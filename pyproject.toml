@@ -50,4 +50,4 @@ where = ["src"]
 # --- CLI Entry Points -----------------------------------------------------------------------------
 
 [project.scripts]
-stelion = "stelion.cli:main"
+stelion = "stelion.cli:app"
