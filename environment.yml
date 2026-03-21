@@ -1,0 +1,30 @@
+name: stelion
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  # Data manipulation and formats
+  - pyyaml
+  - types-pyyaml
+  # Development tools
+  - black
+  - mypy
+  - mypy_extensions
+  - pylint
+  - pyright
+  # Testing
+  - pytest
+  - pytest-mock
+  - pytest-cov
+  - pytest-pylint
+  # Documentation
+  - sphinx
+  - myst-parser
+  - sphinx-rtd-theme
+  - sphinx-needs
+  - esbonio
+  # CLI
+  - typer
+  - rich
+variables:
