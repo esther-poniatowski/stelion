@@ -20,6 +20,7 @@ dependencies:
   - pytest-pylint
   # Documentation
   - sphinx
+  - sphinxcontrib-napoleon
   - myst-parser
   - sphinx-rtd-theme
   - sphinx-needs
