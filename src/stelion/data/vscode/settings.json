@@ -1,0 +1,42 @@
+{
+	"python.terminal.activateEnvironment": true,
+
+	"editor.lineNumbers": "on",
+	"editor.rulers": [100],
+	"editor.wordWrap": "off",
+	"rewrap.wrappingColumn": 100,
+	"rewrap.wholeComment": false,
+	"rewrap.autoWrap.enabled": true,
+
+	"files.exclude": {
+		"**/.git": false,
+		"**/.DS_Store": true,
+		"**/.pytest_cache": true,
+		"**/__pycache__": true,
+		"**/.mypy_cache": true
+	},
+
+	"search.exclude": {
+		"**/.git": true,
+		"**/.DS_Store": true,
+		"**/.pytest_cache": true,
+		"**/__pycache__": true,
+		"**/.mypy_cache": true,
+		"**/docs/build": true,
+		"archive": true
+	},
+
+	"github.copilot.enable": {
+		"*": true,
+		"python": true,
+		"restructuredtext": true,
+		"plaintext": true,
+		"markdown": true,
+		"yaml": true,
+		"json": true,
+		"ini": true,
+		"shellscript": true,
+		"gitignore": true,
+		"git": true
+	}
+}

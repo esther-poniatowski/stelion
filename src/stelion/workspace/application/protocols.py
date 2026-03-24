@@ -1,0 +1,54 @@
+"""Protocol interfaces for workspace infrastructure capabilities."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Protocol
+
+from ..domain.dependency import DependencyEdge
+from ..domain.environment import EnvironmentSpec
+from ..domain.project import ProjectMetadata
+
+
+class MetadataExtractor(Protocol):
+    """Extract project metadata from a directory."""
+
+    def extract(self, project_dir: Path) -> ProjectMetadata: ...
+
+
+class DependencyScanner(Protocol):
+    """Scan a project directory for inter-project dependency edges."""
+
+    def scan(self, project_dir: Path, all_project_names: set[str]) -> list[DependencyEdge]: ...
+
+
+class EnvironmentReader(Protocol):
+    """Read a Conda environment spec from a project directory."""
+
+    def read(self, project_dir: Path) -> EnvironmentSpec | None: ...
+
+
+class FileReader(Protocol):
+    """Read file content from disk."""
+
+    def read(self, path: Path) -> str: ...
+
+
+class FileWriter(Protocol):
+    """Write file content to disk."""
+
+    def write(self, path: Path, content: str) -> None: ...
+
+
+class FileHasher(Protocol):
+    """Compute a content hash for drift detection."""
+
+    def hash_content(self, content: str) -> str: ...
+
+
+class PackageDataLoader(Protocol):
+    """Load bundled package data resources."""
+
+    def load_text(self, resource_path: str) -> str: ...
+
+    def load_json(self, resource_path: str) -> dict: ...

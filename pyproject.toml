@@ -47,6 +47,13 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# Include non-Python data files shipped with the package
+[tool.setuptools.package-data]
+stelion = [
+    "data/**/*.md",
+    "data/**/*.json",
+]
+
 # --- CLI Entry Points -----------------------------------------------------------------------------
 
 [project.scripts]

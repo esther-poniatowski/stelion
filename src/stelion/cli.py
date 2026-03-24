@@ -6,6 +6,7 @@ Defines commands available via `python -m stelion` or `stelion` if installed as 
 Commands
 --------
 info : Display diagnostic information.
+workspace : Multi-project workspace management.
 
 See Also
 --------
@@ -15,8 +16,12 @@ typer.Typer
 
 import typer
 from . import info, __version__
+from .workspace.adapters.commands import app as workspace_app
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
+
+
+# --- Global Commands ------------------------------------------------------------------------------
 
 
 @app.command("info")
@@ -35,3 +40,8 @@ def main_callback(
     if version:
         typer.echo(__version__)
         raise typer.Exit()
+
+
+# --- Commands for Workspace Management ------------------------------------------------------------
+
+app.add_typer(workspace_app, name="workspace")
