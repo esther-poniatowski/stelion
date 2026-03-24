@@ -28,8 +28,8 @@ Stelion manages consistency across a multi-project Python ecosystem. It operates
 at two levels:
 
 1. **Workspace management** --- Discovers projects on disk, generates a unified
-   VS Code workspace, a project inventory, an inter-project dependency graph,
-   and a shared Conda environment from a single declarative manifest
+   VS Code workspace, a project registry (YAML), a structured dependency graph
+   (YAML), and a shared Conda environment from a single declarative manifest
    (`stelion.yml`). Bootstraps new projects from a template repository with
    placeholder substitution.
 
@@ -72,8 +72,8 @@ is a recurring challenge:
 
 - [X] Discover projects by scanning directories for `pyproject.toml`.
 - [X] Generate VS Code multi-root workspace files from discovered projects.
-- [X] Generate project inventory (`projects.md`) from `pyproject.toml` metadata.
-- [X] Generate structured dependency graph (`dependencies.yml` + `dependencies.md`).
+- [X] Generate project registry (`projects.yml`) with description, status, and language detection.
+- [X] Generate structured dependency graph (`dependencies.yml`).
 - [X] Generate shared Conda environment from merged project environments.
 - [X] Bootstrap new projects from a keystone template with placeholder substitution.
 - [X] Register existing projects into workspace artifacts without full regeneration.

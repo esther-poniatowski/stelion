@@ -28,9 +28,8 @@ def generate_all(
     graph: DependencyGraph,
     environment: EnvironmentSpec,
     render_workspace_file: callable,
-    render_projects_index: callable,
+    render_projects_yaml: callable,
     render_dependency_yaml: callable,
-    render_dependency_md: callable,
     render_environment: callable,
     writer: FileWriter,
     reader: FileReader,
@@ -48,16 +47,12 @@ def generate_all(
             lambda: render_workspace_file(manifest, inventory),
         ),
         (
-            manifest.manifest_dir / manifest.generate.projects_index.output,
-            lambda: render_projects_index(manifest, inventory),
+            manifest.manifest_dir / manifest.generate.projects_registry.output,
+            lambda: render_projects_yaml(inventory, manifest.manifest_dir),
         ),
         (
-            manifest.manifest_dir / manifest.generate.dependency_graph.output_yaml,
+            manifest.manifest_dir / manifest.generate.dependency_graph.output,
             lambda: render_dependency_yaml(graph),
-        ),
-        (
-            manifest.manifest_dir / manifest.generate.dependency_graph.output_md,
-            lambda: render_dependency_md(graph),
         ),
         (
             manifest.manifest_dir / manifest.generate.shared_environment.output,
@@ -86,9 +81,8 @@ def compute_drift(
     graph: DependencyGraph,
     environment: EnvironmentSpec,
     render_workspace_file: callable,
-    render_projects_index: callable,
+    render_projects_yaml: callable,
     render_dependency_yaml: callable,
-    render_dependency_md: callable,
     render_environment: callable,
     reader: FileReader,
     hasher: FileHasher,
@@ -100,16 +94,12 @@ def compute_drift(
             lambda: render_workspace_file(manifest, inventory),
         ),
         (
-            manifest.manifest_dir / manifest.generate.projects_index.output,
-            lambda: render_projects_index(manifest, inventory),
+            manifest.manifest_dir / manifest.generate.projects_registry.output,
+            lambda: render_projects_yaml(inventory, manifest.manifest_dir),
         ),
         (
-            manifest.manifest_dir / manifest.generate.dependency_graph.output_yaml,
+            manifest.manifest_dir / manifest.generate.dependency_graph.output,
             lambda: render_dependency_yaml(graph),
-        ),
-        (
-            manifest.manifest_dir / manifest.generate.dependency_graph.output_md,
-            lambda: render_dependency_md(graph),
         ),
         (
             manifest.manifest_dir / manifest.generate.shared_environment.output,

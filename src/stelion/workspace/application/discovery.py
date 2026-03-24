@@ -11,7 +11,6 @@ from .protocols import MetadataExtractor
 
 def discover_projects(
     config: DiscoveryConfig,
-    categories: dict[str, list[str]],
     extractor: MetadataExtractor,
     manifest_dir: Path,
 ) -> ProjectInventory:
@@ -21,8 +20,6 @@ def discover_projects(
     ----------
     config
         Discovery rules from the workspace manifest.
-    categories
-        Category-to-project-names mapping from the manifest.
     extractor
         Infrastructure implementation that reads pyproject.toml.
     manifest_dir
@@ -31,9 +28,10 @@ def discover_projects(
     Returns
     -------
     ProjectInventory
-        All discovered projects with their metadata and category assignments.
+        All discovered projects with their metadata.
     """
     projects: list[ProjectMetadata] = []
+    seen: set[Path] = set()
 
     for scan_dir_str in config.scan_dirs:
         scan_dir = (manifest_dir / scan_dir_str).resolve()
@@ -48,15 +46,33 @@ def discover_projects(
                 continue
             if not _has_marker(child, config.markers):
                 continue
-            metadata = extractor.extract(child)
-            projects.append(metadata)
+            resolved = child.resolve()
+            if resolved not in seen:
+                seen.add(resolved)
+                projects.append(extractor.extract(child))
 
-    return ProjectInventory(projects=projects, categories=categories)
+    for extra_path_str in config.extra_paths:
+        extra_path = (manifest_dir / extra_path_str).resolve()
+        if extra_path.is_dir() and extra_path not in seen:
+            seen.add(extra_path)
+            projects.append(extractor.extract(extra_path))
+
+    return ProjectInventory(projects=projects)
 
 
 def _has_marker(directory: Path, markers: list[str]) -> bool:
-    """Check whether a directory contains at least one marker file."""
+    """Check whether a directory contains at least one marker file.
+
+    Markers can be exact filenames (``pyproject.toml``) or glob patterns
+    (``*.sty``, ``*.cls``) to match projects without standard Python packaging.
+    """
     try:
-        return any((directory / marker).exists() for marker in markers)
+        for marker in markers:
+            if "*" in marker or "?" in marker:
+                if next(directory.glob(marker), None) is not None:
+                    return True
+            elif (directory / marker).exists():
+                return True
+        return False
     except PermissionError:
         return False

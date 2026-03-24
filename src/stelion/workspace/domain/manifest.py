@@ -13,6 +13,7 @@ class DiscoveryConfig:
     scan_dirs: list[str]
     exclude: list[str] = field(default_factory=lambda: ["dev"])
     markers: list[str] = field(default_factory=lambda: ["pyproject.toml"])
+    extra_paths: list[str] = field(default_factory=list)
     include_self: bool = True
     self_name: str = "dev"
 
@@ -53,19 +54,17 @@ class WorkspaceFileConfig:
 
 
 @dataclass(frozen=True)
-class ProjectsIndexConfig:
-    """Generation target for the projects index (Markdown)."""
+class ProjectsRegistryConfig:
+    """Generation target for the projects registry (YAML)."""
 
-    output: str = "projects.md"
-    categories: dict[str, list[str]] = field(default_factory=dict)
+    output: str = "projects.yml"
 
 
 @dataclass(frozen=True)
 class DependencyGraphConfig:
-    """Generation target for the dependency graph (YAML + Markdown)."""
+    """Generation target for the dependency graph (YAML)."""
 
-    output_yaml: str = "dependencies.yml"
-    output_md: str = "dependencies.md"
+    output: str = "dependencies.yml"
 
 
 @dataclass(frozen=True)
@@ -81,7 +80,7 @@ class GenerateConfig:
     """All generation targets."""
 
     workspace_file: WorkspaceFileConfig = field(default_factory=WorkspaceFileConfig)
-    projects_index: ProjectsIndexConfig = field(default_factory=ProjectsIndexConfig)
+    projects_registry: ProjectsRegistryConfig = field(default_factory=ProjectsRegistryConfig)
     dependency_graph: DependencyGraphConfig = field(default_factory=DependencyGraphConfig)
     shared_environment: SharedEnvironmentConfig = field(default_factory=SharedEnvironmentConfig)
 
@@ -121,17 +120,6 @@ class ManualEdge:
 
 
 @dataclass(frozen=True)
-class ProposedIntegration:
-    """A proposed but not yet implemented integration."""
-
-    consumer: str
-    library: str
-    integration: str
-    priority: str = ""
-    notes: str = ""
-
-
-@dataclass(frozen=True)
 class DependenciesConfig:
     """Manually declared dependency edges and extra scan directories."""
 
@@ -157,7 +145,6 @@ class WorkspaceManifest:
     generate: GenerateConfig
     integrations: IntegrationsConfig
     names_in_use: dict[str, str]
-    proposed_integrations: list[ProposedIntegration]
     dependencies: DependenciesConfig
     references: ReferencesConfig
     manifest_dir: Path

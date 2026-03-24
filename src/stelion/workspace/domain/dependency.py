@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
-from .manifest import ManualEdge, ProposedIntegration
+from .manifest import ManualEdge
 
 
 class DependencyMechanism(Enum):
@@ -28,11 +28,10 @@ class DependencyEdge:
 
 @dataclass(frozen=True)
 class DependencyGraph:
-    """Complete dependency graph: auto-detected, manual, and proposed edges."""
+    """Complete dependency graph: auto-detected and manual edges."""
 
     detected: list[DependencyEdge] = field(default_factory=list)
     manual: list[DependencyEdge] = field(default_factory=list)
-    proposed: list[ProposedIntegration] = field(default_factory=list)
 
     @property
     def all_edges(self) -> list[DependencyEdge]:

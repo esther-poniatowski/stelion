@@ -15,8 +15,7 @@ from ..domain.manifest import (
     DependencyGraphConfig,
     IntegrationsConfig,
     ManualEdge,
-    ProjectsIndexConfig,
-    ProposedIntegration,
+    ProjectsRegistryConfig,
     ReferenceImplementation,
     ReferencesConfig,
     SharedEnvironmentConfig,
@@ -64,7 +63,6 @@ def load_manifest(path: Path) -> WorkspaceManifest:
         generate=_parse_generate(raw.get("generate", {})),
         integrations=_parse_integrations(raw.get("integrations", {})),
         names_in_use=raw.get("names_in_use", {}),
-        proposed_integrations=_parse_proposed(raw.get("proposed_integrations", [])),
         dependencies=_parse_dependencies(raw.get("dependencies", {})),
         references=_parse_references(raw.get("references", {})),
         manifest_dir=manifest_dir,
@@ -76,6 +74,7 @@ def _parse_discovery(raw: dict) -> DiscoveryConfig:
         scan_dirs=raw.get("scan_dirs", ["../"]),
         exclude=raw.get("exclude", ["dev"]),
         markers=raw.get("markers", ["pyproject.toml"]),
+        extra_paths=raw.get("extra_paths", []),
         include_self=raw.get("include_self", True),
         self_name=raw.get("self_name", "dev"),
     )
@@ -109,18 +108,16 @@ def _parse_vscode(raw: dict) -> VSCodeConfig:
 
 def _parse_generate(raw: dict) -> GenerateConfig:
     wf = raw.get("workspace_file", {})
-    pi = raw.get("projects_index", {})
+    pr = raw.get("projects_registry", {})
     dg = raw.get("dependency_graph", {})
     se = raw.get("shared_environment", {})
     return GenerateConfig(
         workspace_file=WorkspaceFileConfig(output=wf.get("output", "dev-repos.code-workspace")),
-        projects_index=ProjectsIndexConfig(
-            output=pi.get("output", "projects.md"),
-            categories=pi.get("categories", {}),
+        projects_registry=ProjectsRegistryConfig(
+            output=pr.get("output", "projects.yml"),
         ),
         dependency_graph=DependencyGraphConfig(
-            output_yaml=dg.get("output_yaml", "dependencies.yml"),
-            output_md=dg.get("output_md", "dependencies.md"),
+            output=dg.get("output", "dependencies.yml"),
         ),
         shared_environment=SharedEnvironmentConfig(
             output=se.get("output", "environment.yml"),
@@ -147,19 +144,6 @@ def _parse_integrations(raw: dict) -> IntegrationsConfig:
         canonical_mechanisms=mechanisms,
         reference_implementations=refs,
     )
-
-
-def _parse_proposed(raw: list) -> list[ProposedIntegration]:
-    return [
-        ProposedIntegration(
-            consumer=item.get("consumer", ""),
-            library=item.get("library", ""),
-            integration=item.get("integration", ""),
-            priority=item.get("priority", ""),
-            notes=item.get("notes", ""),
-        )
-        for item in (raw or [])
-    ]
 
 
 def _parse_dependencies(raw: dict) -> DependenciesConfig:

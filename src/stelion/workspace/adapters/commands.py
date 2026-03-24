@@ -19,9 +19,8 @@ from ..infrastructure.environment_parser import CondaEnvironmentReader
 from ..infrastructure.file_ops import LocalFileReader, LocalFileWriter, SHA256Hasher
 from ..infrastructure.manifest_loader import load_manifest
 from ..infrastructure.pyproject_parser import PyprojectExtractor
-from ..infrastructure.renderers.markdown import render_dependency_md, render_projects_index
 from ..infrastructure.renderers.vscode import render_workspace_file
-from ..infrastructure.renderers.yaml import render_dependency_yaml, render_environment
+from ..infrastructure.renderers.yaml import render_dependency_yaml, render_environment, render_projects_yaml
 from ..infrastructure.template_engine import copy_template, rename_paths, substitute_in_directory
 
 app = typer.Typer(name="workspace", help="Multi-project workspace management.", no_args_is_help=True)
@@ -54,7 +53,7 @@ def workspace_init(
     reader = LocalFileReader()
     hasher = SHA256Hasher()
 
-    inventory = discover_projects(m.discovery, m.generate.projects_index.categories, extractor, m.manifest_dir)
+    inventory = discover_projects(m.discovery, extractor, m.manifest_dir)
     graph = _build_graph(m, inventory, env_reader)
     environment = _build_environment(m, inventory, env_reader)
 
@@ -70,9 +69,8 @@ def workspace_init(
         graph=graph,
         environment=environment,
         render_workspace_file=render_workspace_file,
-        render_projects_index=render_projects_index,
+        render_projects_yaml=render_projects_yaml,
         render_dependency_yaml=render_dependency_yaml,
-        render_dependency_md=render_dependency_md,
         render_environment=render_environment,
         writer=writer,
         reader=reader,
@@ -104,15 +102,15 @@ def workspace_sync(
     reader = LocalFileReader()
     hasher = SHA256Hasher()
 
-    inventory = discover_projects(m.discovery, m.generate.projects_index.categories, extractor, m.manifest_dir)
+    inventory = discover_projects(m.discovery, extractor, m.manifest_dir)
     graph = _build_graph(m, inventory, env_reader)
     environment = _build_environment(m, inventory, env_reader)
 
     if dry_run:
         report = compute_drift(
             m, inventory, graph, environment,
-            render_workspace_file, render_projects_index,
-            render_dependency_yaml, render_dependency_md, render_environment,
+            render_workspace_file, render_projects_yaml,
+            render_dependency_yaml, render_environment,
             reader, hasher,
         )
         _print_drift(report, m.manifest_dir)
@@ -121,9 +119,8 @@ def workspace_sync(
     results = generate_all(
         manifest=m, inventory=inventory, graph=graph, environment=environment,
         render_workspace_file=render_workspace_file,
-        render_projects_index=render_projects_index,
+        render_projects_yaml=render_projects_yaml,
         render_dependency_yaml=render_dependency_yaml,
-        render_dependency_md=render_dependency_md,
         render_environment=render_environment,
         writer=writer, reader=reader, hasher=hasher, force=force,
     )
@@ -239,14 +236,14 @@ def workspace_status(
     reader = LocalFileReader()
     hasher = SHA256Hasher()
 
-    inventory = discover_projects(m.discovery, m.generate.projects_index.categories, extractor, m.manifest_dir)
+    inventory = discover_projects(m.discovery, extractor, m.manifest_dir)
     graph = _build_graph(m, inventory, env_reader)
     environment = _build_environment(m, inventory, env_reader)
 
     report = compute_drift(
         m, inventory, graph, environment,
-        render_workspace_file, render_projects_index,
-        render_dependency_yaml, render_dependency_md, render_environment,
+        render_workspace_file, render_projects_yaml,
+        render_dependency_yaml, render_environment,
         reader, hasher,
     )
 
@@ -292,7 +289,6 @@ def _build_graph(m, inventory, env_reader) -> DependencyGraph:
     return DependencyGraph(
         detected=detected,
         manual=manual,
-        proposed=m.proposed_integrations,
     )
 
 
@@ -328,9 +324,8 @@ def _target_paths(m) -> list[Path]:
     """List all generation target paths."""
     return [
         m.manifest_dir / m.generate.workspace_file.output,
-        m.manifest_dir / m.generate.projects_index.output,
-        m.manifest_dir / m.generate.dependency_graph.output_yaml,
-        m.manifest_dir / m.generate.dependency_graph.output_md,
+        m.manifest_dir / m.generate.projects_registry.output,
+        m.manifest_dir / m.generate.dependency_graph.output,
         m.manifest_dir / m.generate.shared_environment.output,
     ]
 
@@ -363,7 +358,7 @@ def _generate_default_manifest(manifest_path: Path, dry_run: bool) -> None:
     from ..domain.manifest import DiscoveryConfig
     config = DiscoveryConfig(scan_dirs=["../"], exclude=[manifest_dir.name])
     from ..application.discovery import discover_projects as _discover
-    inventory = _discover(config, {}, extractor, manifest_dir)
+    inventory = _discover(config, extractor, manifest_dir)
 
     # Get author info from git config
     github_user = ""
@@ -400,12 +395,10 @@ def _generate_default_manifest(manifest_path: Path, dry_run: bool) -> None:
         "generate:",
         "  workspace_file:",
         '    output: "dev-repos.code-workspace"',
-        "  projects_index:",
-        '    output: "projects.md"',
-        "    categories: {}",
+        "  projects_registry:",
+        '    output: "projects.yml"',
         "  dependency_graph:",
-        '    output_yaml: "dependencies.yml"',
-        '    output_md: "dependencies.md"',
+        '    output: "dependencies.yml"',
         "  shared_environment:",
         '    output: "environment.yml"',
         f'    name: "{manifest_dir.name}"',
@@ -415,8 +408,6 @@ def _generate_default_manifest(manifest_path: Path, dry_run: bool) -> None:
         "integrations:",
         "  canonical_mechanisms: {}",
         "  reference_implementations: []",
-        "",
-        "proposed_integrations: []",
         "",
         "dependencies:",
         "  manual_edges: []",
@@ -435,5 +426,5 @@ def _generate_default_manifest(manifest_path: Path, dry_run: bool) -> None:
     console.print(f"[green]Created[/green] {manifest_path}")
     console.print(f"Discovered {len(project_names)} projects: {', '.join(project_names)}")
     console.print("\nNext steps:")
-    console.print("  1. Fill in categories, names_in_use, and integrations in stelion.yml")
+    console.print("  1. Fill in names_in_use and integrations in stelion.yml")
     console.print("  2. Run: stelion workspace init")
