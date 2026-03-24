@@ -57,10 +57,10 @@ def discover_projects(
             seen.add(extra_path)
             projects.append(extractor.extract(extra_path))
 
-    return ProjectInventory(projects=projects)
+    return ProjectInventory(projects=tuple(projects))
 
 
-def _has_marker(directory: Path, markers: list[str]) -> bool:
+def _has_marker(directory: Path, markers: tuple[str, ...]) -> bool:
     """Check whether a directory contains at least one marker file.
 
     Markers can be exact filenames (``pyproject.toml``) or glob patterns

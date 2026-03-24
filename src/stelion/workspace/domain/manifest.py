@@ -10,10 +10,10 @@ from pathlib import Path
 class DiscoveryConfig:
     """Rules for discovering projects on disk."""
 
-    scan_dirs: list[str]
-    exclude: list[str] = field(default_factory=lambda: ["dev"])
-    markers: list[str] = field(default_factory=lambda: ["pyproject.toml"])
-    extra_paths: list[str] = field(default_factory=list)
+    scan_dirs: tuple[str, ...]
+    exclude: tuple[str, ...] = ("dev",)
+    markers: tuple[str, ...] = ("pyproject.toml",)
+    extra_paths: tuple[str, ...] = ()
     include_self: bool = True
     self_name: str = "dev"
 
@@ -24,7 +24,7 @@ class TemplateConfig:
 
     source: str
     delimiters: tuple[str, str] = ("{{ ", " }}")
-    exclude_patterns: list[str] = field(default_factory=list)
+    exclude_patterns: tuple[str, ...] = ()
     renames: dict[str, str] = field(default_factory=dict)
 
 
@@ -43,7 +43,7 @@ class VSCodeConfig:
 
     source: str = "defaults"
     settings_overrides: dict = field(default_factory=dict)
-    extensions_overrides: list[str] = field(default_factory=list)
+    extensions_overrides: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -106,7 +106,7 @@ class IntegrationsConfig:
     """Project-specific integration mechanism assignments and references."""
 
     canonical_mechanisms: dict[str, CanonicalMechanism] = field(default_factory=dict)
-    reference_implementations: list[ReferenceImplementation] = field(default_factory=list)
+    reference_implementations: tuple[ReferenceImplementation, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -123,15 +123,15 @@ class ManualEdge:
 class DependenciesConfig:
     """Manually declared dependency edges and extra scan directories."""
 
-    manual_edges: list[ManualEdge] = field(default_factory=list)
-    extra_scan_dirs: list[str] = field(default_factory=list)
+    manual_edges: tuple[ManualEdge, ...] = ()
+    extra_scan_dirs: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class ReferencesConfig:
     """Expected reference documents in the workspace."""
 
-    expected: list[str] = field(default_factory=list)
+    expected: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

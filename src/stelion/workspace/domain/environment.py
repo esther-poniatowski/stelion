@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -10,9 +10,9 @@ class EnvironmentSpec:
     """Parsed content of a Conda environment.yml file."""
 
     name: str = ""
-    channels: list[str] = field(default_factory=list)
-    dependencies: list[str] = field(default_factory=list)
-    pip_dependencies: list[str] = field(default_factory=list)
+    channels: tuple[str, ...] = ()
+    dependencies: tuple[str, ...] = ()
+    pip_dependencies: tuple[str, ...] = ()
 
 
 def merge_environments(specs: list[EnvironmentSpec], name: str) -> EnvironmentSpec:
@@ -38,7 +38,7 @@ def merge_environments(specs: list[EnvironmentSpec], name: str) -> EnvironmentSp
 
     return EnvironmentSpec(
         name=name,
-        channels=list(seen_channels),
-        dependencies=list(seen_deps),
-        pip_dependencies=list(seen_pip),
+        channels=tuple(seen_channels),
+        dependencies=tuple(seen_deps),
+        pip_dependencies=tuple(seen_pip),
     )

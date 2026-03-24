@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from .manifest import ManualEdge
@@ -30,11 +30,11 @@ class DependencyEdge:
 class DependencyGraph:
     """Complete dependency graph: auto-detected and manual edges."""
 
-    detected: list[DependencyEdge] = field(default_factory=list)
-    manual: list[DependencyEdge] = field(default_factory=list)
+    detected: tuple[DependencyEdge, ...] = ()
+    manual: tuple[DependencyEdge, ...] = ()
 
     @property
-    def all_edges(self) -> list[DependencyEdge]:
+    def all_edges(self) -> tuple[DependencyEdge, ...]:
         """All resolved edges (detected + manual)."""
         return self.detected + self.manual
 
@@ -54,16 +54,28 @@ class DependencyGraph:
 
 
 def manual_edge_to_dependency_edge(edge: ManualEdge) -> DependencyEdge:
-    """Convert a manifest ManualEdge to a resolved DependencyEdge."""
+    """Convert a manifest ManualEdge to a resolved DependencyEdge.
+
+    Raises
+    ------
+    ValueError
+        If the mechanism string does not match a known ``DependencyMechanism``.
+    """
     mechanism_map = {
         "editable_pip": DependencyMechanism.EDITABLE_PIP,
         "conda": DependencyMechanism.CONDA,
         "git_submodule": DependencyMechanism.GIT_SUBMODULE,
     }
-    mechanism = mechanism_map.get(edge.mechanism, DependencyMechanism.EDITABLE_PIP)
+    if edge.mechanism not in mechanism_map:
+        known = ", ".join(sorted(mechanism_map))
+        raise ValueError(
+            f"Unknown dependency mechanism '{edge.mechanism}' on edge "
+            f"'{edge.dependent} -> {edge.dependency}'. "
+            f"Known mechanisms: {known}"
+        )
     return DependencyEdge(
         dependent=edge.dependent,
         dependency=edge.dependency,
-        mechanism=mechanism,
+        mechanism=mechanism_map[edge.mechanism],
         detail=edge.detail,
     )

@@ -22,15 +22,14 @@ def scan_gitmodules(project_dir: Path, all_project_names: set[str]) -> list[Depe
 
     edges: list[DependencyEdge] = []
     for section in parser.sections():
-        # Sections are 'submodule "name"'
-        submodule_name = section.replace('submodule "', "").rstrip('"')
         submodule_path = parser.get(section, "path", fallback="")
+        # Extract the bare project name from the submodule path (e.g. "vendor/scholia" -> "scholia")
+        dep_name = Path(submodule_path).name if submodule_path else ""
 
-        # Match against known ecosystem project names
-        if submodule_name in all_project_names:
+        if dep_name in all_project_names:
             edges.append(DependencyEdge(
                 dependent=project_dir.name,
-                dependency=submodule_name,
+                dependency=dep_name,
                 mechanism=DependencyMechanism.GIT_SUBMODULE,
                 detail=submodule_path,
             ))

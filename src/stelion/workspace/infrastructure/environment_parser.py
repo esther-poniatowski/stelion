@@ -21,8 +21,11 @@ class CondaEnvironmentReader:
         if not env_path.exists():
             return None
 
-        with open(env_path, encoding="utf-8") as f:
-            raw = yaml.safe_load(f) or {}
+        try:
+            with open(env_path, encoding="utf-8") as f:
+                raw = yaml.safe_load(f) or {}
+        except yaml.YAMLError:
+            return None
 
         name = raw.get("name", "")
         channels = raw.get("channels", [])
@@ -37,7 +40,7 @@ class CondaEnvironmentReader:
 
         return EnvironmentSpec(
             name=name,
-            channels=channels,
-            dependencies=deps,
-            pip_dependencies=pip_deps,
+            channels=tuple(channels),
+            dependencies=tuple(deps),
+            pip_dependencies=tuple(pip_deps),
         )

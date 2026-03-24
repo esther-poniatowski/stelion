@@ -5,9 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol
 
-from ..domain.dependency import DependencyEdge
+from ..domain.dependency import DependencyEdge, DependencyGraph
 from ..domain.environment import EnvironmentSpec
-from ..domain.project import ProjectMetadata
+from ..domain.manifest import WorkspaceManifest
+from ..domain.project import ProjectInventory, ProjectMetadata
 
 
 class MetadataExtractor(Protocol):
@@ -19,7 +20,7 @@ class MetadataExtractor(Protocol):
 class DependencyScanner(Protocol):
     """Scan a project directory for inter-project dependency edges."""
 
-    def scan(self, project_dir: Path, all_project_names: set[str]) -> list[DependencyEdge]: ...
+    def scan(self, project_dir: Path, all_project_names: set[str]) -> list[DependencyEdge]: ...  # noqa: UP006
 
 
 class EnvironmentReader(Protocol):
@@ -52,3 +53,30 @@ class PackageDataLoader(Protocol):
     def load_text(self, resource_path: str) -> str: ...
 
     def load_json(self, resource_path: str) -> dict: ...
+
+
+# --- Renderer protocols ------------------------------------------------------
+
+
+class WorkspaceFileRenderer(Protocol):
+    """Render a VS Code .code-workspace file."""
+
+    def __call__(self, manifest: WorkspaceManifest, inventory: ProjectInventory) -> str: ...
+
+
+class ProjectsYamlRenderer(Protocol):
+    """Render the projects registry YAML."""
+
+    def __call__(self, inventory: ProjectInventory, manifest_dir: Path) -> str: ...
+
+
+class DependencyYamlRenderer(Protocol):
+    """Render the dependency graph YAML."""
+
+    def __call__(self, graph: DependencyGraph) -> str: ...
+
+
+class EnvironmentRenderer(Protocol):
+    """Render the shared Conda environment YAML."""
+
+    def __call__(self, environment: EnvironmentSpec) -> str: ...

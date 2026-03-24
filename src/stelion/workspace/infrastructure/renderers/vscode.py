@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from ...domain.manifest import WorkspaceManifest
 from ...domain.project import ProjectInventory
@@ -38,7 +39,7 @@ def render_workspace_file(manifest: WorkspaceManifest, inventory: ProjectInvento
     return json.dumps(workspace, indent="\t", ensure_ascii=False) + "\n"
 
 
-def _relative_path(manifest_dir: str, project_path: str) -> str:
+def _relative_path(manifest_dir: Path, project_path: Path) -> str:
     """Compute a relative path from the manifest directory to the project."""
     try:
         rel = project_path.relative_to(manifest_dir)

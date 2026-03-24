@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 import shutil
+from collections.abc import Sequence
 from pathlib import Path
 
 BINARY_EXTENSIONS: set[str] = {
@@ -24,7 +25,7 @@ BINARY_EXTENSIONS: set[str] = {
 def substitute_in_file(
     path: Path,
     bindings: dict[str, str],
-    exclude_patterns: list[str] | None = None,
+    exclude_patterns: Sequence[str] | None = None,
 ) -> int:
     """Replace placeholder strings in a single file.
 
@@ -68,7 +69,7 @@ def substitute_in_file(
 def substitute_in_directory(
     root: Path,
     bindings: dict[str, str],
-    exclude_patterns: list[str] | None = None,
+    exclude_patterns: Sequence[str] | None = None,
 ) -> int:
     """Replace placeholders in all text files under a directory.
 

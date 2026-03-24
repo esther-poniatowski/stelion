@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -17,14 +17,14 @@ class ProjectMetadata:
     status: str | None = None
     homepage: str | None = None
     has_git: bool = False
-    languages: list[str] = field(default_factory=list)
+    languages: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class ProjectInventory:
     """Collection of discovered projects."""
 
-    projects: list[ProjectMetadata] = field(default_factory=list)
+    projects: tuple[ProjectMetadata, ...] = ()
 
     def by_name(self) -> dict[str, ProjectMetadata]:
         """Index projects by name."""

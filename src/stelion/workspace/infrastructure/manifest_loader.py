@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import yaml
@@ -24,6 +25,8 @@ from ..domain.manifest import (
     WorkspaceFileConfig,
     WorkspaceManifest,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def load_manifest(path: Path) -> WorkspaceManifest:
@@ -53,6 +56,8 @@ def load_manifest(path: Path) -> WorkspaceManifest:
     with open(path, encoding="utf-8") as f:
         raw = yaml.safe_load(f) or {}
 
+    _validate_manifest(raw)
+
     manifest_dir = path.parent
 
     return WorkspaceManifest(
@@ -69,12 +74,58 @@ def load_manifest(path: Path) -> WorkspaceManifest:
     )
 
 
+_KNOWN_TOP_LEVEL_KEYS = frozenset({
+    "discovery",
+    "template",
+    "defaults",
+    "vscode",
+    "generate",
+    "integrations",
+    "names_in_use",
+    "dependencies",
+    "references",
+})
+
+
+def _validate_manifest(raw: dict) -> None:
+    """Validate required fields and warn on unknown top-level keys.
+
+    Raises
+    ------
+    ValueError
+        If a required section is missing or has an invalid type.
+    """
+    # Check required sections
+    if "discovery" not in raw:
+        raise ValueError("Manifest is missing required section 'discovery'.")
+    discovery = raw["discovery"]
+    if not isinstance(discovery, dict):
+        raise ValueError("Section 'discovery' must be a mapping.")
+    if "scan_dirs" not in discovery:
+        raise ValueError(
+            "Section 'discovery' is missing required field 'scan_dirs'."
+        )
+
+    if "generate" not in raw:
+        raise ValueError("Manifest is missing required section 'generate'.")
+    if not isinstance(raw["generate"], dict):
+        raise ValueError("Section 'generate' must be a mapping.")
+
+    # Warn on unknown top-level keys
+    unknown = set(raw) - _KNOWN_TOP_LEVEL_KEYS
+    if unknown:
+        logger.warning(
+            "Unknown top-level keys in manifest: %s",
+            ", ".join(sorted(unknown)),
+        )
+
+
 def _parse_discovery(raw: dict) -> DiscoveryConfig:
     return DiscoveryConfig(
-        scan_dirs=raw.get("scan_dirs", ["../"]),
-        exclude=raw.get("exclude", ["dev"]),
-        markers=raw.get("markers", ["pyproject.toml"]),
-        extra_paths=raw.get("extra_paths", []),
+        scan_dirs=tuple(raw.get("scan_dirs", ["../"])),
+        exclude=tuple(raw.get("exclude", ["dev"])),
+        markers=tuple(raw.get("markers", ["pyproject.toml"])),
+        extra_paths=tuple(raw.get("extra_paths", [])),
         include_self=raw.get("include_self", True),
         self_name=raw.get("self_name", "dev"),
     )
@@ -85,7 +136,7 @@ def _parse_template(raw: dict) -> TemplateConfig:
     return TemplateConfig(
         source=raw.get("source", ""),
         delimiters=(delimiters[0], delimiters[1]) if len(delimiters) >= 2 else ("{{ ", " }}"),
-        exclude_patterns=raw.get("exclude_patterns", []),
+        exclude_patterns=tuple(raw.get("exclude_patterns", [])),
         renames=raw.get("renames", {}),
     )
 
@@ -102,7 +153,7 @@ def _parse_vscode(raw: dict) -> VSCodeConfig:
     return VSCodeConfig(
         source=raw.get("source", "defaults"),
         settings_overrides=raw.get("settings_overrides", {}),
-        extensions_overrides=raw.get("extensions_overrides", []),
+        extensions_overrides=tuple(raw.get("extensions_overrides", [])),
     )
 
 
@@ -133,13 +184,13 @@ def _parse_integrations(raw: dict) -> IntegrationsConfig:
             type=val.get("type", ""),
             mechanism=val.get("mechanism", ""),
         )
-    refs = [
+    refs = tuple(
         ReferenceImplementation(
             module=r.get("module", ""),
             description=r.get("description", ""),
         )
         for r in raw.get("reference_implementations", [])
-    ]
+    )
     return IntegrationsConfig(
         canonical_mechanisms=mechanisms,
         reference_implementations=refs,
@@ -147,7 +198,7 @@ def _parse_integrations(raw: dict) -> IntegrationsConfig:
 
 
 def _parse_dependencies(raw: dict) -> DependenciesConfig:
-    edges = [
+    edges = tuple(
         ManualEdge(
             dependent=e.get("dependent", ""),
             dependency=e.get("dependency", ""),
@@ -155,12 +206,12 @@ def _parse_dependencies(raw: dict) -> DependenciesConfig:
             detail=e.get("detail", ""),
         )
         for e in raw.get("manual_edges", [])
-    ]
+    )
     return DependenciesConfig(
         manual_edges=edges,
-        extra_scan_dirs=raw.get("extra_scan_dirs", []),
+        extra_scan_dirs=tuple(raw.get("extra_scan_dirs", [])),
     )
 
 
 def _parse_references(raw: dict) -> ReferencesConfig:
-    return ReferencesConfig(expected=raw.get("expected", []))
+    return ReferencesConfig(expected=tuple(raw.get("expected", [])))

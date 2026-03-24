@@ -18,7 +18,7 @@ class RegistrationResult:
     """Outcome of registering a project."""
 
     project: ProjectMetadata
-    files_updated: list[str]
+    files_updated: tuple[str, ...]
 
 
 def register_project(

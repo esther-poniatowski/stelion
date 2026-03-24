@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
@@ -28,7 +28,7 @@ class DriftEntry:
 class DriftReport:
     """Aggregated drift report for all generated workspace files."""
 
-    entries: list[DriftEntry] = field(default_factory=list)
+    entries: tuple[DriftEntry, ...] = ()
 
     @property
     def has_drift(self) -> bool:

@@ -106,7 +106,7 @@ _EXTENSION_MAP: dict[str, str] = {
 }
 
 
-def _detect_languages(project_dir: Path) -> list[str]:
+def _detect_languages(project_dir: Path) -> tuple[str, ...]:
     """Detect programming languages from source file extensions."""
     search_dir = project_dir / "src" if (project_dir / "src").is_dir() else project_dir
     found = []
@@ -116,4 +116,4 @@ def _detect_languages(project_dir: Path) -> list[str]:
                 found.append(lang)
         except PermissionError:
             continue
-    return found
+    return tuple(found)

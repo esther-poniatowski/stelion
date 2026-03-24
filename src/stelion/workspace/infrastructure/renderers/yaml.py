@@ -84,7 +84,7 @@ def render_environment(environment: EnvironmentSpec) -> str:
 
     deps: list = list(environment.dependencies)
     if environment.pip_dependencies:
-        deps.append({"pip": environment.pip_dependencies})
+        deps.append({"pip": list(environment.pip_dependencies)})
 
     data["dependencies"] = deps
 
