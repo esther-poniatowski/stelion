@@ -6,10 +6,9 @@
 [![Python](https://img.shields.io/badge/python-supported-blue)](https://www.python.org/)
 [![License: GPL](https://img.shields.io/badge/License-GPL-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
 
----
+Tool that synchronizes files across repositories while preserving modifications specific to each project.
 
-Repository synchronizer toolset for cross-project consistency and project-specific
-adjustments via configurable mappings, fine-grained diffs, and template-based substitution.
+---
 
 ## Table of Contents
 
@@ -28,36 +27,28 @@ adjustments via configurable mappings, fine-grained diffs, and template-based su
 
 ### Motivation
 
-Distinct development projects often share common configurations, development environments, and tool
-settings. A recurring challenge is to maintain consistency across these projects while supporting
-project-specific customizations.
+Distinct development projects often share configurations, environments, and tool settings.
+Keeping files consistent while supporting customizations specific to each project is a recurring
+challenge.
 
-Standard approaches remain limited:
+Standard approaches fall short:
 
-- Manual duplication across projects with targeted edits is error-prone and unsustainable as
-  projects evolve.
-- Template-based synchronization partially automates replication but does not accommodate
-  fine-grained, project-specific adjustments.
-- Comparing or merging *individual* files across projects is not supported by standard version
-  control systems (e.g., `git`), and their line-based diffing fails to capture structural or
-semantic differences (e.g., reordering, token-level edits, placeholder substitutions).
-
-These limitations hinder the ability to propagate updates across repositories, track divergence from
-a reference template, and integrate external modifications selectively.
+- Duplicating files manually with targeted edits becomes unsustainable as projects evolve.
+- Templates replicate files automatically but cannot handle precise adjustments specific to each project.
+- `git` and similar tools cannot compare individual files across projects, and their diffs miss
+  structural changes such as reordered blocks or substituted placeholders.
 
 ### Advantages
 
-This tool introduces a controlled, file-level synchronization mechanism across multiple
-repositories, while preserving project-specific modifications.
+Stelion synchronizes files across repositories while preserving modifications specific to each
+project:
 
-It provides the following benefits:
-
-- **Cross-project coherence with flexibility**: Ensures consistency across shared configuration
-  files across repositories while permitting local deviations.
-- **Template-aware merging**: Tracks changes derived from template instantiation, enabling
-  meaningful integration of updates.
-- **Fine-grained difference analysis**: Detects divergences at the token level (including
-  placeholder substitutions) and structural edits, allowing precise inspection of relevant changes.
+- **Cross-project coherence**: Keeps shared configuration files consistent while permitting
+  local deviations.
+- **Template merging**: Tracks changes derived from instantiating templates to integrate updates
+  meaningfully.
+- **Precise diffing**: Detects divergences at the token level, including substituted placeholders
+  and structural edits.
 
 ---
 
@@ -66,8 +57,8 @@ It provides the following benefits:
 - [ ] Synchronize and adapt file versions across repositories.
 - [ ] Configure mappings between local and remote versions across multiple repositories.
 - [ ] Merge versions with standard conflict markers (three-way scheme).
-- [ ] Compare file contents (diff) at various granularity (line, word, token).
-- [ ] Fill templates via configurable placeholder replacement.
+- [ ] Compare file contents (diff) at line, word, or token level.
+- [ ] Fill templates by replacing placeholders via configurable rules.
 - [ ] Dry-run and verbose modes for safe inspection.
 - [ ] Extend merge, diff and template strategies via plugins.
 
@@ -75,19 +66,17 @@ It provides the following benefits:
 
 ## Installation
 
-To install the package and its dependencies, use one of the following methods:
+### Using pip
 
-### Using Pip Installs Packages
-
-Install the package from the GitHub repository URL via `pip`:
+Install from the GitHub repository:
 
 ```bash
 pip install git+https://github.com/esther-poniatowski/stelion.git
 ```
 
-### Using Conda
+### Using conda
 
-Install the package from the private channel eresthanaconda:
+Install from the eresthanaconda channel:
 
 ```bash
 conda install stelion -c eresthanaconda
@@ -121,7 +110,7 @@ stelion info
 ```
 
 > [!NOTE]
-> Stelion's CLI commands for template merging, diffing, and synchronization are under
+> Stelion's CLI commands for merging templates, diffing, and synchronizing files are under
 > active development. See the [Features](#features) section for the planned command set.
 
 ---
