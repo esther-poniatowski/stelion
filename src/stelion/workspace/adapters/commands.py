@@ -8,11 +8,12 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from ..application.bootstrap import build_placeholder_bindings
+from ..application.bootstrap import WorkspaceBootstrapRequest, bootstrap_workspace_project
 from ..application.manifest_init import generate_default_manifest_content
 from ..application.registration import register_project
 from ..composition import (
     build_workspace_context,
+    create_bootstrap_services,
     create_services,
     resolve_manifest,
     run_drift_check,
@@ -20,7 +21,7 @@ from ..composition import (
     target_paths,
 )
 from ..domain.status import DriftReport, FileStatus
-from ..infrastructure.template_engine import copy_template, rename_paths, substitute_in_directory
+from ..exceptions import BootstrapError
 
 app = typer.Typer(name="workspace", help="Multi-project workspace management.", no_args_is_help=True)
 console = Console(stderr=True)
@@ -117,70 +118,33 @@ def workspace_new(
     no_git: bool = typer.Option(False, "--no-git", help="Skip git init."),
 ) -> None:
     """Bootstrap a new project from the template and register it."""
-    import re
-    import subprocess
-
-    if not re.match(r"^[a-z][a-z0-9_]*$", name):
-        console.print("[red]Error:[/red] Name must start with a lowercase letter and contain only lowercase letters, digits, and underscores.")
-        raise typer.Exit(1)
-
     m = resolve_manifest(Path(manifest))
-    template_source = (m.manifest_dir / m.template.source).resolve()
-
-    if not template_source.is_dir():
-        console.print(f"[red]Error:[/red] Template source not found: {template_source}")
-        raise typer.Exit(1)
-
-    # Determine target directory (first scan dir)
-    scan_dir = (m.manifest_dir / m.discovery.scan_dirs[0]).resolve()
-    target_dir = scan_dir / name
-
-    if target_dir.exists():
-        console.print(f"[red]Error:[/red] Directory already exists: {target_dir}")
+    request = WorkspaceBootstrapRequest(
+        manifest_dir=m.manifest_dir,
+        name=name,
+        description=description,
+        template=m.template,
+        defaults=m.defaults,
+        discovery_scan_dirs=m.discovery.scan_dirs,
+        initialize_git=not no_git,
+        dry_run=dry_run,
+    )
+    services = create_bootstrap_services()
+    try:
+        result = bootstrap_workspace_project(request, services)
+    except BootstrapError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
 
     if dry_run:
-        console.print(f"[bold]Dry run:[/bold] would create project at {target_dir}")
+        console.print(f"[bold]Dry run:[/bold] would create project at {result.target_dir}")
         return
 
-    # Build placeholder bindings
-    author_name = ""
-    author_email = ""
-    try:
-        author_name = subprocess.run(
-            ["git", "config", "user.name"], capture_output=True, text=True, check=False
-        ).stdout.strip()
-        author_email = subprocess.run(
-            ["git", "config", "user.email"], capture_output=True, text=True, check=False
-        ).stdout.strip()
-    except FileNotFoundError:
-        pass
-
-    bindings = build_placeholder_bindings(name, description, m.defaults, author_name, author_email)
-
-    # Copy template
-    console.print(f"Copying template from {template_source.name}...")
-    copy_template(template_source, target_dir)
-
-    # Substitute placeholders
-    count = substitute_in_directory(target_dir, bindings, m.template.exclude_patterns)
-    console.print(f"Replaced {count} placeholder occurrences.")
-
-    # Rename directories and files
-    renamed = rename_paths(target_dir, m.template.renames, bindings)
-    console.print(f"Renamed {renamed} paths.")
-
-    # Initialize git
-    if not no_git:
-        subprocess.run(["git", "init", "--quiet"], cwd=target_dir, check=True)
-        subprocess.run(["git", "add", "."], cwd=target_dir, check=True)
-        subprocess.run(
-            ["git", "commit", "--quiet", "-m", "feat: Initialize project from keystone template"],
-            cwd=target_dir, check=True,
-        )
+    console.print(f"Replaced {result.placeholders_replaced} placeholder occurrences.")
+    console.print(f"Renamed {result.files_renamed} paths.")
+    if result.git_initialized:
         console.print("Initialized git repository.")
-
-    console.print(f"\n[bold green]Project '{name}' created at {target_dir}[/bold green]")
+    console.print(f"\n[bold green]Project '{name}' created at {result.target_dir}[/bold green]")
     console.print(f"\nRun [bold]stelion workspace sync[/bold] to update workspace files.")
 
 

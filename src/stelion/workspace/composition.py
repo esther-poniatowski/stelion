@@ -10,11 +10,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from .application.bootstrap import BootstrapServices
 from .application.discovery import discover_projects
 from .application.environment import build_shared_environment
 from .application.generation import GenerationResult, compute_drift, generate_all
 from .application.graph import build_dependency_graph
 from .application.protocols import (
+    DependencyScanner,
     DependencyYamlRenderer,
     EnvironmentReader,
     EnvironmentRenderer,
@@ -31,10 +33,16 @@ from .domain.manifest import WorkspaceManifest
 from .domain.project import ProjectInventory
 from .domain.status import DriftReport
 from .infrastructure.environment_parser import CondaEnvironmentReader
+from .infrastructure.bootstrap_git import init_repository, read_git_identity
+from .infrastructure.dependency_scanners import (
+    EditablePipDependencyScanner,
+    GitmodulesDependencyScanner,
+)
 from .infrastructure.file_ops import LocalFileReader, LocalFileWriter, SHA256Hasher
 from .infrastructure.manifest_loader import load_manifest
 from .infrastructure.pyproject_parser import PyprojectExtractor
 from .infrastructure.renderers.vscode import render_workspace_file
+from .infrastructure.template_engine import copy_template, rename_paths, substitute_in_directory
 from .infrastructure.renderers.yaml import (
     render_dependency_yaml,
     render_environment,
@@ -48,6 +56,7 @@ class WorkspaceServices:
 
     extractor: MetadataExtractor
     env_reader: EnvironmentReader
+    dependency_scanners: tuple[DependencyScanner, ...]
     writer: FileWriter
     reader: FileReader
     hasher: FileHasher
@@ -62,6 +71,10 @@ def create_services() -> WorkspaceServices:
     return WorkspaceServices(
         extractor=PyprojectExtractor(),
         env_reader=CondaEnvironmentReader(),
+        dependency_scanners=(
+            EditablePipDependencyScanner(CondaEnvironmentReader()),
+            GitmodulesDependencyScanner(),
+        ),
         writer=LocalFileWriter(),
         reader=LocalFileReader(),
         hasher=SHA256Hasher(),
@@ -69,6 +82,21 @@ def create_services() -> WorkspaceServices:
         render_projects_yaml=render_projects_yaml,
         render_dependency_yaml=render_dependency_yaml,
         render_environment=render_environment,
+    )
+
+
+def create_bootstrap_services() -> BootstrapServices:
+    """Build the injected services for workspace project bootstrapping."""
+    return BootstrapServices(
+        read_git_identity=read_git_identity,
+        copy_template=copy_template,
+        substitute_directory=lambda root, bindings, patterns: substitute_in_directory(
+            root,
+            bindings,
+            patterns,
+        ),
+        rename_paths=rename_paths,
+        init_repository=init_repository,
     )
 
 
@@ -95,7 +123,7 @@ def build_workspace_context(
     inventory = discover_projects(
         manifest.discovery, services.extractor, manifest.manifest_dir,
     )
-    graph = build_dependency_graph(manifest, inventory, services.env_reader)
+    graph = build_dependency_graph(manifest, inventory, services.dependency_scanners)
     environment = build_shared_environment(manifest, inventory, services.env_reader)
     return WorkspaceContext(
         manifest=manifest,
