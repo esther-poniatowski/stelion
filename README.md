@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.12-blue)](https://www.python.org/)
 [![License: GPL](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
 
-Cross-project synchronization framework and multi-project workspace manager.
+Multi-project workspace manager for heterogeneous project ecosystems.
 
 ---
 
@@ -59,8 +59,6 @@ is a recurring challenge:
   Conda environments.
 - **Project bootstrapping**: New projects inherit their structure from a template
   repository with automated placeholder substitution and registration.
-- **Ecosystem governance**: Ships authoritative standards (design principles,
-  writing conventions, integration policy) and audit prompts as package data.
 - **Cross-project coherence**: Keeps shared configuration files consistent while
   permitting local deviations.
 
@@ -79,7 +77,7 @@ is a recurring challenge:
 - [X] Register existing projects into workspace artifacts without full regeneration.
 - [X] Detect drift between generated files and current project state.
 - [X] Auto-generate manifest with sensible defaults on first run.
-- [X] Ship ecosystem governance documents and VS Code defaults as package data.
+- [X] Ship VS Code workspace defaults as package data.
 
 ### Repository Synchronization (planned)
 
@@ -129,8 +127,7 @@ stelion workspace init
 ```
 
 This auto-discovers projects and generates `stelion.yml` with sensible defaults.
-Fill in the manifest's `categories`, `names_in_use`, and `integrations` sections,
-then run:
+Fill in the manifest's `names_in_use` and `integrations` sections, then run:
 
 ```sh
 stelion workspace init
@@ -154,8 +151,7 @@ stelion workspace init [--manifest PATH] [--dry-run]
 
 Initialize or regenerate a workspace. Generates `stelion.yml` with
 auto-discovered projects when no manifest exists. With an existing manifest,
-generates all workspace artifacts and copies reference documents from package
-data.
+generates all workspace artifacts.
 
 ```sh
 stelion workspace sync [--target TARGET] [--force] [--dry-run]
@@ -196,31 +192,20 @@ stelion --version     # version number
 
 ## Package Data
 
-Stelion ships ecosystem governance documents and VS Code defaults as package
-data under `src/stelion/data/`:
+Stelion ships VS Code workspace defaults as package data under
+`src/stelion/data/`:
 
 ```text
 data/
-    standards/              # Authoritative rule definitions
-        design-principles.md    # Architectural rules (referenced by audit-architecture)
-        writing-standards.md    # Prose conventions (referenced by audit-documentation)
-        integration-policy.md   # Integration mechanisms and version pinning
-    audits/                 # Enforcement prompts
-        audit-architecture.md   # Detects violations of design-principles
-        audit-documentation.md  # Detects violations of writing-standards
-    references/             # Other reference documents
-        names.md                # Project naming conventions (Greek/Latin etymologies)
     vscode/                 # VS Code workspace defaults
         settings.json           # Ecosystem-standard editor settings
         extensions.json         # Recommended extensions
 ```
 
-Each audit prompt references its corresponding standards file. The standards
-define the rules; the audits define the detection methodology.
-
-Governance documents are the single source of truth and live only here — they
-are not copied into workspaces. The VS Code multi-root workspace includes
-stelion as a folder, making all files navigable from the editor.
+Quality governance (design principles, writing standards, audit prompts, AI
+agent templates) is provided by [eutaxis](https://github.com/esther-poniatowski/eutaxis).
+Research organization (note types, contracts, registries, epistemic rules) is
+provided by [gnomon](https://github.com/esther-poniatowski/gnomon).
 
 ---
 

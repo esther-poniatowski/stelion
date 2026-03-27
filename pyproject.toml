@@ -18,8 +18,8 @@ authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 readme = {file = "README.md", content-type = "text/markdown"}
-description = "Repository synchronization framework for combining cross-project consistency with project-specific adjustments through configurable mappings, diff-based comparisons, and template-based substitution"
-keywords = ["template", "diff", "synchronization", "repository-management", "merging-conflict", "placeholder-substitution"]
+description = "Multi-project workspace manager for heterogeneous project ecosystems."
+keywords = ["workspace", "project-discovery", "vscode", "conda", "bootstrapping", "dependency-graph"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -50,7 +50,6 @@ where = ["src"]
 # Include non-Python data files shipped with the package
 [tool.setuptools.package-data]
 stelion = [
-    "data/**/*.md",
     "data/**/*.json",
 ]
 
