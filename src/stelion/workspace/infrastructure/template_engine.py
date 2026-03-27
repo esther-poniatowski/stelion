@@ -53,12 +53,23 @@ def substitute_in_file(
     except (UnicodeDecodeError, PermissionError):
         return 0
 
+    protected: dict[str, str] = {}
+    if exclude_patterns:
+        for idx, pattern in enumerate(exclude_patterns):
+            for match_index, match in enumerate(re.finditer(pattern, content)):
+                token = f"__STELION_PROTECTED_{idx}_{match_index}__"
+                protected[token] = match.group(0)
+                content = content.replace(match.group(0), token, 1)
+
     count = 0
     for placeholder, value in bindings.items():
         occurrences = content.count(placeholder)
         if occurrences > 0:
             content = content.replace(placeholder, value)
             count += occurrences
+
+    for token, original in protected.items():
+        content = content.replace(token, original)
 
     if count > 0:
         path.write_text(content, encoding="utf-8")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tomllib
+import warnings
 from pathlib import Path
 
 from ..domain.project import ProjectMetadata
@@ -15,34 +16,30 @@ class PyprojectExtractor:
         """Extract metadata from a project directory.
 
         Reads ``pyproject.toml`` for package metadata. Determines ``has_git``
-        from the presence of a ``.git`` directory. Infers ``status`` from the
-        version string and git state.
+        from the presence of a ``.git`` directory. If ``pyproject.toml`` is
+        missing or contains invalid TOML, a warning is emitted and all fields
+        derived from it fall back to their defaults; fields derivable from the
+        filesystem (``has_git``, ``languages``, README description) are still
+        populated normally.
         """
-        pyproject_path = project_dir / "pyproject.toml"
         has_git = (project_dir / ".git").is_dir()
+        pyproject_path = project_dir / "pyproject.toml"
 
+        data: dict = {}
         if not pyproject_path.exists():
-            return ProjectMetadata(
-                name=project_dir.name,
-                path=project_dir,
-                description=_readme_description(project_dir),
-                status=_infer_status("0.0.0", has_git),
-                has_git=has_git,
-                languages=_detect_languages(project_dir),
+            warnings.warn(
+                f"{project_dir.name}: missing pyproject.toml, using defaults",
+                stacklevel=2,
             )
-
-        try:
-            with open(pyproject_path, "rb") as f:
-                data = tomllib.load(f)
-        except tomllib.TOMLDecodeError:
-            return ProjectMetadata(
-                name=project_dir.name,
-                path=project_dir,
-                description=_readme_description(project_dir),
-                status=_infer_status("0.0.0", has_git),
-                has_git=has_git,
-                languages=_detect_languages(project_dir),
-            )
+        else:
+            try:
+                with open(pyproject_path, "rb") as f:
+                    data = tomllib.load(f)
+            except tomllib.TOMLDecodeError as exc:
+                warnings.warn(
+                    f"{project_dir.name}: invalid TOML ({exc}), using defaults",
+                    stacklevel=2,
+                )
 
         project = data.get("project", {})
         name = project.get("name", project_dir.name)
@@ -51,7 +48,6 @@ class PyprojectExtractor:
         urls = project.get("urls", {})
         homepage = urls.get("homepage")
 
-        status = _infer_status(version, has_git)
         languages = _detect_languages(project_dir)
 
         return ProjectMetadata(
@@ -59,20 +55,10 @@ class PyprojectExtractor:
             path=project_dir,
             description=description,
             version=version,
-            status=status,
             homepage=homepage,
             has_git=has_git,
             languages=languages,
         )
-
-
-def _infer_status(version: str, has_git: bool) -> str:
-    """Infer a human-readable status string from version and git state."""
-    if not has_git:
-        return f"Pre-release (v{version}), no git repo"
-    if version == "0.0.0":
-        return f"Alpha (v{version}), active"
-    return f"v{version}, active"
 
 
 def _readme_description(project_dir: Path) -> str:

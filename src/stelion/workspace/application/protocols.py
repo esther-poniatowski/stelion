@@ -20,7 +20,12 @@ class MetadataExtractor(Protocol):
 class DependencyScanner(Protocol):
     """Scan a project directory for inter-project dependency edges."""
 
-    def scan(self, project_dir: Path, all_project_names: set[str]) -> list[DependencyEdge]: ...  # noqa: UP006
+    def scan(
+        self,
+        project_name: str,
+        project_dir: Path,
+        all_project_names: set[str],
+    ) -> list[DependencyEdge]: ...
 
 
 class EnvironmentReader(Protocol):

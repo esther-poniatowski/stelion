@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import yaml
@@ -24,7 +25,11 @@ class CondaEnvironmentReader:
         try:
             with open(env_path, encoding="utf-8") as f:
                 raw = yaml.safe_load(f) or {}
-        except yaml.YAMLError:
+        except yaml.YAMLError as exc:
+            warnings.warn(
+                f"{project_dir.name}: invalid environment.yml ({str(exc).splitlines()[0]}), skipping",
+                stacklevel=2,
+            )
             return None
 
         name = raw.get("name", "")

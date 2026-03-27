@@ -55,7 +55,7 @@ def _relative_path(manifest_dir: Path, project_path: Path) -> str:
 
 def _load_settings(manifest: WorkspaceManifest) -> dict:
     """Load VS Code settings from the configured source."""
-    if manifest.vscode.source == "defaults":
+    if manifest.vscode.uses_defaults():
         loader = StelionDataLoader()
         settings = loader.load_json("vscode/settings.json")
     else:
@@ -70,7 +70,7 @@ def _load_settings(manifest: WorkspaceManifest) -> dict:
 
 def _load_extensions(manifest: WorkspaceManifest) -> list[str]:
     """Load VS Code extension recommendations from the configured source."""
-    if manifest.vscode.source == "defaults":
+    if manifest.vscode.uses_defaults():
         loader = StelionDataLoader()
         extensions = loader.load_json("vscode/extensions.json")
     else:

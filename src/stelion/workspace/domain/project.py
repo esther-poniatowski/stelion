@@ -14,7 +14,6 @@ class ProjectMetadata:
     path: Path
     description: str = ""
     version: str = "0.0.0"
-    status: str | None = None
     homepage: str | None = None
     has_git: bool = False
     languages: tuple[str, ...] = ()

@@ -37,8 +37,7 @@ def workspace_init(
     """Initialize or regenerate a workspace from its manifest.
 
     If stelion.yml does not exist, generates one with auto-discovered projects
-    and sensible defaults. If it exists, generates all workspace artifacts and
-    copies reference documents from package data.
+    and sensible defaults. If it exists, generates all workspace artifacts.
     """
     manifest_path = Path(manifest).resolve()
 
