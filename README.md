@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.12-blue)](https://www.python.org/)
 [![License: GPL](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
 
-Multi-project workspace manager for heterogeneous project ecosystems.
+Keeps multiple Python projects consistent within a shared workspace.
 
 ---
 

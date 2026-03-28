@@ -18,7 +18,7 @@ authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 readme = {file = "README.md", content-type = "text/markdown"}
-description = "Multi-project workspace manager for heterogeneous project ecosystems."
+description = "Keeps multiple Python projects consistent within a shared workspace."
 keywords = ["workspace", "project-discovery", "vscode", "conda", "bootstrapping", "dependency-graph"]
 classifiers = [
     "Programming Language :: Python :: 3",
