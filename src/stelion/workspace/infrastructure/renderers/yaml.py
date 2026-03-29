@@ -53,6 +53,7 @@ def render_projects_yaml(inventory: ProjectInventory, manifest_dir: Path) -> str
     projects: dict = {}
     for p in sorted(inventory.projects, key=lambda x: x.name):
         entry: dict = {}
+        entry["status"] = p.status.value
         if p.description:
             entry["description"] = p.description
         entry["version"] = p.version
@@ -61,6 +62,8 @@ def render_projects_yaml(inventory: ProjectInventory, manifest_dir: Path) -> str
         entry["path"] = os.path.relpath(p.path, manifest_dir)
         if p.homepage:
             entry["homepage"] = p.homepage
+        if p.issue:
+            entry["issue"] = p.issue
         projects[p.name] = entry
 
     data["projects"] = projects
@@ -86,4 +89,8 @@ def render_environment(environment: EnvironmentSpec) -> str:
 
     data["dependencies"] = deps
 
-    return yaml.dump(data, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    body = yaml.dump(data, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    if not environment.issues:
+        return body
+    header = "".join(f"# WARNING: {issue}\n" for issue in environment.issues)
+    return header + body

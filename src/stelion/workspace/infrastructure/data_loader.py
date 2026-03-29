@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from importlib import resources
+from typing import Any
 
 
 class StelionDataLoader:
@@ -27,7 +28,7 @@ class StelionDataLoader:
         ref = resources.files(subpackage).joinpath(filename)
         return ref.read_text(encoding="utf-8")
 
-    def load_json(self, resource_path: str) -> dict:
+    def load_json(self, resource_path: str) -> Any:
         """Load and parse a JSON resource from the data directory."""
         text = self.load_text(resource_path)
         return json.loads(text)

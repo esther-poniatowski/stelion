@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import Callable
 
@@ -26,15 +27,26 @@ from .protocols import (
 class GenerationResult:
     """Outcome of generating a single file."""
 
+    artifact: "GenerationArtifact"
     path: Path
     written: bool
     reason: str
+
+
+class GenerationArtifact(StrEnum):
+    """Identifier for a generated workspace artifact."""
+
+    WORKSPACE_FILE = "workspace-file"
+    PROJECTS = "projects"
+    DEPENDENCIES = "dependencies"
+    ENVIRONMENT = "environment"
 
 
 @dataclass(frozen=True)
 class GenerationTarget:
     """A single file to generate: its output path and a renderer callable."""
 
+    artifact: GenerationArtifact
     path: Path
     render: Callable[[], str]
 
@@ -52,18 +64,22 @@ def _build_targets(
     """Build the ordered list of generation targets from manifest config."""
     return (
         GenerationTarget(
+            artifact=GenerationArtifact.WORKSPACE_FILE,
             path=manifest.manifest_dir / manifest.generate.workspace_file.output,
             render=lambda: render_workspace_file(manifest, inventory),
         ),
         GenerationTarget(
+            artifact=GenerationArtifact.PROJECTS,
             path=manifest.manifest_dir / manifest.generate.projects_registry.output,
             render=lambda: render_projects_yaml(inventory, manifest.manifest_dir),
         ),
         GenerationTarget(
+            artifact=GenerationArtifact.DEPENDENCIES,
             path=manifest.manifest_dir / manifest.generate.dependency_graph.output,
             render=lambda: render_dependency_yaml(graph),
         ),
         GenerationTarget(
+            artifact=GenerationArtifact.ENVIRONMENT,
             path=manifest.manifest_dir / manifest.generate.shared_environment.output,
             render=lambda: render_environment(environment),
         ),
@@ -83,6 +99,7 @@ def generate_all(
     reader: FileReader,
     hasher: FileHasher,
     force: bool = False,
+    selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> list[GenerationResult]:
     """Generate all enabled workspace artifacts.
 
@@ -95,17 +112,33 @@ def generate_all(
         render_dependency_yaml, render_environment,
     )
 
+    selected = _select_targets(targets, selected_targets)
     results: list[GenerationResult] = []
-    for target in targets:
+    for target in selected:
         content = target.render()
+        existed = target.path.exists()
         if not force and target.path.exists():
             existing = reader.read(target.path)
             if hasher.hash_content(existing) == hasher.hash_content(content):
-                results.append(GenerationResult(target.path, written=False, reason="current"))
+                results.append(
+                    GenerationResult(
+                        artifact=target.artifact,
+                        path=target.path,
+                        written=False,
+                        reason="current",
+                    )
+                )
                 continue
         writer.write(target.path, content)
-        reason = "created" if not target.path.exists() else "updated"
-        results.append(GenerationResult(target.path, written=True, reason=reason))
+        reason = "created" if not existed else "updated"
+        results.append(
+            GenerationResult(
+                artifact=target.artifact,
+                path=target.path,
+                written=True,
+                reason=reason,
+            )
+        )
 
     return results
 
@@ -121,6 +154,7 @@ def compute_drift(
     render_environment: EnvironmentRenderer,
     reader: FileReader,
     hasher: FileHasher,
+    selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> DriftReport:
     """Compare generated content with existing files without writing."""
     targets = _build_targets(
@@ -129,8 +163,9 @@ def compute_drift(
         render_dependency_yaml, render_environment,
     )
 
+    selected = _select_targets(targets, selected_targets)
     entries: list[DriftEntry] = []
-    for target in targets:
+    for target in selected:
         expected = target.render()
         if not target.path.exists():
             entries.append(DriftEntry(target.path, FileStatus.MISSING))
@@ -142,3 +177,14 @@ def compute_drift(
             entries.append(DriftEntry(target.path, FileStatus.STALE))
 
     return DriftReport(entries=tuple(entries))
+
+
+def _select_targets(
+    targets: tuple[GenerationTarget, ...],
+    selected_targets: tuple[GenerationArtifact, ...],
+) -> tuple[GenerationTarget, ...]:
+    """Return either all targets or the caller-selected subset."""
+    if not selected_targets:
+        return targets
+    wanted = set(selected_targets)
+    return tuple(target for target in targets if target.artifact in wanted)

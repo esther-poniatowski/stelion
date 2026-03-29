@@ -29,9 +29,9 @@ def build_dependency_graph(
     all_names = {p.name for p in inventory.projects}
     detected: list[DependencyEdge] = []
 
-    # Collect all directories to scan: inventory projects + extra_scan_dirs
+    # Collect all directories to scan: inventory projects + configured extra scan paths.
     scan_dirs: list[tuple[str, Path]] = [(p.name, p.path) for p in inventory.projects]
-    for extra_dir_str in manifest.dependencies.extra_scan_dirs:
+    for extra_dir_str in manifest.dependencies.scan_paths:
         extra_dir = (manifest.manifest_dir / extra_dir_str).resolve()
         if extra_dir.is_dir():
             scan_dirs.append((extra_dir.name, extra_dir))

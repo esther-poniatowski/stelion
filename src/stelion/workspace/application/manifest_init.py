@@ -2,38 +2,62 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
-import yaml
-
-from ..domain.manifest import default_workspace_manifest, manifest_to_dict
+from ..domain.manifest import WorkspaceManifest
 from ..domain.project import ProjectInventory
 from .discovery import discover_projects
 from .protocols import MetadataExtractor
 
 
-def generate_default_manifest_content(
-    manifest_dir: Path,
+@dataclass(frozen=True)
+class ManifestInitServices:
+    """Injected collaborators for initializing a new workspace manifest."""
+
+    read_git_identity: Callable[[], tuple[str, str]]
+    build_default_manifest: Callable[[Path, str], WorkspaceManifest]
+    render_manifest: Callable[[WorkspaceManifest], str]
+    write_manifest: Callable[[Path, str], None]
+
+
+@dataclass(frozen=True)
+class ManifestInitResult:
+    """Result of creating a default workspace manifest."""
+
+    manifest_path: Path
+    manifest: WorkspaceManifest
+    inventory: ProjectInventory
+    content: str
+    written: bool
+
+    @property
+    def project_names(self) -> tuple[str, ...]:
+        """Alphabetical list of discovered project names."""
+        return tuple(sorted(project.name for project in self.inventory.projects))
+
+
+def initialize_default_manifest(
+    manifest_path: Path,
     extractor: MetadataExtractor,
-    github_user: str = "",
-) -> tuple[str, ProjectInventory]:
-    """Build the text content for a new stelion.yml with auto-discovered projects.
-
-    Parameters
-    ----------
-    manifest_dir
-        Directory that will contain the new manifest.
-    extractor
-        Infrastructure component for reading pyproject.toml metadata.
-    github_user
-        GitHub username for template defaults (e.g. from git config).
-
-    Returns
-    -------
-    tuple[str, ProjectInventory]
-        The YAML content string and the discovered project inventory.
-    """
-    manifest = default_workspace_manifest(manifest_dir, github_user=github_user)
+    services: ManifestInitServices,
+    *,
+    dry_run: bool = False,
+) -> ManifestInitResult:
+    """Build and optionally persist a default manifest for a new workspace."""
+    manifest_path = manifest_path.resolve()
+    manifest_dir = manifest_path.parent
+    github_user, _ = services.read_git_identity()
+    manifest = services.build_default_manifest(manifest_dir, github_user=github_user)
     inventory = discover_projects(manifest.discovery, extractor, manifest_dir)
-    content = yaml.safe_dump(manifest_to_dict(manifest), sort_keys=False)
-    return content, inventory
+    content = services.render_manifest(manifest)
+    if not dry_run:
+        services.write_manifest(manifest_path, content)
+    return ManifestInitResult(
+        manifest_path=manifest_path,
+        manifest=manifest,
+        inventory=inventory,
+        content=content,
+        written=not dry_run,
+    )

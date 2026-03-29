@@ -256,14 +256,18 @@ def _resolve_superproject_dir(
     superproject_name: str,
     manifest: WorkspaceManifest,
 ) -> Path:
-    """Resolve a superproject's absolute path from extra_scan_dirs."""
-    for extra_dir_str in manifest.dependencies.extra_scan_dirs:
+    """Resolve a superproject's absolute path from configured superproject paths.
+
+    Matches by directory basename, assuming project names are unique across the
+    workspace (which is enforced by project discovery deduplication).
+    """
+    for extra_dir_str in manifest.dependencies.superproject_paths:
         candidate = (manifest.manifest_dir / extra_dir_str).resolve()
         if candidate.name == superproject_name and candidate.is_dir():
             return candidate
     raise SyncError(
         f"Superproject '{superproject_name}' not found in "
-        f"dependencies.extra_scan_dirs: {list(manifest.dependencies.extra_scan_dirs)}"
+        f"dependencies.superproject_paths: {list(manifest.dependencies.superproject_paths)}"
     )
 
 

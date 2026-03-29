@@ -13,6 +13,7 @@ class EnvironmentSpec:
     channels: tuple[str, ...] = ()
     dependencies: tuple[str, ...] = ()
     pip_dependencies: tuple[str, ...] = ()
+    issues: tuple[str, ...] = ()
 
 
 def merge_environments(specs: list[EnvironmentSpec], name: str) -> EnvironmentSpec:
@@ -25,8 +26,10 @@ def merge_environments(specs: list[EnvironmentSpec], name: str) -> EnvironmentSp
     seen_channels: dict[str, None] = {}
     seen_deps: dict[str, None] = {}
     seen_pip: dict[str, None] = {}
+    issues: list[str] = []
 
     for spec in specs:
+        issues.extend(spec.issues)
         for ch in spec.channels:
             seen_channels.setdefault(ch, None)
         for dep in spec.dependencies:
@@ -41,4 +44,5 @@ def merge_environments(specs: list[EnvironmentSpec], name: str) -> EnvironmentSp
         channels=tuple(seen_channels),
         dependencies=tuple(seen_deps),
         pip_dependencies=tuple(seen_pip),
+        issues=tuple(issues),
     )

@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from ..domain.manifest import WorkspaceManifest
+from .manifest_codec import parse_workspace_manifest
 
 
 def load_manifest(path: Path) -> WorkspaceManifest:
@@ -37,4 +38,4 @@ def load_manifest(path: Path) -> WorkspaceManifest:
         raw = yaml.safe_load(f) or {}
 
     manifest_dir = path.parent
-    return WorkspaceManifest.from_dict(raw, manifest_dir)
+    return parse_workspace_manifest(raw, manifest_dir)

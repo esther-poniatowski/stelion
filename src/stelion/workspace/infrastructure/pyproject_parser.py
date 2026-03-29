@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import tomllib
-import warnings
 from pathlib import Path
 
-from ..domain.project import ProjectMetadata
+from ..domain.project import MetadataStatus, ProjectMetadata
+
+
+MISSING_PYPROJECT_MARKER = "<missing-pyproject>"
+INVALID_PYPROJECT_MARKER = "<invalid-pyproject>"
 
 
 class PyprojectExtractor:
@@ -26,27 +29,34 @@ class PyprojectExtractor:
         pyproject_path = project_dir / "pyproject.toml"
 
         data: dict = {}
+        status = MetadataStatus.CURRENT
+        issue = ""
         if not pyproject_path.exists():
-            warnings.warn(
-                f"{project_dir.name}: missing pyproject.toml, using defaults",
-                stacklevel=2,
-            )
+            status = MetadataStatus.MISSING_PYPROJECT
+            issue = f"{project_dir.name}: missing pyproject.toml"
         else:
             try:
                 with open(pyproject_path, "rb") as f:
                     data = tomllib.load(f)
             except tomllib.TOMLDecodeError as exc:
-                warnings.warn(
-                    f"{project_dir.name}: invalid TOML ({exc}), using defaults",
-                    stacklevel=2,
-                )
+                status = MetadataStatus.INVALID_PYPROJECT
+                issue = f"{project_dir.name}: invalid pyproject.toml ({exc})"
 
         project = data.get("project", {})
         name = project.get("name", project_dir.name)
-        version = project.get("version", "0.0.0")
+        marker = {
+            MetadataStatus.CURRENT: "0.0.0",
+            MetadataStatus.MISSING_PYPROJECT: MISSING_PYPROJECT_MARKER,
+            MetadataStatus.INVALID_PYPROJECT: INVALID_PYPROJECT_MARKER,
+        }[status]
+        version = project.get("version", marker)
         description = project.get("description", "") or _readme_description(project_dir)
+        if not description and status != MetadataStatus.CURRENT:
+            description = marker
         urls = project.get("urls", {})
         homepage = urls.get("homepage")
+        if homepage is None and status != MetadataStatus.CURRENT:
+            homepage = marker
 
         languages = _detect_languages(project_dir)
 
@@ -58,6 +68,8 @@ class PyprojectExtractor:
             homepage=homepage,
             has_git=has_git,
             languages=languages,
+            status=status,
+            issue=issue,
         )
 
 

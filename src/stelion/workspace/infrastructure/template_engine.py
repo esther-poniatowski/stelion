@@ -25,6 +25,7 @@ BINARY_EXTENSIONS: set[str] = {
 def substitute_in_file(
     path: Path,
     bindings: dict[str, str],
+    delimiters: tuple[str, str] = ("{{ ", " }}"),
     exclude_patterns: Sequence[str] | None = None,
 ) -> int:
     """Replace placeholder strings in a single file.
@@ -35,8 +36,10 @@ def substitute_in_file(
         File to process.
     bindings
         Mapping from placeholder string (including delimiters) to value.
+    delimiters
+        Opening and closing placeholder delimiters.
     exclude_patterns
-        Patterns to skip (not currently regex-matched; reserved for future use).
+        Regex patterns whose matches should be protected from substitution.
 
     Returns
     -------
@@ -62,7 +65,8 @@ def substitute_in_file(
                 content = content.replace(match.group(0), token, 1)
 
     count = 0
-    for placeholder, value in bindings.items():
+    placeholders = _materialize_bindings(bindings, delimiters)
+    for placeholder, value in placeholders.items():
         occurrences = content.count(placeholder)
         if occurrences > 0:
             content = content.replace(placeholder, value)
@@ -80,6 +84,7 @@ def substitute_in_file(
 def substitute_in_directory(
     root: Path,
     bindings: dict[str, str],
+    delimiters: tuple[str, str] = ("{{ ", " }}"),
     exclude_patterns: Sequence[str] | None = None,
 ) -> int:
     """Replace placeholders in all text files under a directory.
@@ -89,7 +94,7 @@ def substitute_in_directory(
     total = 0
     for path in root.rglob("*"):
         if path.is_file() and ".git" not in path.parts:
-            total += substitute_in_file(path, bindings, exclude_patterns)
+            total += substitute_in_file(path, bindings, delimiters, exclude_patterns)
     return total
 
 
@@ -101,7 +106,12 @@ def copy_template(source: Path, target: Path) -> None:
     shutil.copytree(source, target, ignore=shutil.ignore_patterns(".git"))
 
 
-def rename_paths(root: Path, renames: dict[str, str], bindings: dict[str, str]) -> int:
+def rename_paths(
+    root: Path,
+    renames: dict[str, str],
+    bindings: dict[str, str],
+    delimiters: tuple[str, str] = ("{{ ", " }}"),
+) -> int:
     """Rename directories and files according to the rename mapping.
 
     The rename values may contain placeholder references that are resolved
@@ -110,10 +120,11 @@ def rename_paths(root: Path, renames: dict[str, str], bindings: dict[str, str]) 
     Returns the number of renames performed.
     """
     count = 0
+    placeholders = _materialize_bindings(bindings, delimiters)
     for old_rel, new_template in renames.items():
         # Resolve placeholders in the new name
         new_rel = new_template
-        for placeholder, value in bindings.items():
+        for placeholder, value in placeholders.items():
             new_rel = new_rel.replace(placeholder, value)
 
         old_path = root / old_rel
@@ -123,3 +134,12 @@ def rename_paths(root: Path, renames: dict[str, str], bindings: dict[str, str]) 
             count += 1
 
     return count
+
+
+def _materialize_bindings(
+    bindings: dict[str, str],
+    delimiters: tuple[str, str],
+) -> dict[str, str]:
+    """Expand logical binding names into concrete placeholder tokens."""
+    start, end = delimiters
+    return {f"{start}{name}{end}": value for name, value in bindings.items()}

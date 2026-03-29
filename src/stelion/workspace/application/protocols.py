@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
+from ..domain.bulk import ProjectOutcome
 from ..domain.dependency import DependencyEdge, DependencyGraph
 from ..domain.environment import EnvironmentSpec
 from ..domain.manifest import WorkspaceManifest
@@ -57,7 +59,7 @@ class PackageDataLoader(Protocol):
 
     def load_text(self, resource_path: str) -> str: ...
 
-    def load_json(self, resource_path: str) -> dict: ...
+    def load_json(self, resource_path: str) -> Any: ...
 
 
 # --- Renderer protocols ------------------------------------------------------
@@ -115,3 +117,30 @@ class GitOperations(Protocol):
     def update_local_clone(self, repo_dir: Path, commit: str) -> str: ...
 
     def push_to_remote(self, repo_dir: Path, remote: str, branch: str) -> None: ...
+
+
+# --- Bulk operations ----------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    """Captured output from a subprocess execution."""
+
+    return_code: int
+    stdout: str
+    stderr: str
+
+
+class CommandRunner(Protocol):
+    """Run a command in a working directory and capture its output."""
+
+    def run(self, args: tuple[str, ...], cwd: Path) -> CommandResult: ...
+
+
+class BulkOperation(Protocol):
+    """Operation executable on a single project within a bulk run."""
+
+    @property
+    def label(self) -> str: ...
+
+    def __call__(self, project: ProjectMetadata, *, dry_run: bool) -> ProjectOutcome: ...

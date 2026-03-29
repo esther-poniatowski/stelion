@@ -50,6 +50,7 @@ class WorkspaceBootstrapRequest:
     template: TemplateConfig
     defaults: EcosystemDefaults
     discovery_scan_dirs: tuple[str, ...]
+    destination_root: str | None = None
     initialize_git: bool = True
     dry_run: bool = False
 
@@ -60,8 +61,8 @@ class BootstrapServices:
 
     read_git_identity: Callable[[], tuple[str, str]]
     copy_template: Callable[[Path, Path], None]
-    substitute_directory: Callable[[Path, dict[str, str], tuple[str, ...]], int]
-    rename_paths: Callable[[Path, dict[str, str], dict[str, str]], int]
+    substitute_directory: Callable[[Path, dict[str, str], tuple[str, str], tuple[str, ...]], int]
+    rename_paths: Callable[[Path, dict[str, str], dict[str, str], tuple[str, str]], int]
     init_repository: Callable[[Path], None]
 
 
@@ -69,7 +70,12 @@ def plan_bootstrap_request(request: WorkspaceBootstrapRequest) -> BootstrapReque
     """Resolve manifest-relative bootstrap paths into an executable request."""
     if not request.discovery_scan_dirs:
         raise BootstrapError("Manifest discovery.scan_dirs must contain at least one scan directory.")
-    scan_dir = (request.manifest_dir / request.discovery_scan_dirs[0]).resolve()
+    destination_root = request.destination_root or request.discovery_scan_dirs[0]
+    if destination_root not in request.discovery_scan_dirs:
+        raise BootstrapError(
+            "Bootstrap destination must be one of manifest discovery.scan_dirs."
+        )
+    scan_dir = (request.manifest_dir / destination_root).resolve()
     target_dir = scan_dir / request.name
     template_source = (request.manifest_dir / request.template.source).resolve()
     return BootstrapRequest(
@@ -107,24 +113,24 @@ def build_placeholder_bindings(
         Author email (typically from git config).
     """
     bindings = {
-        "{{ package_name }}": name,
-        "{{ repo_name }}": name,
-        "{{ project_name }}": name,
-        "{{ env_name }}": name,
-        "{{ description }}": description,
-        "{{ github_user }}": defaults.github_user,
-        "{{ channel_name }}": defaults.channel_name,
-        "{{ license }}": defaults.license,
+        "package_name": name,
+        "repo_name": name,
+        "project_name": name,
+        "env_name": name,
+        "description": description,
+        "github_user": defaults.github_user,
+        "channel_name": defaults.channel_name,
+        "license": defaults.license,
     }
     if author_name:
-        bindings["{{ author_name }}"] = author_name
+        bindings["author_name"] = author_name
         first = author_name.split()[0] if author_name.split() else ""
         last = author_name.split()[-1] if author_name.split() else ""
-        bindings["{{ first_name }}"] = first
-        bindings["{{ last_name }}"] = last
+        bindings["first_name"] = first
+        bindings["last_name"] = last
     if author_email:
-        bindings["{{ email }}"] = author_email
-        bindings["{{ contact@example.com }}"] = author_email
+        bindings["email"] = author_email
+        bindings["contact@example.com"] = author_email
     return bindings
 
 
@@ -162,12 +168,14 @@ def bootstrap_project(
     replaced = services.substitute_directory(
         request.target_dir,
         bindings,
+        request.template.delimiters,
         request.template.exclude_patterns,
     )
     renamed = services.rename_paths(
         request.target_dir,
         request.template.renames,
         bindings,
+        request.template.delimiters,
     )
     git_initialized = False
     if request.initialize_git:
