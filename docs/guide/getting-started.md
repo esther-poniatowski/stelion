@@ -67,3 +67,24 @@ stelion workspace register ../external/manual
 ```
 
 See the [Bulk Operations](bulk-operations.md) guide for the full reference.
+
+Compare directory structures across two or more projects:
+
+```sh
+stelion compare tree --names architekta,morpha,glossa
+```
+
+Compare a specific configuration file field by field:
+
+```sh
+stelion compare files pyproject.toml --names architekta,morpha
+```
+
+For machine-parseable output, add `--format yaml`. For complex comparisons with
+path overrides and field selectors, use a declarative instruction file:
+
+```sh
+stelion compare files --instruction compare-instructions.yml
+```
+
+See the [Cross-Project Comparison](comparison.md) guide for the full reference.

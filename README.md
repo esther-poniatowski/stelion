@@ -42,7 +42,12 @@ at three levels:
    discovered projects. Includes generic shell execution and structured git
    operations (commit, push) with per-project outcome reporting.
 
-4. **Repository synchronization** (planned) --- Synchronizes shared files across
+4. **Cross-project comparison** --- Compares directory structures or file
+   contents across selected projects. Infers file mappings by similarity
+   (exact, case-insensitive, fuzzy), reports per-project presence, and
+   produces both human-readable tables and machine-parseable YAML output.
+
+5. **Repository synchronization** (planned) --- Synchronizes shared files across
    repositories while preserving project-specific modifications. Supports
    token-level diffing, three-way merge with conflict markers, and configurable
    template substitution.
@@ -70,6 +75,9 @@ is a recurring challenge:
   repository with automated placeholder substitution and registration.
 - **Bulk operations**: Commit, push, or run arbitrary commands across all projects
   (or a filtered subset) in a single invocation.
+- **Cross-project comparison**: Compare directory layouts or specific files
+  (TOML, YAML, JSON, Markdown) across projects with hierarchical matching,
+  variant grouping, and structured field-level diffing.
 - **Cross-project coherence**: Keeps shared configuration files consistent while
   permitting local deviations.
 
@@ -109,12 +117,23 @@ is a recurring challenge:
 - [X] Per-project error resilience: failures in one project do not abort the rest.
 - [X] Tabular outcome reporting with per-project status (success, skipped, failed).
 
+### Cross-Project Comparison (implemented)
+
+- [X] Compare directory structures across projects with hierarchical matching (directories first, then files).
+- [X] Infer file correspondence via three-pass matching: exact, case-insensitive, and fuzzy.
+- [X] Report per-project presence and absence for every matched node (N-way, not pairwise).
+- [X] Compare structured files (TOML, YAML, JSON) field by field with dotted-path diffing.
+- [X] Compare unstructured files (Markdown, text) via variant grouping and pairwise similarity.
+- [X] Filter compared fields with selectors and remap project-specific paths with overrides.
+- [X] Load complex comparison specifications from a declarative YAML instruction file.
+- [X] Output as Rich terminal tables or machine-parseable YAML.
+- [X] Per-file error resilience: read or parse failures do not abort the comparison.
+
 ### Repository Synchronization (planned)
 
 - [ ] Synchronize and adapt file versions across repositories.
 - [ ] Configure mappings between local and remote versions.
 - [ ] Merge versions with standard conflict markers (three-way scheme).
-- [ ] Compare file contents (diff) at line, word, or token level.
 - [ ] Fill templates by replacing placeholders via configurable rules.
 - [ ] Dry-run and verbose modes for safe inspection.
 - [ ] Extend merge, diff, and template strategies via plugins.
@@ -262,6 +281,32 @@ selects the source: `local` (default) uses the standalone repo's HEAD, a
 superproject name reads from that superproject's submodule pointer, and `remote`
 fetches and uses the remote HEAD. All other replicas are updated automatically:
 submodule pointers in superprojects, the local clone, and the remote.
+
+### Comparison Commands
+
+```sh
+stelion compare tree [--subtree PATH] [--include GLOB] [--exclude-pattern GLOB] [FILTERS]
+```
+
+Compare directory structures across projects. Matches directories first, then
+files within, using three-pass matching (exact, case-insensitive, fuzzy).
+`--subtree` limits the scan to a subdirectory. `--include` and
+`--exclude-pattern` accept comma-separated glob patterns.
+
+```sh
+stelion compare files <paths...> [--granularity survey|detail] [--reference PROJECT] [FILTERS]
+```
+
+Compare specific files across projects. Structured files (TOML, YAML, JSON) are
+compared field by field; unstructured files are compared by variant grouping with
+pairwise similarity scores. Use `--granularity detail --reference PROJECT` for
+unified diffs against a reference project.
+
+Both commands share the same filter options as bulk commands (`--names`,
+`--pattern`, `--git-only`, `--exclude`). Use `--format yaml` for
+machine-parseable output. Use `--instruction FILE` to load a declarative YAML
+specification for complex comparisons with path overrides, field selectors, and
+parser hints.
 
 ### Global Commands
 
