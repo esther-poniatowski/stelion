@@ -25,7 +25,7 @@ Keeps multiple Python projects consistent within a shared workspace.
 ## Overview
 
 Stelion manages consistency across a multi-project Python ecosystem. It operates
-at two levels:
+at three levels:
 
 1. **Workspace management** --- Discovers projects on disk, generates a unified
    VS Code workspace, a project registry (YAML), a structured dependency graph
@@ -33,12 +33,16 @@ at two levels:
    (`stelion.yml`). Bootstraps new projects from a template repository with
    placeholder substitution.
 
-2. **Submodule synchronization** (implemented) --- Propagates a commit across
-   all replicas of a dependency: local clone, superproject submodule pointers,
-   and remote. Supports local, superproject, and remote sources with optional
-   auto-commit and dry-run inspection.
+2. **Submodule synchronization** --- Propagates a commit across all replicas of
+   a dependency: local clone, superproject submodule pointers, and remote.
+   Supports local, superproject, and remote sources with optional auto-commit
+   and dry-run inspection.
 
-3. **Repository synchronization** (planned) --- Synchronizes shared files across
+3. **Bulk operations** --- Runs commands across all or a filtered subset of
+   discovered projects. Includes generic shell execution and structured git
+   operations (commit, push) with per-project outcome reporting.
+
+4. **Repository synchronization** (planned) --- Synchronizes shared files across
    repositories while preserving project-specific modifications. Supports
    token-level diffing, three-way merge with conflict markers, and configurable
    template substitution.
@@ -64,6 +68,8 @@ is a recurring challenge:
   Conda environments.
 - **Project bootstrapping**: New projects inherit their structure from a template
   repository with automated placeholder substitution and registration.
+- **Bulk operations**: Commit, push, or run arbitrary commands across all projects
+  (or a filtered subset) in a single invocation.
 - **Cross-project coherence**: Keeps shared configuration files consistent while
   permitting local deviations.
 
@@ -79,7 +85,7 @@ is a recurring challenge:
 - [X] Generate structured dependency graph (`dependencies.yml`).
 - [X] Generate shared Conda environment from merged project environments.
 - [X] Bootstrap new projects from a keystone template with placeholder substitution.
-- [X] Register existing projects into workspace artifacts without full regeneration.
+- [X] Register existing projects into workspace artifacts and persist discovery config when needed.
 - [X] Detect drift between generated files and current project state.
 - [X] Auto-generate manifest with sensible defaults on first run.
 - [X] Ship VS Code workspace defaults as package data.
@@ -92,6 +98,16 @@ is a recurring challenge:
 - [X] Dry-run mode for safe inspection of planned updates.
 - [X] Optional auto-commit of submodule pointer changes in each superproject.
 - [X] Per-action error resilience: failures in one replica do not abort the rest.
+
+### Bulk Operations (implemented)
+
+- [X] Run an arbitrary shell command in each project directory.
+- [X] Stage tracked changes and commit across projects with a shared message.
+- [X] Push the current branch to a remote across projects.
+- [X] Filter target projects by name, regex pattern, git presence, or exclusion list.
+- [X] Dry-run mode for safe inspection of planned operations.
+- [X] Per-project error resilience: failures in one project do not abort the rest.
+- [X] Tabular outcome reporting with per-project status (success, skipped, failed).
 
 ### Repository Synchronization (planned)
 
@@ -153,6 +169,12 @@ Bootstrap a new project from the template:
 stelion workspace new myproject "One-line description."
 ```
 
+Then register it into the generated workspace artifacts:
+
+```sh
+stelion workspace register ../myproject
+```
+
 ---
 
 ## Usage
@@ -179,14 +201,16 @@ stelion workspace register <path>
 ```
 
 Register an existing project (copy-pasted, imported, or manually created)
-without running the full generation pipeline.
+and immediately regenerate workspace artifacts. If the project sits outside the
+configured scan roots, Stelion records it in `discovery.extra_paths`.
 
 ```sh
-stelion workspace new <name> "<description>" [--no-git] [--dry-run]
+stelion workspace new <name> "<description>" [--destination ROOT] [--no-git] [--dry-run]
 ```
 
 Bootstrap a new project from the template: copy, substitute placeholders, rename
-directories, initialize git, and register into workspace artifacts.
+directories, and optionally initialize git. Then use `stelion workspace register`
+to add it to generated workspace artifacts.
 
 ```sh
 stelion workspace status
@@ -194,6 +218,38 @@ stelion workspace status
 
 Show which generated files are out of date. Exit code 0 if all current, 1 if
 drift detected.
+
+### Bulk Commands
+
+```sh
+stelion workspace exec <command> [--names a,b,c] [--pattern REGEX] [--git-only] [--exclude x,y] [--dry-run]
+```
+
+Run an arbitrary shell command in each project directory. Compound commands work
+via shell expansion (e.g. `"git add -A && git status"`).
+
+```sh
+stelion workspace commit -m <message> [--names a,b,c] [--pattern REGEX] [--git-only] [--exclude x,y] [--dry-run]
+```
+
+Stage tracked changes (`git add --update`) and commit in each project. Projects
+with a clean working tree or no git repository are skipped automatically.
+
+```sh
+stelion workspace push [--remote origin] [--branch main] [--names a,b,c] [--pattern REGEX] [--git-only] [--exclude x,y] [--dry-run]
+```
+
+Push the current branch to a remote in each project.
+
+All bulk commands share the same filter options:
+
+| Option | Effect |
+| --- | --- |
+| `--names a,b,c` | Restrict to the named projects |
+| `--pattern REGEX` | Match project names by regular expression |
+| `--git-only` | Only projects with a git repository |
+| `--exclude x,y` | Exclude the named projects |
+| `--dry-run` | Preview without executing |
 
 ### Submodule Commands
 
