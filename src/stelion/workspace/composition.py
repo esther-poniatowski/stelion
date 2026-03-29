@@ -73,6 +73,7 @@ from .infrastructure.spec_loader import YamlSpecLoader
 from .infrastructure.structured_parsers import (
     DispatchingParser,
     JsonParser,
+    MarkdownSectionParser,
     TomlParser,
     YamlParser,
 )
@@ -445,6 +446,7 @@ def create_comparison_services() -> ComparisonServices:
             ".yaml": YamlParser(),
             ".yml": YamlParser(),
             ".json": JsonParser(),
+            ".md": MarkdownSectionParser(),
         }),
         spec_loader=YamlSpecLoader(),
         reader=LocalFileReader(),

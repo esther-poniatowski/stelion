@@ -652,11 +652,11 @@ class TestCompareFilesIntegration:
         proj_a.mkdir()
         proj_b.mkdir()
 
-        (proj_a / "README.md").write_text("# Shared Title\nAlpha specific.")
-        (proj_b / "README.md").write_text("# Shared Title\nBeta specific.")
+        (proj_a / "notes.txt").write_text("Shared title\nAlpha specific.")
+        (proj_b / "notes.txt").write_text("Shared title\nBeta specific.")
 
         projects = (_project("alpha", proj_a), _project("beta", proj_b))
-        target = FileTarget(entries=(FileTargetEntry(canonical="README.md"),))
+        target = FileTarget(entries=(FileTargetEntry(canonical="notes.txt"),))
         reader = _TextFileReader()
         parser = DispatchingParser({".toml": TomlParser()})
 
@@ -717,13 +717,13 @@ class TestCompareFilesIntegration:
         proj_b.mkdir()
         proj_c.mkdir()
 
-        (proj_a / "README.md").write_text("line 1\nshared\n")
-        (proj_b / "README.md").write_text("line 1\nbeta only\n")
-        (proj_c / "README.md").write_text("line 1\nshared\n")
+        (proj_a / "notes.txt").write_text("line 1\nshared\n")
+        (proj_b / "notes.txt").write_text("line 1\nbeta only\n")
+        (proj_c / "notes.txt").write_text("line 1\nshared\n")
 
         projects = (_project("alpha", proj_a), _project("beta", proj_b), _project("gamma", proj_c))
         target = FileTarget(
-            entries=(FileTargetEntry(canonical="README.md"),),
+            entries=(FileTargetEntry(canonical="notes.txt"),),
             granularity="detail",
             reference_project="alpha",
         )

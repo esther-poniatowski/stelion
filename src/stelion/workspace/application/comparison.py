@@ -30,7 +30,7 @@ from .protocols import FileReader, StructuredParser, TreeScanner
 # Structured-file extension set
 # ---------------------------------------------------------------------------
 
-_STRUCTURED_EXTENSIONS: frozenset[str] = frozenset({".toml", ".yaml", ".yml", ".json"})
+_STRUCTURED_EXTENSIONS: frozenset[str] = frozenset({".toml", ".yaml", ".yml", ".json", ".md"})
 
 
 def _is_structured(path: str, parser_hint: str | None) -> bool:
