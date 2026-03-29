@@ -85,3 +85,33 @@ class EnvironmentRenderer(Protocol):
     """Render the shared Conda environment YAML."""
 
     def __call__(self, environment: EnvironmentSpec) -> str: ...
+
+
+# --- Git operations -----------------------------------------------------------
+
+
+class GitOperations(Protocol):
+    """Git operations needed for submodule synchronization."""
+
+    def head_commit(self, repo_dir: Path) -> str: ...
+
+    def submodule_commit(self, superproject_dir: Path, submodule_path: str) -> str: ...
+
+    def fetch_remote(self, repo_dir: Path) -> None: ...
+
+    def remote_head(self, repo_dir: Path, remote: str, branch: str) -> str: ...
+
+    def update_submodule_pointer(
+        self, superproject_dir: Path, submodule_path: str, commit: str,
+    ) -> None: ...
+
+    def commit_submodule_update(
+        self, superproject_dir: Path, submodule_path: str,
+        dependency: str, commit_short: str,
+    ) -> None: ...
+
+    def is_clean(self, repo_dir: Path) -> bool: ...
+
+    def update_local_clone(self, repo_dir: Path, commit: str) -> str: ...
+
+    def push_to_remote(self, repo_dir: Path, remote: str, branch: str) -> None: ...

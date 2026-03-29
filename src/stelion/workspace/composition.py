@@ -15,6 +15,7 @@ from .application.discovery import discover_projects
 from .application.environment import build_shared_environment
 from .application.generation import GenerationResult, compute_drift, generate_all
 from .application.graph import build_dependency_graph
+from .application.sync import execute_sync, plan_sync, resolve_submodule_targets
 from .application.protocols import (
     DependencyScanner,
     DependencyYamlRenderer,
@@ -32,6 +33,7 @@ from .domain.environment import EnvironmentSpec
 from .domain.manifest import WorkspaceManifest
 from .domain.project import ProjectInventory
 from .domain.status import DriftReport
+from .domain.sync import SyncOrigin, SyncResult
 from .infrastructure.environment_parser import CondaEnvironmentReader
 from .infrastructure.bootstrap_git import init_repository, read_git_identity
 from .infrastructure.dependency_scanners import (
@@ -39,6 +41,7 @@ from .infrastructure.dependency_scanners import (
     GitmodulesDependencyScanner,
 )
 from .infrastructure.file_ops import LocalFileReader, LocalFileWriter, SHA256Hasher
+from .infrastructure.git_operations import SubprocessGitOperations
 from .infrastructure.manifest_loader import load_manifest
 from .infrastructure.pyproject_parser import PyprojectExtractor
 from .infrastructure.renderers.vscode import render_workspace_file
@@ -182,3 +185,41 @@ def target_paths(manifest: WorkspaceManifest) -> list[Path]:
         manifest.manifest_dir / manifest.generate.dependency_graph.output,
         manifest.manifest_dir / manifest.generate.shared_environment.output,
     ]
+
+
+# --- Submodule synchronization -----------------------------------------------
+
+
+def create_git_operations() -> SubprocessGitOperations:
+    """Build the git operations infrastructure for submodule sync."""
+    return SubprocessGitOperations()
+
+
+def run_submodule_sync(
+    ctx: WorkspaceContext,
+    dependency: str,
+    origin: SyncOrigin,
+    *,
+    source_superproject: str | None = None,
+    remote: str = "origin",
+    branch: str = "main",
+    commit: bool = True,
+    dry_run: bool = False,
+) -> SyncResult:
+    """Resolve, plan, and execute a submodule sync for a dependency."""
+    git = create_git_operations()
+
+    targets = resolve_submodule_targets(dependency, ctx.graph, ctx.manifest)
+
+    plan = plan_sync(
+        dependency=dependency,
+        targets=targets,
+        inventory=ctx.inventory,
+        origin=origin,
+        git=git,
+        source_superproject=source_superproject,
+        remote=remote,
+        branch=branch,
+    )
+
+    return execute_sync(plan, git, commit=commit, dry_run=dry_run)

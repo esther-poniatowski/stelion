@@ -7,6 +7,7 @@ Welcome to the stelion documentation.
 :caption: User Guide
 
 guide/getting-started
+guide/submodule-sync
 ```
 
 ```{toctree}

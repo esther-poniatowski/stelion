@@ -19,3 +19,7 @@ class EnvironmentParseError(WorkspaceError):
 
 class BootstrapError(WorkspaceError):
     """Raised when bootstrapping a new project cannot proceed."""
+
+
+class SyncError(WorkspaceError):
+    """Raised when submodule synchronization cannot proceed."""

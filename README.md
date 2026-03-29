@@ -33,7 +33,12 @@ at two levels:
    (`stelion.yml`). Bootstraps new projects from a template repository with
    placeholder substitution.
 
-2. **Repository synchronization** (planned) --- Synchronizes shared files across
+2. **Submodule synchronization** (implemented) --- Propagates a commit across
+   all replicas of a dependency: local clone, superproject submodule pointers,
+   and remote. Supports local, superproject, and remote sources with optional
+   auto-commit and dry-run inspection.
+
+3. **Repository synchronization** (planned) --- Synchronizes shared files across
    repositories while preserving project-specific modifications. Supports
    token-level diffing, three-way merge with conflict markers, and configurable
    template substitution.
@@ -78,6 +83,15 @@ is a recurring challenge:
 - [X] Detect drift between generated files and current project state.
 - [X] Auto-generate manifest with sensible defaults on first run.
 - [X] Ship VS Code workspace defaults as package data.
+
+### Submodule Synchronization (implemented)
+
+- [X] Propagate a commit from a local repo to all superproject submodule pointers and the remote.
+- [X] Propagate a commit from one superproject's submodule to the local clone, the remote, and all other superprojects.
+- [X] Fetch and propagate a remote HEAD to the local clone and all superproject submodule pointers.
+- [X] Dry-run mode for safe inspection of planned updates.
+- [X] Optional auto-commit of submodule pointer changes in each superproject.
+- [X] Per-action error resilience: failures in one replica do not abort the rest.
 
 ### Repository Synchronization (planned)
 
@@ -180,6 +194,18 @@ stelion workspace status
 
 Show which generated files are out of date. Exit code 0 if all current, 1 if
 drift detected.
+
+### Submodule Commands
+
+```sh
+stelion submodule sync <dependency> [--from local|<superproject>|remote] [--no-commit] [--dry-run]
+```
+
+Propagate a commit across all replicas of `<dependency>`. The `--from` flag
+selects the source: `local` (default) uses the standalone repo's HEAD, a
+superproject name reads from that superproject's submodule pointer, and `remote`
+fetches and uses the remote HEAD. All other replicas are updated automatically:
+submodule pointers in superprojects, the local clone, and the remote.
 
 ### Global Commands
 
