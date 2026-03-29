@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from io import StringIO
 from pathlib import Path
 from typing import Optional
 
@@ -47,6 +48,7 @@ _opt_exclude = typer.Option(None, "--exclude", "-e", help="Comma-separated proje
 _opt_manifest = typer.Option("stelion.yml", "--manifest", help="Path to workspace manifest.")
 _opt_format = typer.Option("table", "--format", "-f", help="Output format: table or yaml.")
 _opt_instruction = typer.Option(None, "--instruction", "-i", help="Path to instruction YAML file.")
+_opt_output = typer.Option(None, "--output", "-o", help="Save report to a file instead of printing.")
 
 
 def _parse_selection(
@@ -62,6 +64,36 @@ def _parse_selection(
         git_only=git_only,
         exclude=tuple(exclude.split(",")) if exclude else (),
     )
+
+
+def _resolve_format(fmt: str, output: str | None) -> str:
+    """Determine the effective output format.
+
+    When ``--output`` targets a ``.yml`` or ``.yaml`` file, YAML is used
+    regardless of ``--format``.  Otherwise the explicit ``--format`` wins.
+    """
+    if output is not None:
+        suffix = Path(output).suffix.lower()
+        if suffix in (".yml", ".yaml"):
+            return "yaml"
+    return fmt
+
+
+def _write_output(content: str, output: str) -> None:
+    """Write *content* to *output* and print a confirmation to stderr."""
+    path = Path(output)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    console.print(f"Report saved to [bold]{path}[/bold]")
+
+
+def _capture_rich(*renderables: object) -> str:
+    """Render Rich objects to plain text (no ANSI codes)."""
+    buf = StringIO()
+    file_console = Console(file=buf, force_terminal=False, width=200)
+    for r in renderables:
+        file_console.print(r)
+    return buf.getvalue()
 
 
 def _check_mutual_exclusivity(
@@ -95,6 +127,7 @@ def compare_tree(
     exclude: Optional[str] = _opt_exclude,
     instruction: Optional[str] = _opt_instruction,
     fmt: str = _opt_format,
+    output: Optional[str] = _opt_output,
     manifest: Path = _opt_manifest,
 ) -> None:
     """Compare directory structures across projects."""
@@ -133,8 +166,16 @@ def compare_tree(
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
 
-    if fmt == "yaml":
-        typer.echo(render_tree_yaml(report))
+    effective_fmt = _resolve_format(fmt, output)
+    if effective_fmt == "yaml":
+        content = render_tree_yaml(report)
+    else:
+        content = _capture_tree_report(report)
+
+    if output:
+        _write_output(content, output)
+    elif effective_fmt == "yaml":
+        typer.echo(content)
     else:
         _print_tree_report(report)
 
@@ -160,6 +201,7 @@ def compare_files_cmd(
     exclude: Optional[str] = _opt_exclude,
     instruction: Optional[str] = _opt_instruction,
     fmt: str = _opt_format,
+    output: Optional[str] = _opt_output,
     manifest: Path = _opt_manifest,
 ) -> None:
     """Compare specific files across projects."""
@@ -204,8 +246,16 @@ def compare_files_cmd(
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
 
-    if fmt == "yaml":
-        typer.echo(render_file_yaml(report))
+    effective_fmt = _resolve_format(fmt, output)
+    if effective_fmt == "yaml":
+        content = render_file_yaml(report)
+    else:
+        content = _capture_file_report(report)
+
+    if output:
+        _write_output(content, output)
+    elif effective_fmt == "yaml":
+        typer.echo(content)
     else:
         _print_file_report(report)
 
@@ -215,8 +265,8 @@ def compare_files_cmd(
 # ---------------------------------------------------------------------------
 
 
-def _print_tree_report(report: TreeReport) -> None:
-    """Render a tree comparison as Rich tables."""
+def _build_tree_table(report: TreeReport) -> tuple[Table, str]:
+    """Build the Rich table and summary line for a tree report."""
     title = "Architecture Comparison"
     if report.subtree:
         title += f" ({report.subtree})"
@@ -230,14 +280,27 @@ def _print_tree_report(report: TreeReport) -> None:
     table.add_column("Similarity", justify="right")
 
     _add_tree_rows(table, report.matches, report.projects)
-    console.print(table)
 
     s = report.summary
-    console.print(
-        f"\n[bold]Summary:[/bold] {s.total_nodes} nodes — "
+    summary = (
+        f"Summary: {s.total_nodes} nodes — "
         f"{s.in_all} in all, {s.in_some} in some, {s.in_one} unique  "
         f"({s.directories_matched} dirs, {s.files_matched} files)"
     )
+    return table, summary
+
+
+def _print_tree_report(report: TreeReport) -> None:
+    """Render a tree comparison as Rich tables to the terminal."""
+    table, summary = _build_tree_table(report)
+    console.print(table)
+    console.print(f"\n[bold]{summary}[/bold]")
+
+
+def _capture_tree_report(report: TreeReport) -> str:
+    """Render a tree comparison to plain text for file output."""
+    table, summary = _build_tree_table(report)
+    return _capture_rich(table) + "\n" + summary + "\n"
 
 
 def _add_tree_rows(
@@ -271,21 +334,37 @@ def _add_tree_rows(
             _add_tree_rows(table, node.children, projects, indent + 1)
 
 
-def _print_file_report(report: FileReport) -> None:
-    """Render a file comparison as Rich panels."""
+def _build_file_renderables(report: FileReport) -> tuple[list[object], str]:
+    """Build Rich renderables and summary line for a file report."""
+    renderables: list[object] = []
     for result in report.results:
-        _print_single_file_result(result, report.projects)
+        renderables.extend(_build_single_file_renderables(result, report.projects))
 
     s = report.summary
-    console.print(
-        f"\n[bold]Summary:[/bold] {s.files_compared} files — "
+    summary = (
+        f"Summary: {s.files_compared} files — "
         f"{s.fully_identical} identical, {s.with_differences} different, "
         f"{s.with_errors} errors"
     )
+    return renderables, summary
 
 
-def _print_single_file_result(result: FileDiffResult, projects: tuple[str, ...]) -> None:
-    """Render one file's comparison result."""
+def _print_file_report(report: FileReport) -> None:
+    """Render a file comparison as Rich panels to the terminal."""
+    renderables, summary = _build_file_renderables(report)
+    for r in renderables:
+        console.print(r)
+    console.print(f"\n[bold]{summary}[/bold]")
+
+
+def _capture_file_report(report: FileReport) -> str:
+    """Render a file comparison to plain text for file output."""
+    renderables, summary = _build_file_renderables(report)
+    return _capture_rich(*renderables) + "\n" + summary + "\n"
+
+
+def _build_single_file_renderables(result: FileDiffResult, projects: tuple[str, ...]) -> list[object]:
+    """Build Rich renderables for one file's comparison result."""
     status = "[green]identical[/green]" if result.is_identical else "[yellow]differs[/yellow]"
     if result.issue:
         status = "[red]error[/red]"
@@ -293,6 +372,8 @@ def _print_single_file_result(result: FileDiffResult, projects: tuple[str, ...])
     header = f"[bold]{result.canonical_path}[/bold] — {status}"
     if result.absent_from:
         header += f"  [dim](absent from: {', '.join(sorted(result.absent_from))})[/dim]"
+
+    renderables: list[object] = []
 
     if result.content_kind == ContentKind.STRUCTURED and result.field_diffs:
         table = Table(show_header=True, box=None, pad_edge=False)
@@ -311,7 +392,7 @@ def _print_single_file_result(result: FileDiffResult, projects: tuple[str, ...])
             style = "" if fd.is_identical else "yellow"
             table.add_row(fd.path, *values, style=style)
 
-        console.print(Panel(table, title=header, expand=False))
+        renderables.append(Panel(table, title=header, expand=False))
 
     elif result.content_kind == ContentKind.UNSTRUCTURED and result.variants:
         if result.reference_diffs:
@@ -330,8 +411,8 @@ def _print_single_file_result(result: FileDiffResult, projects: tuple[str, ...])
                 lines.append("")
                 lines.append("Similarities:")
                 for sim in result.similarities:
-                    lines.append(f"{sim.project_a} ↔ {sim.project_b}: {sim.score:.1%}")
-            console.print(Panel(Text("\n".join(lines)), title=header, expand=False))
+                    lines.append(f"{sim.project_a} \u2194 {sim.project_b}: {sim.score:.1%}")
+            renderables.append(Panel(Text("\n".join(lines)), title=header, expand=False))
         else:
             lines = []
             for i, variant in enumerate(result.variants, 1):
@@ -341,13 +422,15 @@ def _print_single_file_result(result: FileDiffResult, projects: tuple[str, ...])
                 lines.append("")
                 for sim in result.similarities:
                     lines.append(f"  {sim.project_a} \u2194 {sim.project_b}: {sim.score:.1%}")
-            console.print(Panel("\n".join(lines), title=header, expand=False))
+            renderables.append(Panel("\n".join(lines), title=header, expand=False))
 
     else:
-        console.print(header)
+        renderables.append(Text(header))
 
     if result.issue:
-        console.print(f"  [red]{result.issue}[/red]")
+        renderables.append(Text(f"  {result.issue}"))
+
+    return renderables
 
 
 def _truncate(text: str, max_len: int) -> str:
