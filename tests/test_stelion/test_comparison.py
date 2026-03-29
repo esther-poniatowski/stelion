@@ -556,7 +556,7 @@ class TestTreeScanner:
         snapshot = scanner.scan(tmp_path, subtree="src", include=(), exclude=())
 
         paths = {e.relative_path for e in snapshot.entries}
-        assert "src/app.py" in paths
+        assert "app.py" in paths
         assert "README.md" not in paths
 
 

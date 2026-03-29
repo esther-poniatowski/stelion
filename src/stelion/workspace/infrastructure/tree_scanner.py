@@ -27,7 +27,8 @@ class LocalTreeScanner:
     ) -> TreeSnapshot:
         project_key = project_name or project_dir.name
         root = project_dir / subtree if subtree else project_dir
-        entries = list(self._walk(root, project_dir, include, exclude, project_key))
+        base = root if subtree else project_dir
+        entries = list(self._walk(root, base, include, exclude, project_key))
         return TreeSnapshot(
             project=project_key,
             root=str(root.relative_to(project_dir)) if subtree else "",
