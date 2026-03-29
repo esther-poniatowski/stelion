@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .application.bootstrap import BootstrapServices
 from .application.bulk import execute_bulk, select_projects
+from .application.comparison import compare_files, compare_trees
 from .application.discovery import discover_projects
 from .application.environment import build_shared_environment
 from .application.generation import (
@@ -32,11 +33,15 @@ from .application.protocols import (
     FileWriter,
     MetadataExtractor,
     ProjectsYamlRenderer,
+    SpecLoader,
+    StructuredParser,
+    TreeScanner,
     WorkspaceFileRenderer,
 )
 from .application.registration import apply_registration, register_project
 from .application.sync import execute_sync, plan_sync, resolve_submodule_targets
 from .domain.bulk import BulkResult
+from .domain.comparison import FileReport, FileTarget, TreeReport, TreeTarget
 from .domain.dependency import DependencyGraph
 from .domain.environment import EnvironmentSpec
 from .domain.manifest import WorkspaceManifest
@@ -64,11 +69,19 @@ from .infrastructure.renderers.yaml import (
     render_environment,
     render_projects_yaml,
 )
+from .infrastructure.spec_loader import YamlSpecLoader
+from .infrastructure.structured_parsers import (
+    DispatchingParser,
+    JsonParser,
+    TomlParser,
+    YamlParser,
+)
 from .infrastructure.template_engine import (
     copy_template,
     rename_paths as rename_template_paths,
     substitute_in_directory,
 )
+from .infrastructure.tree_scanner import LocalTreeScanner
 
 
 @dataclass(frozen=True)
@@ -408,3 +421,82 @@ def _run_bulk(
         exclude=exclude,
     )
     return execute_bulk(projects, operation, dry_run=dry_run)
+
+
+# --- Comparison ---------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ComparisonServices:
+    """Container for cross-project comparison infrastructure."""
+
+    scanner: TreeScanner
+    parser: StructuredParser
+    spec_loader: SpecLoader
+    reader: FileReader
+
+
+def create_comparison_services() -> ComparisonServices:
+    """Build the infrastructure services for comparison operations."""
+    return ComparisonServices(
+        scanner=LocalTreeScanner(),
+        parser=DispatchingParser({
+            ".toml": TomlParser(),
+            ".yaml": YamlParser(),
+            ".yml": YamlParser(),
+            ".json": JsonParser(),
+        }),
+        spec_loader=YamlSpecLoader(),
+        reader=LocalFileReader(),
+    )
+
+
+def run_compare_trees(
+    ctx: WorkspaceContext,
+    services: ComparisonServices,
+    target: TreeTarget,
+    *,
+    names: tuple[str, ...] = (),
+    pattern: str | None = None,
+    git_only: bool = False,
+    exclude: tuple[str, ...] = (),
+) -> TreeReport:
+    """Select projects and compare their directory structures."""
+    projects = _select_comparison_projects(
+        ctx, names=names, pattern=pattern, git_only=git_only, exclude=exclude,
+    )
+    return compare_trees(projects, target, services.scanner)
+
+
+def run_compare_files(
+    ctx: WorkspaceContext,
+    services: ComparisonServices,
+    target: FileTarget,
+    *,
+    names: tuple[str, ...] = (),
+    pattern: str | None = None,
+    git_only: bool = False,
+    exclude: tuple[str, ...] = (),
+) -> FileReport:
+    """Select projects and compare specific files across them."""
+    projects = _select_comparison_projects(
+        ctx, names=names, pattern=pattern, git_only=git_only, exclude=exclude,
+    )
+    return compare_files(projects, target, services.reader, services.parser)
+
+
+def _select_comparison_projects(
+    ctx: WorkspaceContext,
+    *,
+    names: tuple[str, ...],
+    pattern: str | None,
+    git_only: bool,
+    exclude: tuple[str, ...],
+) -> tuple[ProjectMetadata, ...]:
+    """Select and validate that at least 2 projects are available."""
+    projects = select_projects(
+        ctx.inventory, names=names, pattern=pattern, git_only=git_only, exclude=exclude,
+    )
+    if len(projects) < 2:
+        raise WorkspaceError("Comparison requires at least 2 projects.")
+    return projects

@@ -17,6 +17,7 @@ typer.Typer
 import typer
 from . import info, __version__
 from .workspace.adapters.commands import app as workspace_app
+from .workspace.adapters.comparison_commands import app as compare_app
 from .workspace.adapters.submodule_commands import app as submodule_app
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -47,3 +48,4 @@ def main_callback(
 
 app.add_typer(workspace_app, name="workspace")
 app.add_typer(submodule_app, name="submodule")
+app.add_typer(compare_app, name="compare")

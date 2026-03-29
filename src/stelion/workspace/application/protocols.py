@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, Union
 
 from ..domain.bulk import ProjectOutcome
+from ..domain.comparison import ComparisonSpec, TreeSnapshot
 from ..domain.dependency import DependencyEdge, DependencyGraph
 from ..domain.environment import EnvironmentSpec
 from ..domain.manifest import WorkspaceManifest
@@ -144,3 +145,38 @@ class BulkOperation(Protocol):
     def label(self) -> str: ...
 
     def __call__(self, project: ProjectMetadata, *, dry_run: bool) -> ProjectOutcome: ...
+
+
+# --- Comparison operations ----------------------------------------------------
+
+
+class TreeScanner(Protocol):
+    """Scan a project directory and return its file-tree snapshot."""
+
+    def scan(
+        self,
+        project_dir: Path,
+        subtree: str | None,
+        include: tuple[str, ...],
+        exclude: tuple[str, ...],
+        *,
+        project_name: str | None = None,
+    ) -> TreeSnapshot: ...
+
+
+class StructuredParser(Protocol):
+    """Parse structured text content into a nested dict.
+
+    Implementations consume **text**, not file paths — the application
+    layer reads files via :class:`FileReader` and hands the content here.
+    """
+
+    def parse(
+        self, content: str, *, extension: str = "", hint: str | None = None,
+    ) -> dict[str, Any]: ...
+
+
+class SpecLoader(Protocol):
+    """Load a comparison instruction file into a typed specification."""
+
+    def load(self, path: Path) -> ComparisonSpec: ...

@@ -23,3 +23,7 @@ class BootstrapError(WorkspaceError):
 
 class SyncError(WorkspaceError):
     """Raised when submodule synchronization cannot proceed."""
+
+
+class ComparisonError(WorkspaceError):
+    """Raised when a comparison operation cannot proceed."""
