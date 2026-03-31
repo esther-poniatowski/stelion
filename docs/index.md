@@ -1,15 +1,18 @@
 # stelion
 
-Welcome to the stelion documentation.
+Keeps multiple Python projects consistent within a shared workspace.
 
 ```{toctree}
 :maxdepth: 2
 :caption: User Guide
 
-guide/getting-started
+guide/installation
+guide/usage
+guide/cli-reference
 guide/bulk-operations
 guide/submodule-sync
 guide/comparison
+guide/integration-policy
 ```
 
 ```{toctree}
