@@ -23,7 +23,7 @@ Keeps multiple Python projects consistent within a shared workspace.
 ## Overview
 
 Stelion manages consistency across a multi-project Python ecosystem. The tool operates
-at four levels:
+at five levels:
 
 1. **Workspace management** — discovers projects on disk, generates a unified VS Code
    workspace, a project registry, a dependency graph, and a shared Conda environment
@@ -37,6 +37,9 @@ at four levels:
 4. **Cross-project comparison** — compares directory structures or file contents across
    selected projects with hierarchical matching, variant grouping, and structured
    field-level diffing.
+5. **Repository synchronization** (planned) — synchronizes shared files across
+   repositories while preserving project-specific modifications, with token-level
+   diffing, three-way merge, and configurable template substitution.
 
 ### Motivation
 
@@ -63,6 +66,8 @@ a recurring challenge:
 - **Cross-project comparison** — compare directory layouts or specific files (TOML,
   YAML, JSON, Markdown) across projects with hierarchical matching, variant grouping,
   and structured field-level diffing.
+- **Cross-project coherence** — shared configuration files stay consistent across
+  projects while permitting local deviations.
 
 ---
 
@@ -72,13 +77,16 @@ a recurring challenge:
 
 - [X] Discover projects by scanning directories for `pyproject.toml`.
 - [X] Generate VS Code multi-root workspace files from discovered projects.
-- [X] Generate project registry (`projects.yml`) with description, status, and language.
+- [X] Generate project registry (`projects.yml`) with description, status, and language
+  detection.
 - [X] Generate structured dependency graph (`dependencies.yml`).
 - [X] Generate shared Conda environment from merged project environments.
 - [X] Bootstrap new projects from a keystone template with placeholder substitution.
-- [X] Register existing projects and persist discovery config when needed.
+- [X] Register existing projects into workspace artifacts and persist discovery config
+  when needed.
 - [X] Detect drift between generated files and current project state.
 - [X] Auto-generate manifest with sensible defaults on first run.
+- [X] Ship VS Code workspace defaults as package data.
 
 ### Submodule Synchronization (implemented)
 
@@ -86,33 +94,48 @@ a recurring challenge:
   the remote.
 - [X] Propagate a commit from one superproject's submodule to the local clone, the
   remote, and all other superprojects.
-- [X] Fetch and propagate a remote HEAD to the local clone and all superproject pointers.
-- [X] Dry-run mode, optional auto-commit, per-action error resilience.
+- [X] Fetch and propagate a remote HEAD to the local clone and all superproject
+  submodule pointers.
+- [X] Dry-run mode for safe inspection of planned updates.
+- [X] Optional auto-commit of submodule pointer changes in each superproject.
+- [X] Per-action error resilience: failures in one replica do not abort the rest.
 
 ### Bulk Operations (implemented)
 
-- [X] Run arbitrary shell commands in each project directory.
+- [X] Run an arbitrary shell command in each project directory.
 - [X] Stage tracked changes and commit across projects with a shared message.
 - [X] Push the current branch to a remote across projects.
-- [X] Filter by name, regex, git presence, or exclusion list; dry-run mode.
-- [X] Tabular outcome reporting with per-project status.
+- [X] Filter target projects by name, regex pattern, git presence, or exclusion list.
+- [X] Dry-run mode for safe inspection of planned operations.
+- [X] Per-project error resilience: failures in one project do not abort the rest.
+- [X] Tabular outcome reporting with per-project status (success, skipped, failed).
 
 ### Cross-Project Comparison (implemented)
 
-- [X] Compare directory structures with hierarchical matching (exact, case-insensitive,
-  fuzzy).
+- [X] Compare directory structures across projects with hierarchical matching
+  (directories first, then files).
+- [X] Infer file correspondence via three-pass matching: exact, case-insensitive, and
+  fuzzy.
+- [X] Report per-project presence and absence for every matched node (N-way, not
+  pairwise).
 - [X] Compare structured files (TOML, YAML, JSON) field by field with dotted-path
   diffing.
 - [X] Compare unstructured files (Markdown, text) via variant grouping and pairwise
   similarity.
-- [X] Declarative YAML instruction files for complex comparisons.
+- [X] Filter compared fields with selectors and remap project-specific paths with
+  overrides.
+- [X] Load complex comparison specifications from a declarative YAML instruction file.
 - [X] Output as Rich terminal tables or machine-parseable YAML.
+- [X] Per-file error resilience: read or parse failures do not abort the comparison.
 
 ### Repository Synchronization (planned)
 
 - [ ] Synchronize and adapt file versions across repositories.
-- [ ] Three-way merge with conflict markers; configurable template substitution.
-- [ ] Extensible merge, diff, and template strategies via plugins.
+- [ ] Configure mappings between local and remote versions.
+- [ ] Merge versions with standard conflict markers (three-way scheme).
+- [ ] Fill templates by replacing placeholders via configurable rules.
+- [ ] Dry-run and verbose modes for safe inspection.
+- [ ] Extend merge, diff, and template strategies via plugins.
 
 ---
 
