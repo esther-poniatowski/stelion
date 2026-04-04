@@ -8,7 +8,7 @@ stelion [OPTIONS] COMMAND [ARGS]
 
 | Option | Description |
 | ------ | ----------- |
-| `--version` | Display the version and exit. |
+| `--version` / `-v` | Display the version and exit. |
 | `--help` | Display the help message and exit. |
 
 ## Workspace Commands
@@ -20,7 +20,7 @@ projects when no manifest exists. With an existing manifest, generates all works
 artifacts.
 
 ```sh
-stelion workspace init [--manifest PATH] [--dry-run]
+stelion workspace init [--manifest/-m PATH] [--dry-run]
 ```
 
 ### `stelion workspace sync`
@@ -28,12 +28,13 @@ stelion workspace init [--manifest PATH] [--dry-run]
 Re-scan projects and update generated files.
 
 ```sh
-stelion workspace sync [--target TARGET] [--force] [--dry-run]
+stelion workspace sync [--manifest/-m PATH] [--target/-t TARGET] [--force] [--dry-run]
 ```
 
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-| `--target TARGET` | Limit to a single artifact (`workspace-file`, `projects`, `dependencies`, `environment`). | All |
+| `--manifest PATH` / `-m` | Path to workspace manifest. | `stelion.yml` |
+| `--target TARGET` / `-t` | Limit to a single artifact (`workspace-file`, `projects`, `dependencies`, `environment`). | All |
 | `--force` | Overwrite even if up to date. | Off |
 
 ### `stelion workspace new`
@@ -42,7 +43,7 @@ Bootstrap a new project from the template: copy, substitute placeholders, rename
 directories, and optionally initialize git.
 
 ```sh
-stelion workspace new <name> "<description>" [--destination ROOT] [--no-git] [--dry-run]
+stelion workspace new <name> "<description>" [--manifest/-m PATH] [--destination/-d ROOT] [--no-git] [--dry-run]
 ```
 
 ### `stelion workspace register`
@@ -51,7 +52,7 @@ Register an existing project and regenerate workspace artifacts. If the project 
 outside the configured scan roots, stelion records it in `discovery.extra_paths`.
 
 ```sh
-stelion workspace register <path>
+stelion workspace register <path> [--manifest/-m PATH]
 ```
 
 ### `stelion workspace status`
@@ -60,7 +61,7 @@ Show which generated files are out of date. Exit code 0 if all current, 1 if dri
 detected.
 
 ```sh
-stelion workspace status
+stelion workspace status [--manifest/-m PATH]
 ```
 
 ## Bulk Commands
@@ -109,6 +110,7 @@ Propagate a commit across all replicas of a dependency.
 ```sh
 stelion submodule sync <dependency> [--from local|<superproject>|remote]
                                     [--no-commit] [--dry-run]
+                                    [--manifest/-m PATH]
                                     [--remote origin] [--branch main]
 ```
 
@@ -116,6 +118,7 @@ stelion submodule sync <dependency> [--from local|<superproject>|remote]
 | ------ | ----------- | ------- |
 | `--from` | Source replica: `local`, a superproject name, or `remote`. | `local` |
 | `--no-commit` | Update submodule pointers without committing. | Off |
+| `--manifest PATH` / `-m` | Path to workspace manifest. | `stelion.yml` |
 
 ## Comparison Commands
 
@@ -124,29 +127,49 @@ stelion submodule sync <dependency> [--from local|<superproject>|remote]
 Compare directory structures across projects.
 
 ```sh
-stelion compare tree [--subtree PATH] [--include GLOB] [--exclude-pattern GLOB] [FILTERS]
+stelion compare tree [--subtree/-s PATH] [--include GLOB] [--exclude-pattern GLOB]
+                     [--instruction/-i FILE] [--format/-f FORMAT] [--output/-o FILE]
+                     [--names/-n a,b] [--pattern/-p REGEX] [--git-only]
+                     [--exclude/-e x,y] [--manifest PATH]
 ```
 
 | Option | Description |
 | ------ | ----------- |
-| `--subtree PATH` | Limit the scan to a subdirectory. |
+| `--subtree PATH` / `-s` | Limit the scan to a subdirectory. |
 | `--include GLOB` | Comma-separated glob patterns to include. |
 | `--exclude-pattern GLOB` | Comma-separated glob patterns to exclude. |
+| `--instruction FILE` / `-i` | Load comparison spec from a YAML instruction file. Mutually exclusive with target/filter options. |
+| `--format FORMAT` / `-f` | Output format: `table` or `yaml`. Default: `table`. |
+| `--output FILE` / `-o` | Save report to a file instead of printing. YAML files (`.yml`/`.yaml`) force YAML format. |
+| `--names a,b` / `-n` | Comma-separated project names to include. |
+| `--pattern REGEX` / `-p` | Regex pattern to match project names. |
+| `--git-only` | Only projects with a git repository. |
+| `--exclude x,y` / `-e` | Comma-separated project names to exclude. |
+| `--manifest PATH` | Path to workspace manifest. Default: `stelion.yml`. |
 
 ### `stelion compare files`
 
 Compare specific files across projects.
 
 ```sh
-stelion compare files <paths...> [--granularity survey|detail] [--reference PROJECT] [FILTERS]
+stelion compare files <paths...> [--granularity/-g survey|detail] [--reference/-r PROJECT]
+                      [--instruction/-i FILE] [--format/-f FORMAT] [--output/-o FILE]
+                      [--names/-n a,b] [--pattern/-p REGEX] [--git-only]
+                      [--exclude/-e x,y] [--manifest PATH]
 ```
 
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-| `--granularity` | `survey` (variant grouping) or `detail` (unified diffs). | `survey` |
-| `--reference PROJECT` | Reference project for detail-mode diffs. | None |
-| `--format table\|yaml` | Output format. | `table` |
-| `--instruction FILE` | Load comparison spec from a YAML instruction file. | None |
+| `--granularity` / `-g` | `survey` (variant grouping) or `detail` (unified diffs). | `survey` |
+| `--reference PROJECT` / `-r` | Reference project for detail-mode diffs. | None |
+| `--instruction FILE` / `-i` | Load comparison spec from a YAML instruction file. Mutually exclusive with target/filter options. | None |
+| `--format FORMAT` / `-f` | Output format: `table` or `yaml`. | `table` |
+| `--output FILE` / `-o` | Save report to a file instead of printing. YAML files (`.yml`/`.yaml`) force YAML format. | None |
+| `--names a,b` / `-n` | Comma-separated project names to include. | None |
+| `--pattern REGEX` / `-p` | Regex pattern to match project names. | None |
+| `--git-only` | Only projects with a git repository. | Off |
+| `--exclude x,y` / `-e` | Comma-separated project names to exclude. | None |
+| `--manifest PATH` | Path to workspace manifest. | `stelion.yml` |
 
 ### `stelion info`
 
