@@ -16,6 +16,14 @@ class SyncOrigin(Enum):
 
 
 @dataclass(frozen=True)
+class Superproject:
+    """A project that consumes dependencies as git submodules."""
+
+    name: str
+    path: Path
+
+
+@dataclass(frozen=True)
 class SubmoduleTarget:
     """A superproject containing a submodule that should be updated."""
 

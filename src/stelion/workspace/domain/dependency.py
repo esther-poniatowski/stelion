@@ -52,6 +52,29 @@ class DependencyGraph:
             result.setdefault(edge.dependency, []).append(edge)
         return result
 
+    def dependents_of(self, name: str) -> list[str]:
+        """Project names that directly depend on the given project."""
+        return [e.dependent for e in self.all_edges if e.dependency == name]
+
+    def dependencies_of(self, name: str) -> list[str]:
+        """Project names that the given project directly depends on."""
+        return [e.dependency for e in self.all_edges if e.dependent == name]
+
+    def affected_projects(self, name: str) -> set[str]:
+        """All project names connected to the given project by any edge."""
+        return {
+            e.dependent for e in self.all_edges if e.dependency == name
+        } | {
+            e.dependency for e in self.all_edges if e.dependent == name
+        }
+
+    def edges_involving(self, name: str) -> list[DependencyEdge]:
+        """All dependency edges that reference the given project."""
+        return [
+            e for e in self.all_edges
+            if e.dependent == name or e.dependency == name
+        ]
+
 
 def manual_edge_to_dependency_edge(edge: ManualEdge) -> DependencyEdge:
     """Convert a manifest ManualEdge to a resolved DependencyEdge.

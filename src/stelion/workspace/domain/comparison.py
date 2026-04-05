@@ -30,7 +30,11 @@ class ContentKind(StrEnum):
     UNSTRUCTURED = "unstructured"
 
 
-FILE_GRANULARITIES: frozenset[str] = frozenset({"survey", "detail"})
+class FileGranularity(StrEnum):
+    """Level of detail for file content comparison."""
+
+    SURVEY = "survey"
+    DETAIL = "detail"
 
 
 # ---------------------------------------------------------------------------
@@ -77,20 +81,19 @@ class FileTarget:
     """Target specification for file content comparison."""
 
     entries: tuple[FileTargetEntry, ...]
-    granularity: str = "survey"
+    granularity: FileGranularity = FileGranularity.SURVEY
     reference_project: str | None = None
 
     def __post_init__(self) -> None:
         if not self.entries:
             raise ValueError("File target must include at least one entry.")
-        if self.granularity not in FILE_GRANULARITIES:
-            raise ValueError(
-                f"Unknown file comparison granularity {self.granularity!r}. "
-                f"Expected one of: {', '.join(sorted(FILE_GRANULARITIES))}."
+        if not isinstance(self.granularity, FileGranularity):
+            object.__setattr__(
+                self, "granularity", FileGranularity(self.granularity)
             )
-        if self.granularity == "detail" and not self.reference_project:
+        if self.granularity == FileGranularity.DETAIL and not self.reference_project:
             raise ValueError("Detail granularity requires a reference project.")
-        if self.granularity != "detail" and self.reference_project is not None:
+        if self.granularity != FileGranularity.DETAIL and self.reference_project is not None:
             raise ValueError("A reference project is only valid with detail granularity.")
 
 

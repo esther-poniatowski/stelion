@@ -7,6 +7,16 @@ from enum import Enum
 from pathlib import Path
 
 
+@dataclass(frozen=True)
+class ProjectFilter:
+    """Criteria for selecting a subset of projects."""
+
+    names: tuple[str, ...] = ()
+    pattern: str | None = None
+    git_only: bool = False
+    exclude: tuple[str, ...] = ()
+
+
 class OutcomeStatus(Enum):
     """Result status for a single project within a bulk operation."""
 
