@@ -56,6 +56,28 @@ class WorkspaceBootstrapRequest:
 
 
 @dataclass(frozen=True)
+class PlaceholderBindings:
+    """Resolved template placeholder bindings."""
+
+    mappings: dict[str, str]
+
+    def as_dict(self) -> dict[str, str]:
+        return dict(self.mappings)
+
+    def __getitem__(self, key: str) -> str:
+        return self.mappings[key]
+
+    def __contains__(self, key: object) -> bool:
+        return key in self.mappings
+
+    def __iter__(self):
+        return iter(self.mappings)
+
+    def __len__(self) -> int:
+        return len(self.mappings)
+
+
+@dataclass(frozen=True)
 class BootstrapServices:
     """Injected infrastructure for the project bootstrap workflow."""
 
@@ -96,7 +118,7 @@ def build_placeholder_bindings(
     defaults: EcosystemDefaults,
     author_name: str = "",
     author_email: str = "",
-) -> dict[str, str]:
+) -> PlaceholderBindings:
     """Build the placeholder-to-value mapping for template substitution.
 
     Parameters
@@ -112,7 +134,7 @@ def build_placeholder_bindings(
     author_email
         Author email (typically from git config).
     """
-    bindings = {
+    bindings: dict[str, str] = {
         "package_name": name,
         "repo_name": name,
         "project_name": name,
@@ -131,7 +153,7 @@ def build_placeholder_bindings(
     if author_email:
         bindings["email"] = author_email
         bindings["contact@example.com"] = author_email
-    return bindings
+    return PlaceholderBindings(mappings=bindings)
 
 
 def bootstrap_project(
@@ -167,14 +189,14 @@ def bootstrap_project(
     services.copy_template(request.template_source, request.target_dir)
     replaced = services.substitute_directory(
         request.target_dir,
-        bindings,
+        bindings.as_dict(),
         request.template.delimiters,
         request.template.exclude_patterns,
     )
     renamed = services.rename_paths(
         request.target_dir,
         request.template.renames,
-        bindings,
+        bindings.as_dict(),
         request.template.delimiters,
     )
     git_initialized = False

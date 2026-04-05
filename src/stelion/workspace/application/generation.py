@@ -18,6 +18,7 @@ from .protocols import (
     FileHasher,
     FileReader,
     FileWriter,
+    GenerationServices,
     ProjectsYamlRenderer,
     WorkspaceFileRenderer,
 )
@@ -43,12 +44,44 @@ class GenerationArtifact(StrEnum):
 
 
 @dataclass(frozen=True)
+class ArtifactSpec:
+    """Identity and output path of a workspace artifact."""
+
+    artifact: GenerationArtifact
+    output_path: Path
+
+
+@dataclass(frozen=True)
 class GenerationTarget:
     """A single file to generate: its output path and a renderer callable."""
 
     artifact: GenerationArtifact
     path: Path
     render: Callable[[], str]
+
+
+def compute_artifact_specs(
+    manifest: WorkspaceManifest,
+) -> dict[GenerationArtifact, ArtifactSpec]:
+    """Compute the output paths for all generation artifacts."""
+    return {
+        GenerationArtifact.WORKSPACE_FILE: ArtifactSpec(
+            artifact=GenerationArtifact.WORKSPACE_FILE,
+            output_path=manifest.manifest_dir / manifest.generate.workspace_file.output,
+        ),
+        GenerationArtifact.PROJECTS: ArtifactSpec(
+            artifact=GenerationArtifact.PROJECTS,
+            output_path=manifest.manifest_dir / manifest.generate.projects_registry.output,
+        ),
+        GenerationArtifact.DEPENDENCIES: ArtifactSpec(
+            artifact=GenerationArtifact.DEPENDENCIES,
+            output_path=manifest.manifest_dir / manifest.generate.dependency_graph.output,
+        ),
+        GenerationArtifact.ENVIRONMENT: ArtifactSpec(
+            artifact=GenerationArtifact.ENVIRONMENT,
+            output_path=manifest.manifest_dir / manifest.generate.shared_environment.output,
+        ),
+    }
 
 
 def _build_targets(
@@ -62,25 +95,26 @@ def _build_targets(
     render_environment: EnvironmentRenderer,
 ) -> tuple[GenerationTarget, ...]:
     """Build the ordered list of generation targets from manifest config."""
+    specs = compute_artifact_specs(manifest)
     return (
         GenerationTarget(
             artifact=GenerationArtifact.WORKSPACE_FILE,
-            path=manifest.manifest_dir / manifest.generate.workspace_file.output,
+            path=specs[GenerationArtifact.WORKSPACE_FILE].output_path,
             render=lambda: render_workspace_file(manifest, inventory),
         ),
         GenerationTarget(
             artifact=GenerationArtifact.PROJECTS,
-            path=manifest.manifest_dir / manifest.generate.projects_registry.output,
+            path=specs[GenerationArtifact.PROJECTS].output_path,
             render=lambda: render_projects_yaml(inventory, manifest.manifest_dir),
         ),
         GenerationTarget(
             artifact=GenerationArtifact.DEPENDENCIES,
-            path=manifest.manifest_dir / manifest.generate.dependency_graph.output,
+            path=specs[GenerationArtifact.DEPENDENCIES].output_path,
             render=lambda: render_dependency_yaml(graph),
         ),
         GenerationTarget(
             artifact=GenerationArtifact.ENVIRONMENT,
-            path=manifest.manifest_dir / manifest.generate.shared_environment.output,
+            path=specs[GenerationArtifact.ENVIRONMENT].output_path,
             render=lambda: render_environment(environment),
         ),
     )
@@ -91,13 +125,7 @@ def generate_all(
     inventory: ProjectInventory,
     graph: DependencyGraph,
     environment: EnvironmentSpec,
-    render_workspace_file: WorkspaceFileRenderer,
-    render_projects_yaml: ProjectsYamlRenderer,
-    render_dependency_yaml: DependencyYamlRenderer,
-    render_environment: EnvironmentRenderer,
-    writer: FileWriter,
-    reader: FileReader,
-    hasher: FileHasher,
+    services: GenerationServices,
     force: bool = False,
     selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> list[GenerationResult]:
@@ -108,8 +136,8 @@ def generate_all(
     """
     targets = _build_targets(
         manifest, inventory, graph, environment,
-        render_workspace_file, render_projects_yaml,
-        render_dependency_yaml, render_environment,
+        services.render_workspace_file, services.render_projects_yaml,
+        services.render_dependency_yaml, services.render_environment,
     )
 
     selected = _select_targets(targets, selected_targets)
@@ -118,8 +146,8 @@ def generate_all(
         content = target.render()
         existed = target.path.exists()
         if not force and target.path.exists():
-            existing = reader.read(target.path)
-            if hasher.hash_content(existing) == hasher.hash_content(content):
+            existing = services.reader.read(target.path)
+            if services.hasher.hash_content(existing) == services.hasher.hash_content(content):
                 results.append(
                     GenerationResult(
                         artifact=target.artifact,
@@ -129,7 +157,7 @@ def generate_all(
                     )
                 )
                 continue
-        writer.write(target.path, content)
+        services.writer.write(target.path, content)
         reason = "created" if not existed else "updated"
         results.append(
             GenerationResult(
@@ -148,19 +176,14 @@ def compute_drift(
     inventory: ProjectInventory,
     graph: DependencyGraph,
     environment: EnvironmentSpec,
-    render_workspace_file: WorkspaceFileRenderer,
-    render_projects_yaml: ProjectsYamlRenderer,
-    render_dependency_yaml: DependencyYamlRenderer,
-    render_environment: EnvironmentRenderer,
-    reader: FileReader,
-    hasher: FileHasher,
+    services: GenerationServices,
     selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> DriftReport:
     """Compare generated content with existing files without writing."""
     targets = _build_targets(
         manifest, inventory, graph, environment,
-        render_workspace_file, render_projects_yaml,
-        render_dependency_yaml, render_environment,
+        services.render_workspace_file, services.render_projects_yaml,
+        services.render_dependency_yaml, services.render_environment,
     )
 
     selected = _select_targets(targets, selected_targets)
@@ -170,8 +193,8 @@ def compute_drift(
         if not target.path.exists():
             entries.append(DriftEntry(target.path, FileStatus.MISSING))
             continue
-        actual = reader.read(target.path)
-        if hasher.hash_content(actual) == hasher.hash_content(expected):
+        actual = services.reader.read(target.path)
+        if services.hasher.hash_content(actual) == services.hasher.hash_content(expected):
             entries.append(DriftEntry(target.path, FileStatus.CURRENT))
         else:
             entries.append(DriftEntry(target.path, FileStatus.STALE))

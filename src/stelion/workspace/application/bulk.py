@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from ..domain.bulk import BulkResult, ProjectOutcome
+from ..domain.bulk import BulkResult, ProjectFilter, ProjectOutcome
 from ..domain.project import ProjectInventory, ProjectMetadata
 from ..exceptions import WorkspaceError
 from .protocols import BulkOperation
@@ -12,6 +12,7 @@ from .protocols import BulkOperation
 
 def select_projects(
     inventory: ProjectInventory,
+    filter_: ProjectFilter | None = None,
     *,
     names: tuple[str, ...] = (),
     pattern: str | None = None,
@@ -20,12 +21,21 @@ def select_projects(
 ) -> tuple[ProjectMetadata, ...]:
     """Filter the project inventory to the target set.
 
+    Accepts either a ``ProjectFilter`` object or individual keyword arguments
+    for backward compatibility.
+
     Raises
     ------
     WorkspaceError
         If an explicit name is not found in the inventory, or if the
         resolved set is empty after all filters are applied.
     """
+    if filter_ is not None:
+        names = filter_.names
+        pattern = filter_.pattern
+        git_only = filter_.git_only
+        exclude = filter_.exclude
+
     by_name = inventory.by_name()
     projects: list[ProjectMetadata] = list(inventory.projects)
 

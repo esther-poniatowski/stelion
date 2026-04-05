@@ -9,11 +9,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from pathlib import Path
+from typing import Callable
 
 from ..domain.manifest import WorkspaceManifest
 from ..domain.project import ProjectInventory, ProjectMetadata
 from ..exceptions import WorkspaceError
-from .protocols import MetadataExtractor
+from .generation import GenerationResult
+from .protocols import GenerationServices, MetadataExtractor
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,16 @@ class RegistrationResult:
     manifest: WorkspaceManifest
     project: ProjectMetadata
     manifest_updated: bool
+
+
+@dataclass(frozen=True)
+class ExecuteRegistrationResult:
+    """Full outcome of registering and regenerating workspace artifacts."""
+
+    manifest: WorkspaceManifest
+    project: ProjectMetadata
+    manifest_updated: bool
+    generated: tuple[GenerationResult, ...]
 
 
 def register_project(
@@ -65,4 +77,58 @@ def apply_registration(
         manifest=updated_manifest,
         project=project,
         manifest_updated=updated_manifest != manifest,
+    )
+
+
+def execute_registration(
+    manifest_path: Path,
+    project_dir: Path,
+    manifest: WorkspaceManifest,
+    extractor: MetadataExtractor,
+    discover: Callable[[WorkspaceManifest], ProjectInventory],
+    build_context_and_generate: Callable[
+        [WorkspaceManifest], tuple[ProjectInventory, tuple[GenerationResult, ...]]
+    ],
+    persist_manifest: Callable[[Path, WorkspaceManifest], None],
+) -> ExecuteRegistrationResult:
+    """Full registration use-case: inspect, update manifest, regenerate artifacts.
+
+    Avoids building the full workspace context twice. If the project is already
+    registered (its path is in the manifest's extra_paths), the manifest is
+    used as-is. Otherwise, a discovery pass determines whether the manifest
+    needs updating before the single context build.
+    """
+    project = register_project(project_dir.resolve(), extractor)
+    resolved_project_path = project.path.resolve()
+    extra_resolved = {
+        (manifest.manifest_dir / ep).resolve() for ep in manifest.discovery.extra_paths
+    }
+    already_registered = resolved_project_path in extra_resolved
+
+    if already_registered:
+        _inventory, generated = build_context_and_generate(manifest)
+        return ExecuteRegistrationResult(
+            manifest=manifest,
+            project=project,
+            manifest_updated=False,
+            generated=generated,
+        )
+
+    inventory = discover(manifest)
+    registration = apply_registration(manifest, inventory, project)
+    effective_manifest = registration.manifest
+    if registration.manifest_updated:
+        persist_manifest(manifest_path, effective_manifest)
+
+    updated_inventory, generated = build_context_and_generate(effective_manifest)
+    if resolved_project_path not in updated_inventory.by_path():
+        raise WorkspaceError(
+            f"Registered project at {project.path} is still not discoverable after updating the manifest."
+        )
+
+    return ExecuteRegistrationResult(
+        manifest=effective_manifest,
+        project=registration.project,
+        manifest_updated=registration.manifest_updated,
+        generated=generated,
     )

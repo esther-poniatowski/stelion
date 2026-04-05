@@ -8,6 +8,7 @@ from typing import Mapping
 from ..domain.comparison import (
     ContentKind,
     FileDiffResult,
+    FileGranularity,
     FileReport,
     FileTarget,
     FieldDiff,
@@ -120,7 +121,7 @@ def _compare_single_file(
     overrides: Mapping[str, str],
     selectors: tuple[str, ...],
     parser_hint: str | None,
-    granularity: str,
+    granularity: FileGranularity,
     reference_project: str | None,
     all_names: frozenset[str],
     reader: FileReader,
@@ -207,7 +208,7 @@ def _diff_unstructured_file(
     present_in: frozenset[str],
     absent_from: frozenset[str],
     contents: dict[str, str],
-    granularity: str,
+    granularity: FileGranularity,
     reference_project: str | None,
     issues: list[str],
 ) -> FileDiffResult:
@@ -215,7 +216,7 @@ def _diff_unstructured_file(
     variants = group_variants(contents)
     similarities = compute_pairwise_similarity(contents)
     reference_diffs = ()
-    if granularity == "detail":
+    if granularity == FileGranularity.DETAIL:
         if reference_project is None:
             issues.append("Detail granularity requires a reference project.")
         elif reference_project not in contents:

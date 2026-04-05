@@ -90,6 +90,19 @@ class EnvironmentRenderer(Protocol):
     def __call__(self, environment: EnvironmentSpec) -> str: ...
 
 
+@dataclass(frozen=True)
+class GenerationServices:
+    """Bundled infrastructure services for workspace artifact generation."""
+
+    render_workspace_file: WorkspaceFileRenderer
+    render_projects_yaml: ProjectsYamlRenderer
+    render_dependency_yaml: DependencyYamlRenderer
+    render_environment: EnvironmentRenderer
+    writer: FileWriter
+    reader: FileReader
+    hasher: FileHasher
+
+
 # --- Git operations -----------------------------------------------------------
 
 

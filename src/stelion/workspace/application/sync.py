@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Callable, Protocol
 
 from ..domain.dependency import DependencyGraph, DependencyMechanism
 from ..domain.manifest import WorkspaceManifest
@@ -20,10 +21,133 @@ from ..exceptions import SyncError
 from .protocols import GitOperations
 
 
+class SyncOriginResolver(Protocol):
+    """Strategy for resolving the source commit in a sync operation."""
+
+    def resolve(
+        self,
+        dependency: str,
+        targets: tuple[SubmoduleTarget, ...],
+        inventory: ProjectInventory,
+        git: GitOperations,
+    ) -> SyncPlan: ...
+
+
+class LocalOriginResolver:
+    """Resolve sync origin from the local clone's HEAD."""
+
+    def __init__(self, remote: str = "origin", branch: str = "main") -> None:
+        self._remote = remote
+        self._branch = branch
+
+    def resolve(
+        self,
+        dependency: str,
+        targets: tuple[SubmoduleTarget, ...],
+        inventory: ProjectInventory,
+        git: GitOperations,
+    ) -> SyncPlan:
+        dep_meta = inventory.by_name().get(dependency)
+        local_dir = dep_meta.path if dep_meta else None
+        if local_dir is None:
+            raise SyncError(
+                f"Local origin requires '{dependency}' in the project inventory."
+            )
+        target_commit = git.head_commit(local_dir)
+        return SyncPlan(
+            dependency=dependency,
+            origin=SyncOrigin.LOCAL,
+            source_label="local HEAD",
+            target_commit=target_commit,
+            submodule_targets=targets,
+            local_dir=None,
+            push_spec=PushSpec(repo_dir=local_dir, remote=self._remote, branch=self._branch),
+        )
+
+
+class SuperprojectOriginResolver:
+    """Resolve sync origin from a superproject's submodule pointer."""
+
+    def __init__(
+        self,
+        source_superproject: str,
+        remote: str = "origin",
+        branch: str = "main",
+    ) -> None:
+        self._source_superproject = source_superproject
+        self._remote = remote
+        self._branch = branch
+
+    def resolve(
+        self,
+        dependency: str,
+        targets: tuple[SubmoduleTarget, ...],
+        inventory: ProjectInventory,
+        git: GitOperations,
+    ) -> SyncPlan:
+        dep_meta = inventory.by_name().get(dependency)
+        local_dir = dep_meta.path if dep_meta else None
+        source = _find_target(targets, self._source_superproject)
+        target_commit = git.submodule_commit(
+            source.superproject_dir, source.submodule_path,
+        )
+        source_label = f"{source.superproject_name}/{source.submodule_path}"
+        submodule_targets = tuple(
+            t for t in targets if t.superproject_name != self._source_superproject
+        )
+        push_spec: PushSpec | None = (
+            PushSpec(repo_dir=local_dir, remote=self._remote, branch=self._branch)
+            if local_dir else None
+        )
+        return SyncPlan(
+            dependency=dependency,
+            origin=SyncOrigin.SUPERPROJECT,
+            source_label=source_label,
+            target_commit=target_commit,
+            submodule_targets=submodule_targets,
+            local_dir=local_dir,
+            push_spec=push_spec,
+        )
+
+
+class RemoteOriginResolver:
+    """Resolve sync origin from the remote tracking branch."""
+
+    def __init__(self, remote: str = "origin", branch: str = "main") -> None:
+        self._remote = remote
+        self._branch = branch
+
+    def resolve(
+        self,
+        dependency: str,
+        targets: tuple[SubmoduleTarget, ...],
+        inventory: ProjectInventory,
+        git: GitOperations,
+    ) -> SyncPlan:
+        dep_meta = inventory.by_name().get(dependency)
+        local_dir = dep_meta.path if dep_meta else None
+        if local_dir is None:
+            raise SyncError(
+                f"Remote origin requires '{dependency}' in the project inventory."
+            )
+        git.fetch_remote(local_dir)
+        target_commit = git.remote_head(local_dir, self._remote, self._branch)
+        return SyncPlan(
+            dependency=dependency,
+            origin=SyncOrigin.REMOTE,
+            source_label=f"{self._remote}/{self._branch}",
+            target_commit=target_commit,
+            submodule_targets=targets,
+            local_dir=local_dir,
+            push_spec=None,
+        )
+
+
 def resolve_submodule_targets(
     dependency: str,
     graph: DependencyGraph,
     manifest: WorkspaceManifest,
+    inventory: ProjectInventory | None = None,
 ) -> tuple[SubmoduleTarget, ...]:
     """Extract git-submodule edges for a dependency and resolve to filesystem targets."""
     edges_by_dep = graph.by_dependency()
@@ -38,7 +162,7 @@ def resolve_submodule_targets(
         )
     targets: list[SubmoduleTarget] = []
     for edge in submodule_edges:
-        superproject_dir = _resolve_superproject_dir(edge.dependent, manifest)
+        superproject_dir = _resolve_superproject_dir(edge.dependent, manifest, inventory)
         targets.append(
             SubmoduleTarget(
                 superproject_name=edge.dependent,
@@ -47,6 +171,28 @@ def resolve_submodule_targets(
             )
         )
     return tuple(targets)
+
+
+def make_resolver(
+    origin: SyncOrigin,
+    *,
+    source_superproject: str | None = None,
+    remote: str = "origin",
+    branch: str = "main",
+) -> SyncOriginResolver:
+    """Factory for creating the appropriate resolver from an origin enum."""
+    if origin == SyncOrigin.LOCAL:
+        return LocalOriginResolver(remote=remote, branch=branch)
+    elif origin == SyncOrigin.SUPERPROJECT:
+        if source_superproject is None:
+            raise SyncError("Superproject origin requires --from <superproject>.")
+        return SuperprojectOriginResolver(
+            source_superproject=source_superproject, remote=remote, branch=branch,
+        )
+    elif origin == SyncOrigin.REMOTE:
+        return RemoteOriginResolver(remote=remote, branch=branch)
+    else:
+        raise SyncError(f"Unknown sync origin: {origin}")
 
 
 def plan_sync(
@@ -59,63 +205,21 @@ def plan_sync(
     source_superproject: str | None = None,
     remote: str = "origin",
     branch: str = "main",
+    resolver: SyncOriginResolver | None = None,
 ) -> SyncPlan:
-    """Determine the source commit, local update, remote push, and submodule targets."""
-    dep_meta = inventory.by_name().get(dependency)
-    local_dir = dep_meta.path if dep_meta else None
+    """Determine the source commit, local update, remote push, and submodule targets.
 
-    if origin == SyncOrigin.LOCAL:
-        if local_dir is None:
-            raise SyncError(
-                f"Local origin requires '{dependency}' in the project inventory."
-            )
-        target_commit = git.head_commit(local_dir)
-        source_label = "local HEAD"
-        submodule_targets = targets
-        update_local = None
-        push_spec = PushSpec(repo_dir=local_dir, remote=remote, branch=branch)
-
-    elif origin == SyncOrigin.SUPERPROJECT:
-        if source_superproject is None:
-            raise SyncError("Superproject origin requires --from <superproject>.")
-        source = _find_target(targets, source_superproject)
-        target_commit = git.submodule_commit(
-            source.superproject_dir, source.submodule_path,
+    When *resolver* is provided it is used directly; otherwise a resolver is
+    constructed from *origin* and the keyword parameters.
+    """
+    if resolver is None:
+        resolver = make_resolver(
+            origin,
+            source_superproject=source_superproject,
+            remote=remote,
+            branch=branch,
         )
-        source_label = f"{source.superproject_name}/{source.submodule_path}"
-        submodule_targets = tuple(
-            t for t in targets if t.superproject_name != source_superproject
-        )
-        update_local = local_dir
-        push_spec = (
-            PushSpec(repo_dir=local_dir, remote=remote, branch=branch)
-            if local_dir else None
-        )
-
-    elif origin == SyncOrigin.REMOTE:
-        if local_dir is None:
-            raise SyncError(
-                f"Remote origin requires '{dependency}' in the project inventory."
-            )
-        git.fetch_remote(local_dir)
-        target_commit = git.remote_head(local_dir, remote, branch)
-        source_label = f"{remote}/{branch}"
-        submodule_targets = targets
-        update_local = local_dir
-        push_spec = None
-
-    else:
-        raise SyncError(f"Unknown sync origin: {origin}")
-
-    return SyncPlan(
-        dependency=dependency,
-        origin=origin,
-        source_label=source_label,
-        target_commit=target_commit,
-        submodule_targets=submodule_targets,
-        local_dir=update_local,
-        push_spec=push_spec,
-    )
+    return resolver.resolve(dependency, targets, inventory, git)
 
 
 def execute_sync(
@@ -150,6 +254,42 @@ def execute_sync(
     )
 
 
+# --- Sync action helper -------------------------------------------------------
+
+
+def _execute_sync_action(
+    kind: OutcomeKind,
+    label: str,
+    get_current_ref: Callable[[], str],
+    perform_action: Callable[[], None],
+    target_ref: str,
+    dry_run: bool,
+) -> SyncOutcome:
+    """Execute a sync action with the common try/check/apply/error pattern."""
+    try:
+        current = get_current_ref()
+        if current == target_ref:
+            return SyncOutcome(
+                kind=kind, label=label,
+                old_ref=current, new_ref=target_ref, applied=False,
+            )
+        if dry_run:
+            return SyncOutcome(
+                kind=kind, label=label,
+                old_ref=current, new_ref=target_ref, applied=False,
+            )
+        perform_action()
+        return SyncOutcome(
+            kind=kind, label=label,
+            old_ref=current, new_ref=target_ref, applied=True,
+        )
+    except SyncError as exc:
+        return SyncOutcome(
+            kind=kind, label=label,
+            old_ref="", new_ref=target_ref, applied=False, error=str(exc),
+        )
+
+
 # --- Internal helpers ---------------------------------------------------------
 
 
@@ -157,28 +297,14 @@ def _sync_local(
     local_dir: Path, target_commit: str, git: GitOperations, dry_run: bool,
 ) -> SyncOutcome:
     """Update the local clone to the target commit."""
-    try:
-        old_ref = git.head_commit(local_dir)
-        if old_ref == target_commit:
-            return SyncOutcome(
-                kind=OutcomeKind.LOCAL, label=str(local_dir.name),
-                old_ref=old_ref, new_ref=target_commit, applied=False,
-            )
-        if dry_run:
-            return SyncOutcome(
-                kind=OutcomeKind.LOCAL, label=str(local_dir.name),
-                old_ref=old_ref, new_ref=target_commit, applied=False,
-            )
-        git.update_local_clone(local_dir, target_commit)
-        return SyncOutcome(
-            kind=OutcomeKind.LOCAL, label=str(local_dir.name),
-            old_ref=old_ref, new_ref=target_commit, applied=True,
-        )
-    except SyncError as exc:
-        return SyncOutcome(
-            kind=OutcomeKind.LOCAL, label=str(local_dir.name),
-            old_ref="", new_ref=target_commit, applied=False, error=str(exc),
-        )
+    return _execute_sync_action(
+        kind=OutcomeKind.LOCAL,
+        label=str(local_dir.name),
+        get_current_ref=lambda: git.head_commit(local_dir),
+        perform_action=lambda: git.update_local_clone(local_dir, target_commit),
+        target_ref=target_commit,
+        dry_run=dry_run,
+    )
 
 
 def _sync_remote(
@@ -186,29 +312,15 @@ def _sync_remote(
 ) -> SyncOutcome:
     """Push the local clone to the remote."""
     label = f"{push_spec.remote}/{push_spec.branch}"
-    try:
-        old_ref = git.remote_head(push_spec.repo_dir, push_spec.remote, push_spec.branch)
-        current_head = git.head_commit(push_spec.repo_dir)
-        if old_ref == current_head:
-            return SyncOutcome(
-                kind=OutcomeKind.REMOTE, label=label,
-                old_ref=old_ref, new_ref=current_head, applied=False,
-            )
-        if dry_run:
-            return SyncOutcome(
-                kind=OutcomeKind.REMOTE, label=label,
-                old_ref=old_ref, new_ref=current_head, applied=False,
-            )
-        git.push_to_remote(push_spec.repo_dir, push_spec.remote, push_spec.branch)
-        return SyncOutcome(
-            kind=OutcomeKind.REMOTE, label=label,
-            old_ref=old_ref, new_ref=current_head, applied=True,
-        )
-    except SyncError as exc:
-        return SyncOutcome(
-            kind=OutcomeKind.REMOTE, label=label,
-            old_ref="", new_ref="", applied=False, error=str(exc),
-        )
+    current_head = git.head_commit(push_spec.repo_dir)
+    return _execute_sync_action(
+        kind=OutcomeKind.REMOTE,
+        label=label,
+        get_current_ref=lambda: git.remote_head(push_spec.repo_dir, push_spec.remote, push_spec.branch),
+        perform_action=lambda: git.push_to_remote(push_spec.repo_dir, push_spec.remote, push_spec.branch),
+        target_ref=current_head,
+        dry_run=dry_run,
+    )
 
 
 def _sync_submodule(
@@ -221,18 +333,8 @@ def _sync_submodule(
 ) -> SyncOutcome:
     """Update a single submodule pointer in a superproject."""
     label = f"{target.superproject_name}/{target.submodule_path}"
-    try:
-        old_ref = git.submodule_commit(target.superproject_dir, target.submodule_path)
-        if old_ref == target_commit:
-            return SyncOutcome(
-                kind=OutcomeKind.SUBMODULE, label=label,
-                old_ref=old_ref, new_ref=target_commit, applied=False,
-            )
-        if dry_run:
-            return SyncOutcome(
-                kind=OutcomeKind.SUBMODULE, label=label,
-                old_ref=old_ref, new_ref=target_commit, applied=False,
-            )
+
+    def _perform() -> None:
         git.update_submodule_pointer(
             target.superproject_dir, target.submodule_path, target_commit,
         )
@@ -241,30 +343,39 @@ def _sync_submodule(
                 target.superproject_dir, target.submodule_path,
                 dependency, target_commit[:8],
             )
-        return SyncOutcome(
-            kind=OutcomeKind.SUBMODULE, label=label,
-            old_ref=old_ref, new_ref=target_commit, applied=True,
-        )
-    except SyncError as exc:
-        return SyncOutcome(
-            kind=OutcomeKind.SUBMODULE, label=label,
-            old_ref="", new_ref=target_commit, applied=False, error=str(exc),
-        )
+
+    return _execute_sync_action(
+        kind=OutcomeKind.SUBMODULE,
+        label=label,
+        get_current_ref=lambda: git.submodule_commit(target.superproject_dir, target.submodule_path),
+        perform_action=_perform,
+        target_ref=target_commit,
+        dry_run=dry_run,
+    )
 
 
 def _resolve_superproject_dir(
     superproject_name: str,
     manifest: WorkspaceManifest,
+    inventory: ProjectInventory | None = None,
 ) -> Path:
     """Resolve a superproject's absolute path from configured superproject paths.
 
     Matches by directory basename, assuming project names are unique across the
     workspace (which is enforced by project discovery deduplication).
+
+    Falls back to the project inventory if the name is not found in
+    ``dependencies.superproject_paths``.
     """
     for extra_dir_str in manifest.dependencies.superproject_paths:
         candidate = (manifest.manifest_dir / extra_dir_str).resolve()
         if candidate.name == superproject_name and candidate.is_dir():
             return candidate
+    # Fallback: look up in the project inventory.
+    if inventory is not None:
+        meta = inventory.by_name().get(superproject_name)
+        if meta is not None:
+            return meta.path
     raise SyncError(
         f"Superproject '{superproject_name}' not found in "
         f"dependencies.superproject_paths: {list(manifest.dependencies.superproject_paths)}"
