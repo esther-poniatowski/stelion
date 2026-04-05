@@ -9,10 +9,17 @@ from __future__ import annotations
 
 import json
 import tomllib
+from typing import Protocol
 
 import yaml
 
 from ..exceptions import ComparisonError
+
+
+class ContentParser(Protocol):
+    """Protocol for parsing text content into a dict."""
+
+    def parse(self, content: str) -> dict: ...
 
 
 class TomlParser:
@@ -169,7 +176,7 @@ class DispatchingParser:
         instance.
     """
 
-    def __init__(self, parsers: dict[str, TomlParser | YamlParser | JsonParser | MarkdownSectionParser]) -> None:
+    def __init__(self, parsers: dict[str, ContentParser]) -> None:
         self._parsers = parsers
 
     def parse(self, content: str, *, extension: str = "", hint: str | None = None) -> dict:

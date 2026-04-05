@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ...application.protocols import PackageDataLoader
+from ...application.protocols import FileReader, PackageDataLoader
 from ...domain.manifest import WorkspaceManifest
 from ...domain.project import ProjectInventory
 
@@ -13,8 +13,13 @@ from ...domain.project import ProjectInventory
 class VSCodeWorkspaceFileRenderer:
     """Render a VS Code workspace file using injected package data loading."""
 
-    def __init__(self, loader: PackageDataLoader) -> None:
+    def __init__(
+        self,
+        loader: PackageDataLoader,
+        reader: FileReader | None = None,
+    ) -> None:
         self._loader = loader
+        self._reader = reader
 
     def __call__(self, manifest: WorkspaceManifest, inventory: ProjectInventory) -> str:
         """Generate a VS Code multi-root workspace file."""
@@ -39,8 +44,11 @@ class VSCodeWorkspaceFileRenderer:
             settings = self._loader.load_json("vscode/settings.json")
         else:
             source_path = manifest.manifest_dir / manifest.vscode.source
-            with open(source_path, encoding="utf-8") as f:
-                settings = json.load(f)
+            if self._reader is not None:
+                settings = json.loads(self._reader.read(source_path))
+            else:
+                with open(source_path, encoding="utf-8") as f:
+                    settings = json.load(f)
 
         settings.update(manifest.vscode.settings_overrides)
         return settings

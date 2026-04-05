@@ -5,7 +5,7 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
-from ..domain.project import MetadataStatus, ProjectMetadata
+from ..domain.project import GithubSlug, MetadataStatus, ProjectMetadata
 
 
 MISSING_PYPROJECT_MARKER = "<missing-pyproject>"
@@ -58,6 +58,7 @@ class PyprojectExtractor:
         if homepage is None and status != MetadataStatus.CURRENT:
             homepage = marker
 
+        github = GithubSlug.from_url(homepage) if homepage else None
         languages = _detect_languages(project_dir)
 
         return ProjectMetadata(
@@ -66,6 +67,7 @@ class PyprojectExtractor:
             description=description,
             version=version,
             homepage=homepage,
+            github=github,
             has_git=has_git,
             languages=languages,
             status=status,

@@ -60,6 +60,8 @@ def render_projects_yaml(inventory: ProjectInventory, manifest_dir: Path) -> str
         if p.languages:
             entry["languages"] = list(p.languages)
         entry["path"] = os.path.relpath(p.path, manifest_dir)
+        if p.github:
+            entry["github"] = str(p.github)
         if p.homepage:
             entry["homepage"] = p.homepage
         if p.issue:

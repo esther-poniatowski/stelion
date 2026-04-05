@@ -3,42 +3,25 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from ..composition import (
-    build_workspace_context,
-    create_services,
-    resolve_manifest,
     run_bulk_commit,
     run_bulk_exec,
     run_bulk_push,
 )
-from ..domain.bulk import BulkResult, OutcomeStatus
+from ..domain.bulk import BulkResult, OutcomeStatus, ProjectFilter
 from ..exceptions import WorkspaceError
+from ._cli_common import parse_project_filter, resolve_workspace
 
 console = Console(stderr=True)
 
 
 # --- Shared helpers -----------------------------------------------------------
-
-
-def _parse_selection(
-    names: str | None,
-    pattern: str | None,
-    git_only: bool,
-    exclude: str | None,
-) -> dict[str, Any]:
-    """Convert CLI option strings into keyword arguments for select_projects."""
-    return dict(
-        names=tuple(names.split(",")) if names else (),
-        pattern=pattern,
-        git_only=git_only,
-        exclude=tuple(exclude.split(",")) if exclude else (),
-    )
 
 
 def _print_bulk_result(result: BulkResult, dry_run: bool) -> None:
@@ -73,6 +56,25 @@ def _print_bulk_result(result: BulkResult, dry_run: bool) -> None:
         f"{f', {failed} failed' if failed else ''}"
         f"{f', {skipped} skipped' if skipped else ''}"
     )
+
+
+def _run_bulk_command(
+    manifest: str,
+    filter_: ProjectFilter,
+    dry_run: bool,
+    run_fn: Callable[..., BulkResult],
+    **kwargs: Any,
+) -> None:
+    """Shared workspace setup, error handling, and result printing for bulk commands."""
+    try:
+        ctx, _services = resolve_workspace(manifest)
+        result = run_fn(ctx, filter_=filter_, dry_run=dry_run, **kwargs)
+        _print_bulk_result(result, dry_run)
+        if result.has_errors:
+            raise typer.Exit(1)
+    except WorkspaceError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1)
 
 
 # --- Filter options common to all bulk commands -------------------------------
@@ -113,20 +115,8 @@ def workspace_exec(
     manifest: Path = _opt_manifest,
 ) -> None:
     """Run an arbitrary shell command in each project directory."""
-    services = create_services()
-    m = resolve_manifest(Path(manifest))
-    ctx = build_workspace_context(m, services)
-    selection = _parse_selection(names, pattern, git_only, exclude)
-
-    try:
-        result = run_bulk_exec(ctx, command, dry_run=dry_run, **selection)
-    except WorkspaceError as exc:
-        console.print(f"[red]Error:[/red] {exc}")
-        raise typer.Exit(1)
-
-    _print_bulk_result(result, dry_run)
-    if result.has_errors:
-        raise typer.Exit(1)
+    filter_ = parse_project_filter(names, pattern, git_only, exclude)
+    _run_bulk_command(str(manifest), filter_, dry_run, run_bulk_exec, command=command)
 
 
 def workspace_commit(
@@ -139,20 +129,8 @@ def workspace_commit(
     manifest: Path = _opt_manifest,
 ) -> None:
     """Stage tracked changes and commit across projects."""
-    services = create_services()
-    m = resolve_manifest(Path(manifest))
-    ctx = build_workspace_context(m, services)
-    selection = _parse_selection(names, pattern, git_only, exclude)
-
-    try:
-        result = run_bulk_commit(ctx, message, dry_run=dry_run, **selection)
-    except WorkspaceError as exc:
-        console.print(f"[red]Error:[/red] {exc}")
-        raise typer.Exit(1)
-
-    _print_bulk_result(result, dry_run)
-    if result.has_errors:
-        raise typer.Exit(1)
+    filter_ = parse_project_filter(names, pattern, git_only, exclude)
+    _run_bulk_command(str(manifest), filter_, dry_run, run_bulk_commit, message=message)
 
 
 def workspace_push(
@@ -166,19 +144,8 @@ def workspace_push(
     manifest: Path = _opt_manifest,
 ) -> None:
     """Push the current branch to a remote across projects."""
-    services = create_services()
-    m = resolve_manifest(Path(manifest))
-    ctx = build_workspace_context(m, services)
-    selection = _parse_selection(names, pattern, git_only, exclude)
-
-    try:
-        result = run_bulk_push(
-            ctx, remote=remote, branch=branch, dry_run=dry_run, **selection,
-        )
-    except WorkspaceError as exc:
-        console.print(f"[red]Error:[/red] {exc}")
-        raise typer.Exit(1)
-
-    _print_bulk_result(result, dry_run)
-    if result.has_errors:
-        raise typer.Exit(1)
+    filter_ = parse_project_filter(names, pattern, git_only, exclude)
+    _run_bulk_command(
+        str(manifest), filter_, dry_run, run_bulk_push,
+        remote=remote, branch=branch,
+    )

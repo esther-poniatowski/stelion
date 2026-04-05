@@ -32,6 +32,7 @@ from ..domain.comparison import (
 )
 from ..exceptions import ComparisonError, WorkspaceError
 from ..infrastructure.renderers.comparison import render_file_yaml, render_tree_yaml
+from ._cli_common import parse_project_filter
 
 app = typer.Typer(name="compare", help="Cross-project comparison.", no_args_is_help=True)
 console = Console(stderr=True)
@@ -49,21 +50,6 @@ _opt_manifest = typer.Option("stelion.yml", "--manifest", help="Path to workspac
 _opt_format = typer.Option("table", "--format", "-f", help="Output format: table or yaml.")
 _opt_instruction = typer.Option(None, "--instruction", "-i", help="Path to instruction YAML file.")
 _opt_output = typer.Option(None, "--output", "-o", help="Save report to a file instead of printing.")
-
-
-def _parse_selection(
-    names: str | None,
-    pattern: str | None,
-    git_only: bool,
-    exclude: str | None,
-) -> dict:
-    """Convert CLI option strings into keyword arguments for select_projects."""
-    return dict(
-        names=tuple(names.split(",")) if names else (),
-        pattern=pattern,
-        git_only=git_only,
-        exclude=tuple(exclude.split(",")) if exclude else (),
-    )
 
 
 def _resolve_format(fmt: str, output: str | None) -> str:
@@ -148,7 +134,7 @@ def compare_tree(
             if not isinstance(spec.target, TreeTarget):
                 raise ComparisonError("Instruction file specifies 'files' mode, but 'tree' command was invoked.")
             target = spec.target
-            selection = _parse_selection(
+            filter_ = parse_project_filter(
                 ",".join(spec.project_names) if spec.project_names else None,
                 None, False, None,
             )
@@ -158,9 +144,9 @@ def compare_tree(
                 include_patterns=tuple(include.split(",")) if include else (),
                 exclude_patterns=tuple(exclude_pattern.split(",")) if exclude_pattern else (),
             )
-            selection = _parse_selection(names, pattern, git_only, exclude)
+            filter_ = parse_project_filter(names, pattern, git_only, exclude)
 
-        report = run_compare_trees(ctx, cmp_services, target, **selection)
+        report = run_compare_trees(ctx, cmp_services, target, filter_=filter_)
 
     except (WorkspaceError, ComparisonError) as exc:
         console.print(f"[red]Error:[/red] {exc}")
@@ -222,7 +208,7 @@ def compare_files_cmd(
             if not isinstance(spec.target, FileTarget):
                 raise ComparisonError("Instruction file specifies 'tree' mode, but 'files' command was invoked.")
             target = spec.target
-            selection = _parse_selection(
+            filter_ = parse_project_filter(
                 ",".join(spec.project_names) if spec.project_names else None,
                 None, False, None,
             )
@@ -238,9 +224,9 @@ def compare_files_cmd(
                 )
             except ValueError as exc:
                 raise ComparisonError(str(exc)) from exc
-            selection = _parse_selection(names, pattern, git_only, exclude)
+            filter_ = parse_project_filter(names, pattern, git_only, exclude)
 
-        report = run_compare_files(ctx, cmp_services, target, **selection)
+        report = run_compare_files(ctx, cmp_services, target, filter_=filter_)
 
     except (WorkspaceError, ComparisonError) as exc:
         console.print(f"[red]Error:[/red] {exc}")

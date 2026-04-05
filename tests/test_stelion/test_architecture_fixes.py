@@ -12,6 +12,7 @@ from stelion.workspace.application.bootstrap import (
     plan_bootstrap_request,
 )
 from stelion.workspace.application.generation import GenerationArtifact, generate_all
+from stelion.workspace.application.protocols import GenerationServices
 from stelion.workspace.composition import create_services, register_workspace_project, resolve_manifest
 from stelion.workspace.domain.dependency import DependencyGraph
 from stelion.workspace.domain.environment import EnvironmentSpec, merge_environments
@@ -226,11 +227,7 @@ def test_targeted_generation_respects_selected_artifact(tmp_path: Path) -> None:
     graph = DependencyGraph()
     environment = EnvironmentSpec(name="dev")
 
-    results = generate_all(
-        manifest=manifest,
-        inventory=inventory,
-        graph=graph,
-        environment=environment,
+    services = GenerationServices(
         render_workspace_file=lambda *_: "workspace\n",
         render_projects_yaml=lambda *_: "projects\n",
         render_dependency_yaml=lambda *_: "dependencies\n",
@@ -238,6 +235,13 @@ def test_targeted_generation_respects_selected_artifact(tmp_path: Path) -> None:
         writer=LocalFileWriter(),
         reader=LocalFileReader(),
         hasher=SHA256Hasher(),
+    )
+    results = generate_all(
+        manifest=manifest,
+        inventory=inventory,
+        graph=graph,
+        environment=environment,
+        services=services,
         selected_targets=(GenerationArtifact.PROJECTS,),
     )
 
