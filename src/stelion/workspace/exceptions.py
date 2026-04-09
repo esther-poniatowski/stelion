@@ -1,4 +1,22 @@
-"""Workspace-specific exception types."""
+"""Workspace-specific exception types.
+
+Classes
+-------
+WorkspaceError
+    Base exception for workspace application and infrastructure failures.
+ManifestValidationError
+    Raised when a workspace manifest is structurally invalid.
+ProjectMetadataParseError
+    Raised when project metadata cannot be parsed from pyproject.toml.
+EnvironmentParseError
+    Raised when environment.yml exists but cannot be parsed.
+BootstrapError
+    Raised when bootstrapping a new project cannot proceed.
+SyncError
+    Raised when submodule synchronization cannot proceed.
+ComparisonError
+    Raised when a comparison operation cannot proceed.
+"""
 
 
 class WorkspaceError(Exception):

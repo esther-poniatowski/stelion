@@ -15,7 +15,7 @@ def load_manifest(path: Path) -> WorkspaceManifest:
 
     Parameters
     ----------
-    path
+    path : Path
         Absolute or relative path to ``stelion.yml``.
 
     Returns

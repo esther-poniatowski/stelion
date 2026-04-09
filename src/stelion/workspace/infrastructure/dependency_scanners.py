@@ -1,4 +1,12 @@
-"""Concrete dependency scanners used by the workspace graph builder."""
+"""Concrete dependency scanners used by the workspace graph builder.
+
+Classes
+-------
+EditablePipDependencyScanner
+    Detect editable pip dependencies from environment.yml files.
+GitmodulesDependencyScanner
+    Detect git submodule dependencies.
+"""
 
 from __future__ import annotations
 
@@ -15,7 +23,22 @@ def _extract_editable_pip_edges(
     project_name: str,
     all_project_names: set[str],
 ) -> list[DependencyEdge]:
-    """Extract editable pip dependency edges from an environment spec."""
+    """Extract editable pip dependency edges from an environment spec.
+
+    Parameters
+    ----------
+    env : EnvironmentSpec
+        Parsed Conda environment specification.
+    project_name : str
+        Name of the project owning the environment.
+    all_project_names : set[str]
+        Known project names in the ecosystem.
+
+    Returns
+    -------
+    list[DependencyEdge]
+        Edges for editable pip installs referencing ecosystem projects.
+    """
     edges: list[DependencyEdge] = []
     for pip_dep in env.pip_dependencies:
         stripped = pip_dep.strip()
@@ -34,7 +57,18 @@ def _extract_editable_pip_edges(
 
 
 class EditablePipDependencyScanner:
-    """Detect editable pip dependencies from environment.yml files."""
+    """Detect editable pip dependencies from environment.yml files.
+
+    Parameters
+    ----------
+    env_reader : EnvironmentReader
+        Reader used to load environment specs from disk.
+
+    Attributes
+    ----------
+    _env_reader : EnvironmentReader
+        Reader used to load environment specs from disk.
+    """
 
     def __init__(self, env_reader: EnvironmentReader) -> None:
         self._env_reader = env_reader
@@ -45,6 +79,22 @@ class EditablePipDependencyScanner:
         project_dir: Path,
         all_project_names: set[str],
     ) -> list[DependencyEdge]:
+        """Scan a project directory for editable pip dependency edges.
+
+        Parameters
+        ----------
+        project_name : str
+            Name of the project to scan.
+        project_dir : Path
+            Root directory of the project.
+        all_project_names : set[str]
+            Known project names in the ecosystem.
+
+        Returns
+        -------
+        list[DependencyEdge]
+            Detected editable pip dependency edges.
+        """
         env = self._env_reader.read(project_dir)
         if env is None:
             return []
@@ -56,7 +106,22 @@ class EditablePipDependencyScanner:
         env_spec: EnvironmentSpec | None,
         all_project_names: set[str],
     ) -> list[DependencyEdge]:
-        """Scan using a pre-read environment spec instead of reading from disk."""
+        """Scan using a pre-read environment spec instead of reading from disk.
+
+        Parameters
+        ----------
+        project_name : str
+            Name of the project to scan.
+        env_spec : EnvironmentSpec | None
+            Pre-read environment spec, or ``None`` to skip.
+        all_project_names : set[str]
+            Known project names in the ecosystem.
+
+        Returns
+        -------
+        list[DependencyEdge]
+            Detected editable pip dependency edges.
+        """
         if env_spec is None:
             return []
         return _extract_editable_pip_edges(env_spec, project_name, all_project_names)
@@ -71,6 +136,22 @@ class GitmodulesDependencyScanner:
         project_dir: Path,
         all_project_names: set[str],
     ) -> list[DependencyEdge]:
+        """Scan a project for git submodule dependency edges.
+
+        Parameters
+        ----------
+        project_name : str
+            Name of the project to scan.
+        project_dir : Path
+            Root directory of the project.
+        all_project_names : set[str]
+            Known project names in the ecosystem.
+
+        Returns
+        -------
+        list[DependencyEdge]
+            Detected submodule dependency edges.
+        """
         edges = scan_gitmodules(project_dir, all_project_names)
         return [
             DependencyEdge(

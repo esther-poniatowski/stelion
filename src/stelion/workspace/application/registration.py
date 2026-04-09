@@ -2,6 +2,22 @@
 
 Registers an existing project into workspace artifacts without regenerating
 everything. Used for copy-pasted, imported, or manually created projects.
+
+Classes
+-------
+RegistrationResult
+    Outcome of registering a project.
+ExecuteRegistrationResult
+    Full outcome of registering and regenerating workspace artifacts.
+
+Functions
+---------
+register_project
+    Extract metadata from a project directory for registration.
+apply_registration
+    Return the manifest state needed to include a project in the workspace.
+execute_registration
+    Full registration use-case: inspect, update manifest, regenerate artifacts.
 """
 
 from __future__ import annotations
@@ -20,7 +36,17 @@ from .protocols import GenerationServices, MetadataExtractor
 
 @dataclass(frozen=True)
 class RegistrationResult:
-    """Outcome of registering a project."""
+    """Outcome of registering a project.
+
+    Attributes
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest after registration (may be unchanged).
+    project : ProjectMetadata
+        Metadata of the registered project.
+    manifest_updated : bool
+        Whether the manifest was modified to include the project.
+    """
 
     manifest: WorkspaceManifest
     project: ProjectMetadata
@@ -29,7 +55,19 @@ class RegistrationResult:
 
 @dataclass(frozen=True)
 class ExecuteRegistrationResult:
-    """Full outcome of registering and regenerating workspace artifacts."""
+    """Full outcome of registering and regenerating workspace artifacts.
+
+    Attributes
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest after registration.
+    project : ProjectMetadata
+        Metadata of the registered project.
+    manifest_updated : bool
+        Whether the manifest was modified to include the project.
+    generated : tuple[GenerationResult, ...]
+        Results of regenerating workspace artifacts.
+    """
 
     manifest: WorkspaceManifest
     project: ProjectMetadata
@@ -45,6 +83,18 @@ def register_project(
 
     The caller (CLI adapter) is responsible for updating the workspace file,
     projects index, and dependency graph with the returned metadata.
+
+    Parameters
+    ----------
+    project_dir : Path
+        Absolute path to the project directory.
+    extractor : MetadataExtractor
+        Infrastructure extractor for project metadata.
+
+    Returns
+    -------
+    ProjectMetadata
+        Extracted project metadata.
     """
     if not project_dir.is_dir():
         raise FileNotFoundError(f"Project directory does not exist: {project_dir}")
@@ -57,7 +107,22 @@ def apply_registration(
     inventory: ProjectInventory,
     project: ProjectMetadata,
 ) -> RegistrationResult:
-    """Return the manifest state needed to include *project* in the workspace."""
+    """Return the manifest state needed to include *project* in the workspace.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Current workspace manifest.
+    inventory : ProjectInventory
+        Current project inventory.
+    project : ProjectMetadata
+        Project to register.
+
+    Returns
+    -------
+    RegistrationResult
+        Updated manifest and registration status.
+    """
     existing = inventory.by_name().get(project.name)
     if existing is not None and existing.path.resolve() != project.path.resolve():
         raise WorkspaceError(
@@ -97,6 +162,28 @@ def execute_registration(
     registered (its path is in the manifest's extra_paths), the manifest is
     used as-is. Otherwise, a discovery pass determines whether the manifest
     needs updating before the single context build.
+
+    Parameters
+    ----------
+    manifest_path : Path
+        Path to the manifest file on disk.
+    project_dir : Path
+        Path to the project directory to register.
+    manifest : WorkspaceManifest
+        Current workspace manifest.
+    extractor : MetadataExtractor
+        Infrastructure extractor for project metadata.
+    discover : Callable[[WorkspaceManifest], ProjectInventory]
+        Callable to discover projects from a manifest.
+    build_context_and_generate : Callable[[WorkspaceManifest], tuple[ProjectInventory, tuple[GenerationResult, ...]]]
+        Callable to build the workspace context and generate artifacts.
+    persist_manifest : Callable[[Path, WorkspaceManifest], None]
+        Callable to write the manifest to disk.
+
+    Returns
+    -------
+    ExecuteRegistrationResult
+        Full outcome including manifest update and generated artifacts.
     """
     project = register_project(project_dir.resolve(), extractor)
     resolved_project_path = project.path.resolve()

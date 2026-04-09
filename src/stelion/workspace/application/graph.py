@@ -25,6 +25,20 @@ def build_dependency_graph(
     Scans each project for editable pip installs in ``environment.yml``
     and git submodule relationships, then merges with manually declared
     edges from the manifest.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest with dependency configuration.
+    inventory : ProjectInventory
+        All discovered projects.
+    scanners : tuple[DependencyScanner, ...]
+        Infrastructure scanners for detecting dependency edges.
+
+    Returns
+    -------
+    DependencyGraph
+        Combined graph of detected and manual dependency edges.
     """
     all_names = {p.name for p in inventory.projects}
     detected: list[DependencyEdge] = []

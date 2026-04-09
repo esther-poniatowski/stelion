@@ -1,4 +1,10 @@
-"""Filesystem tree scanner for cross-project comparison."""
+"""Filesystem tree scanner for cross-project comparison.
+
+Classes
+-------
+LocalTreeScanner
+    Scan a project directory and return a TreeSnapshot.
+"""
 
 from __future__ import annotations
 
@@ -25,6 +31,26 @@ class LocalTreeScanner:
         *,
         project_name: str | None = None,
     ) -> TreeSnapshot:
+        """Scan a project directory and return a tree snapshot.
+
+        Parameters
+        ----------
+        project_dir : Path
+            Root directory of the project.
+        subtree : str | None
+            Optional subdirectory to restrict the scan to.
+        include : tuple[str, ...]
+            Glob patterns for files to include (empty means all).
+        exclude : tuple[str, ...]
+            Glob patterns for entries to skip.
+        project_name : str | None
+            Override for the project key (defaults to directory name).
+
+        Returns
+        -------
+        TreeSnapshot
+            Snapshot of the scanned file tree.
+        """
         project_key = project_name or project_dir.name
         root = project_dir / subtree if subtree else project_dir
         base = root if subtree else project_dir
@@ -72,5 +98,18 @@ class LocalTreeScanner:
 
 
 def _matches_any(name: str, patterns: tuple[str, ...]) -> bool:
-    """True if *name* matches any of the given glob patterns."""
+    """True if *name* matches any of the given glob patterns.
+
+    Parameters
+    ----------
+    name : str
+        File or directory name to test.
+    patterns : tuple[str, ...]
+        Glob patterns to match against.
+
+    Returns
+    -------
+    bool
+        ``True`` if *name* matches at least one pattern.
+    """
     return any(fnmatch.fnmatch(name, p) for p in patterns)

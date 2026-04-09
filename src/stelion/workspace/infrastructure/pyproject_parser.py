@@ -1,4 +1,10 @@
-"""Extract ProjectMetadata from a project's pyproject.toml."""
+"""Extract ProjectMetadata from a project's pyproject.toml.
+
+Classes
+-------
+PyprojectExtractor
+    Read pyproject.toml and produce a ProjectMetadata instance.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +30,16 @@ class PyprojectExtractor:
         derived from it fall back to their defaults; fields derivable from the
         filesystem (``has_git``, ``languages``, README description) are still
         populated normally.
+
+        Parameters
+        ----------
+        project_dir : Path
+            Root directory of the project to inspect.
+
+        Returns
+        -------
+        ProjectMetadata
+            Extracted metadata, possibly with degraded status.
         """
         has_git = (project_dir / ".git").is_dir()
         pyproject_path = project_dir / "pyproject.toml"
@@ -76,7 +92,18 @@ class PyprojectExtractor:
 
 
 def _readme_description(project_dir: Path) -> str:
-    """Extract the first descriptive line from a project README as fallback."""
+    """Extract the first descriptive line from a project README as fallback.
+
+    Parameters
+    ----------
+    project_dir : Path
+        Root directory of the project.
+
+    Returns
+    -------
+    str
+        First non-header, non-comment line, or empty string.
+    """
     readme = project_dir / "README.md"
     if not readme.exists():
         return ""
@@ -107,7 +134,18 @@ _EXTENSION_MAP: dict[str, str] = {
 
 
 def _detect_languages(project_dir: Path) -> tuple[str, ...]:
-    """Detect programming languages from source file extensions."""
+    """Detect programming languages from source file extensions.
+
+    Parameters
+    ----------
+    project_dir : Path
+        Root directory of the project to inspect.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Language names found via file extension matching.
+    """
     search_dir = project_dir / "src" if (project_dir / "src").is_dir() else project_dir
     found = []
     for ext, lang in _EXTENSION_MAP.items():

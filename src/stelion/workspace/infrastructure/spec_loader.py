@@ -1,4 +1,10 @@
-"""Loader for comparison instruction files."""
+"""Loader for comparison instruction files.
+
+Classes
+-------
+YamlSpecLoader
+    Load and validate a comparison instruction YAML file.
+"""
 
 from __future__ import annotations
 
@@ -23,6 +29,18 @@ class YamlSpecLoader:
     """
 
     def load(self, path: Path) -> ComparisonSpec:
+        """Load and validate a comparison spec from a YAML file.
+
+        Parameters
+        ----------
+        path : Path
+            Path to the instruction YAML file.
+
+        Returns
+        -------
+        ComparisonSpec
+            Typed comparison specification.
+        """
         try:
             text = path.read_text(encoding="utf-8")
         except OSError as exc:
@@ -39,7 +57,20 @@ class YamlSpecLoader:
 
 
 def _parse_spec(raw: dict[str, Any], source: Path) -> ComparisonSpec:
-    """Convert a raw YAML dict into a typed :class:`ComparisonSpec`."""
+    """Convert a raw YAML dict into a typed :class:`ComparisonSpec`.
+
+    Parameters
+    ----------
+    raw : dict[str, Any]
+        Parsed YAML mapping from the instruction file.
+    source : Path
+        Path to the instruction file, used in error messages.
+
+    Returns
+    -------
+    ComparisonSpec
+        Typed comparison specification.
+    """
     project_names = _parse_string_sequence(raw.get("projects", ()), "projects")
     mode = _parse_required_string(raw.get("mode"), "mode")
 

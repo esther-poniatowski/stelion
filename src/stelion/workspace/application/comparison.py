@@ -1,4 +1,12 @@
-"""Application use-cases for cross-project comparison."""
+"""Application use-cases for cross-project comparison.
+
+Functions
+---------
+compare_trees
+    Scan each project's file tree and match nodes hierarchically.
+compare_files
+    Compare specific files across projects.
+"""
 
 from __future__ import annotations
 
@@ -35,7 +43,20 @@ _STRUCTURED_EXTENSIONS: frozenset[str] = frozenset({".toml", ".yaml", ".yml", ".
 
 
 def _is_structured(path: str, parser_hint: str | None) -> bool:
-    """Determine whether a file should be parsed as structured data."""
+    """Determine whether a file should be parsed as structured data.
+
+    Parameters
+    ----------
+    path : str
+        File path (used to extract the extension).
+    parser_hint : str | None
+        Explicit parser hint; when set, the file is always structured.
+
+    Returns
+    -------
+    bool
+        True if the file should be parsed as structured data.
+    """
     if parser_hint is not None:
         return True
     suffix = Path(path).suffix.lower()
@@ -52,7 +73,22 @@ def compare_trees(
     target: TreeTarget,
     scanner: TreeScanner,
 ) -> TreeReport:
-    """Scan each project's file tree and match nodes hierarchically."""
+    """Scan each project's file tree and match nodes hierarchically.
+
+    Parameters
+    ----------
+    projects : tuple[ProjectMetadata, ...]
+        Projects to compare.
+    target : TreeTarget
+        Target specification for tree comparison.
+    scanner : TreeScanner
+        Infrastructure scanner for file-tree snapshots.
+
+    Returns
+    -------
+    TreeReport
+        Matched nodes and summary statistics.
+    """
     all_names = frozenset(p.name for p in projects)
     snapshots = tuple(
         scanner.scan(
@@ -90,6 +126,22 @@ def compare_files(
     For each :class:`FileTargetEntry`, resolves the actual path per project,
     reads content via *reader*, and dispatches to structured or unstructured
     comparison.  Per-file errors are captured in the result, not raised.
+
+    Parameters
+    ----------
+    projects : tuple[ProjectMetadata, ...]
+        Projects to compare.
+    target : FileTarget
+        Target specification with file entries and options.
+    reader : FileReader
+        Infrastructure reader for file content.
+    parser : StructuredParser
+        Infrastructure parser for structured files.
+
+    Returns
+    -------
+    FileReport
+        Per-file diff results and summary statistics.
     """
     all_names = frozenset(p.name for p in projects)
     if target.reference_project is not None and target.reference_project not in all_names:
@@ -127,7 +179,36 @@ def _compare_single_file(
     reader: FileReader,
     parser: StructuredParser,
 ) -> FileDiffResult:
-    """Compare one logical file across all projects."""
+    """Compare one logical file across all projects.
+
+    Parameters
+    ----------
+    projects : tuple[ProjectMetadata, ...]
+        Projects to compare.
+    canonical : str
+        Canonical relative path of the file.
+    overrides : Mapping[str, str]
+        Per-project path overrides.
+    selectors : tuple[str, ...]
+        Field selectors for structured comparison.
+    parser_hint : str | None
+        Explicit parser hint for structured parsing.
+    granularity : FileGranularity
+        Level of detail for unstructured comparison.
+    reference_project : str | None
+        Reference project name for detail-level diffs.
+    all_names : frozenset[str]
+        All project names in the comparison set.
+    reader : FileReader
+        Infrastructure reader for file content.
+    parser : StructuredParser
+        Infrastructure parser for structured files.
+
+    Returns
+    -------
+    FileDiffResult
+        Comparison result for the single file.
+    """
     actual_paths: dict[str, str] = {}
     contents: dict[str, str] = {}
     issues: list[str] = []
@@ -178,7 +259,34 @@ def _diff_structured_file(
     parser: StructuredParser,
     issues: list[str],
 ) -> FileDiffResult:
-    """Parse and diff a structured file."""
+    """Parse and diff a structured file.
+
+    Parameters
+    ----------
+    canonical : str
+        Canonical relative path of the file.
+    actual_paths : dict[str, str]
+        Per-project actual paths.
+    present_in : frozenset[str]
+        Projects that have the file.
+    absent_from : frozenset[str]
+        Projects missing the file.
+    contents : dict[str, str]
+        Raw file content keyed by project name.
+    selectors : tuple[str, ...]
+        Field selectors to restrict comparison.
+    parser_hint : str | None
+        Explicit parser hint.
+    parser : StructuredParser
+        Infrastructure parser.
+    issues : list[str]
+        Accumulated issue messages.
+
+    Returns
+    -------
+    FileDiffResult
+        Structured comparison result.
+    """
     extension = Path(canonical).suffix.lower()
     parsed: dict[str, dict] = {}
     for project, text in contents.items():
@@ -212,7 +320,32 @@ def _diff_unstructured_file(
     reference_project: str | None,
     issues: list[str],
 ) -> FileDiffResult:
-    """Group variants and compute similarity for an unstructured file."""
+    """Group variants and compute similarity for an unstructured file.
+
+    Parameters
+    ----------
+    canonical : str
+        Canonical relative path of the file.
+    actual_paths : dict[str, str]
+        Per-project actual paths.
+    present_in : frozenset[str]
+        Projects that have the file.
+    absent_from : frozenset[str]
+        Projects missing the file.
+    contents : dict[str, str]
+        Raw file content keyed by project name.
+    granularity : FileGranularity
+        Level of detail for comparison.
+    reference_project : str | None
+        Reference project name for detail-level diffs.
+    issues : list[str]
+        Accumulated issue messages.
+
+    Returns
+    -------
+    FileDiffResult
+        Unstructured comparison result.
+    """
     variants = group_variants(contents)
     similarities = compute_pairwise_similarity(contents)
     reference_diffs = ()

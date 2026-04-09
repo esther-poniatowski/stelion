@@ -1,4 +1,63 @@
-"""Immutable domain models and pure functions for cross-project comparison."""
+"""Immutable domain models and pure functions for cross-project comparison.
+
+Classes
+-------
+MatchMethod
+    How correspondence between nodes was established.
+ContentKind
+    Dispatches the comparison strategy for file content.
+FileGranularity
+    Level of detail for file content comparison.
+TreeTarget
+    Target specification for architecture (tree) comparison.
+FileTargetEntry
+    One logical file to compare across projects.
+FileTarget
+    Target specification for file content comparison.
+ComparisonSpec
+    Full declarative specification for a comparison operation.
+TreeEntry
+    A single node within a project's file tree.
+TreeSnapshot
+    Complete file-tree scan for one project.
+NodeMatch
+    An N-way mapping of one logical node across projects.
+TreeSummary
+    Aggregate counts for a tree comparison.
+TreeReport
+    Full architecture comparison result.
+FieldDiff
+    One structured field compared across N projects.
+VariantGroup
+    Projects with identical content for an unstructured file.
+PairwiseSimilarity
+    Similarity score between two projects for an unstructured file.
+ReferenceDiff
+    Unified diff against the reference project for one compared file.
+FileDiffResult
+    Comparison result for one logical file across projects.
+FileSummary
+    Aggregate counts for a file comparison.
+FileReport
+    Full file comparison result.
+
+Functions
+---------
+match_tree_nodes
+    Match file-tree nodes across projects hierarchically.
+diff_structured
+    Compare parsed structured data field by field across projects.
+group_variants
+    Group projects by identical content.
+compute_pairwise_similarity
+    Compute SequenceMatcher ratio for every pair of projects.
+compute_reference_diffs
+    Compute unified diffs from the reference project to every other project.
+compute_tree_summary
+    Derive aggregate counts from matched nodes.
+compute_file_summary
+    Derive aggregate counts from file comparison results.
+"""
 
 from __future__ import annotations
 
@@ -44,7 +103,17 @@ class FileGranularity(StrEnum):
 
 @dataclass(frozen=True)
 class TreeTarget:
-    """Target specification for architecture (tree) comparison."""
+    """Target specification for architecture (tree) comparison.
+
+    Attributes
+    ----------
+    subtree : str | None
+        Relative path prefix to restrict the comparison scope.
+    include_patterns : tuple[str, ...]
+        Glob patterns for paths to include.
+    exclude_patterns : tuple[str, ...]
+        Glob patterns for paths to exclude.
+    """
 
     subtree: str | None = None
     include_patterns: tuple[str, ...] = ()
@@ -57,13 +126,13 @@ class FileTargetEntry:
 
     Attributes
     ----------
-    canonical
+    canonical : str
         The standard relative path (e.g. ``pyproject.toml``).
-    overrides
+    overrides : Mapping[str, str]
         Project-specific path remappings: ``{project_name: actual_path}``.
-    selectors
+    selectors : tuple[str, ...]
         Dotted field paths to compare for structured files (empty = all).
-    parser_hint
+    parser_hint : str | None
         Force a parser regardless of extension (e.g. ``"toml"``).
     """
 
@@ -78,7 +147,17 @@ class FileTargetEntry:
 
 @dataclass(frozen=True)
 class FileTarget:
-    """Target specification for file content comparison."""
+    """Target specification for file content comparison.
+
+    Attributes
+    ----------
+    entries : tuple[FileTargetEntry, ...]
+        Logical files to compare.
+    granularity : FileGranularity
+        Level of detail for the comparison.
+    reference_project : str | None
+        Project used as the baseline for detail-level diffs.
+    """
 
     entries: tuple[FileTargetEntry, ...]
     granularity: FileGranularity = FileGranularity.SURVEY
@@ -103,7 +182,14 @@ class ComparisonSpec:
 
     Constructed from an instruction file or from CLI arguments.
     ``target`` is either a :class:`TreeTarget` or a :class:`FileTarget`
-    — the tagged union makes invalid states unrepresentable.
+    --- the tagged union makes invalid states unrepresentable.
+
+    Attributes
+    ----------
+    project_names : tuple[str, ...]
+        Names of projects to compare.
+    target : TreeTarget | FileTarget
+        What to compare (architecture tree or file contents).
     """
 
     project_names: tuple[str, ...]
@@ -117,7 +203,17 @@ class ComparisonSpec:
 
 @dataclass(frozen=True)
 class TreeEntry:
-    """A single node within a project's file tree."""
+    """A single node within a project's file tree.
+
+    Attributes
+    ----------
+    relative_path : str
+        Forward-slash path relative to the project root.
+    project : str
+        Name of the project this entry belongs to.
+    is_directory : bool
+        Whether the node is a directory.
+    """
 
     relative_path: str
     project: str
@@ -126,7 +222,17 @@ class TreeEntry:
 
 @dataclass(frozen=True)
 class TreeSnapshot:
-    """Complete file-tree scan for one project."""
+    """Complete file-tree scan for one project.
+
+    Attributes
+    ----------
+    project : str
+        Project name.
+    root : str
+        Filesystem root used for the scan.
+    entries : tuple[TreeEntry, ...]
+        All nodes discovered in the tree.
+    """
 
     project: str
     root: str
@@ -139,6 +245,25 @@ class NodeMatch:
 
     Presence is explicit: ``present_in`` lists projects that contain this
     node, ``absent_from`` lists selected projects that do not.
+
+    Attributes
+    ----------
+    canonical_path : str
+        Normalized path used as the canonical key.
+    resolved : Mapping[str, str]
+        Mapping from project name to actual relative path.
+    present_in : frozenset[str]
+        Projects that contain this node.
+    absent_from : frozenset[str]
+        Selected projects that lack this node.
+    method : MatchMethod
+        How correspondence was established.
+    similarity : float
+        Match confidence score (1.0 for exact).
+    is_directory : bool
+        Whether the node is a directory.
+    children : tuple[NodeMatch, ...]
+        Recursively matched child nodes (directories only).
     """
 
     canonical_path: str
@@ -156,7 +281,23 @@ class NodeMatch:
 
 @dataclass(frozen=True)
 class TreeSummary:
-    """Aggregate counts for a tree comparison."""
+    """Aggregate counts for a tree comparison.
+
+    Attributes
+    ----------
+    total_nodes : int
+        Total number of matched logical nodes.
+    in_all : int
+        Nodes present in every compared project.
+    in_some : int
+        Nodes present in more than one but not all projects.
+    in_one : int
+        Nodes unique to a single project.
+    directories_matched : int
+        Number of directory nodes.
+    files_matched : int
+        Number of file nodes.
+    """
 
     total_nodes: int
     in_all: int
@@ -168,7 +309,19 @@ class TreeSummary:
 
 @dataclass(frozen=True)
 class TreeReport:
-    """Full architecture comparison result."""
+    """Full architecture comparison result.
+
+    Attributes
+    ----------
+    projects : tuple[str, ...]
+        Names of the compared projects.
+    subtree : str | None
+        Subtree prefix that was compared, or ``None`` for the full tree.
+    matches : tuple[NodeMatch, ...]
+        Top-level matched nodes.
+    summary : TreeSummary
+        Aggregate counts.
+    """
 
     projects: tuple[str, ...]
     subtree: str | None
@@ -185,8 +338,15 @@ class TreeReport:
 class FieldDiff:
     """One structured field compared across N projects.
 
-    Status is derived from the values: all equal → identical, some ``None``
-    → partial presence, all different → diverged.
+    Status is derived from the values: all equal means identical, some
+    ``None`` means partial presence, all different means diverged.
+
+    Attributes
+    ----------
+    path : str
+        Dotted field path within the structured document.
+    values : Mapping[str, str | None]
+        Per-project stringified values (``None`` if absent).
     """
 
     path: str
@@ -197,19 +357,41 @@ class FieldDiff:
 
     @property
     def is_identical(self) -> bool:
-        """All projects have the same non-None value."""
+        """All projects have the same non-None value.
+
+        Returns
+        -------
+        bool
+            True when every project has the field and all values are equal.
+        """
         vals = [v for v in self.values.values() if v is not None]
         return len(vals) == len(self.values) and len(set(vals)) == 1
 
     @property
     def is_partial(self) -> bool:
-        """The field is absent in at least one project."""
+        """The field is absent in at least one project.
+
+        Returns
+        -------
+        bool
+            True when at least one project lacks this field.
+        """
         return any(v is None for v in self.values.values())
 
 
 @dataclass(frozen=True)
 class VariantGroup:
-    """Projects with identical content for an unstructured file."""
+    """Projects with identical content for an unstructured file.
+
+    Attributes
+    ----------
+    projects : frozenset[str]
+        Project names sharing the same content.
+    digest : str
+        Truncated SHA-256 hex digest of the content.
+    line_count : int
+        Number of lines in the content.
+    """
 
     projects: frozenset[str]
     digest: str
@@ -218,7 +400,17 @@ class VariantGroup:
 
 @dataclass(frozen=True)
 class PairwiseSimilarity:
-    """Similarity score between two projects for an unstructured file."""
+    """Similarity score between two projects for an unstructured file.
+
+    Attributes
+    ----------
+    project_a : str
+        First project name.
+    project_b : str
+        Second project name.
+    score : float
+        SequenceMatcher ratio between the two files.
+    """
 
     project_a: str
     project_b: str
@@ -227,7 +419,15 @@ class PairwiseSimilarity:
 
 @dataclass(frozen=True)
 class ReferenceDiff:
-    """Unified diff against the reference project for one compared file."""
+    """Unified diff against the reference project for one compared file.
+
+    Attributes
+    ----------
+    project : str
+        Name of the project being compared to the reference.
+    diff_lines : tuple[str, ...]
+        Lines of the unified diff output.
+    """
 
     project: str
     diff_lines: tuple[str, ...]
@@ -235,7 +435,33 @@ class ReferenceDiff:
 
 @dataclass(frozen=True)
 class FileDiffResult:
-    """Comparison result for one logical file across projects."""
+    """Comparison result for one logical file across projects.
+
+    Attributes
+    ----------
+    canonical_path : str
+        Normalized file path used as the comparison key.
+    actual_paths : Mapping[str, str]
+        Per-project resolved file paths.
+    present_in : frozenset[str]
+        Projects where the file exists.
+    absent_from : frozenset[str]
+        Projects where the file is missing.
+    content_kind : ContentKind
+        Whether the file was compared as structured or unstructured.
+    field_diffs : tuple[FieldDiff, ...]
+        Per-field diffs (structured files only).
+    variants : tuple[VariantGroup, ...]
+        Content groups (unstructured files only).
+    similarities : tuple[PairwiseSimilarity, ...]
+        Pairwise similarity scores (unstructured files only).
+    reference_project : str | None
+        Baseline project for detail-level diffs.
+    reference_diffs : tuple[ReferenceDiff, ...]
+        Unified diffs against the reference project.
+    issue : str
+        Error message if comparison failed for this file.
+    """
 
     canonical_path: str
     actual_paths: Mapping[str, str]
@@ -254,7 +480,13 @@ class FileDiffResult:
 
     @property
     def is_identical(self) -> bool:
-        """All projects have identical content (no absent, no differences)."""
+        """All projects have identical content (no absent, no differences).
+
+        Returns
+        -------
+        bool
+            True when no project is missing the file and all content matches.
+        """
         if self.issue or self.absent_from:
             return False
         if self.content_kind == ContentKind.STRUCTURED:
@@ -264,7 +496,19 @@ class FileDiffResult:
 
 @dataclass(frozen=True)
 class FileSummary:
-    """Aggregate counts for a file comparison."""
+    """Aggregate counts for a file comparison.
+
+    Attributes
+    ----------
+    files_compared : int
+        Total number of logical files compared.
+    fully_identical : int
+        Files identical across all projects.
+    with_differences : int
+        Files with at least one difference.
+    with_errors : int
+        Files that could not be compared due to errors.
+    """
 
     files_compared: int
     fully_identical: int
@@ -274,7 +518,17 @@ class FileSummary:
 
 @dataclass(frozen=True)
 class FileReport:
-    """Full file comparison result."""
+    """Full file comparison result.
+
+    Attributes
+    ----------
+    projects : tuple[str, ...]
+        Names of the compared projects.
+    results : tuple[FileDiffResult, ...]
+        Per-file comparison results.
+    summary : FileSummary
+        Aggregate counts.
+    """
 
     projects: tuple[str, ...]
     results: tuple[FileDiffResult, ...]
@@ -296,7 +550,19 @@ def match_tree_nodes(
 
     Directories are matched first at each depth level, then files within
     matched directories.  Each level uses a three-pass strategy: exact
-    name → case-insensitive → fuzzy (above ``_FUZZY_THRESHOLD``).
+    name, case-insensitive, then fuzzy (above ``_FUZZY_THRESHOLD``).
+
+    Parameters
+    ----------
+    snapshots : tuple[TreeSnapshot, ...]
+        Per-project file-tree scans.
+    all_projects : frozenset[str]
+        Complete set of project names being compared.
+
+    Returns
+    -------
+    tuple[NodeMatch, ...]
+        Hierarchically matched nodes sorted by canonical path.
     """
     entries_by_project: dict[str, list[TreeEntry]] = {s.project: list(s.entries) for s in snapshots}
     return _match_at_level(entries_by_project, all_projects, prefix="")
@@ -307,7 +573,22 @@ def _match_at_level(
     all_projects: frozenset[str],
     prefix: str,
 ) -> tuple[NodeMatch, ...]:
-    """Recursively match nodes at a given directory level."""
+    """Recursively match nodes at a given directory level.
+
+    Parameters
+    ----------
+    entries_by_project : dict[str, list[TreeEntry]]
+        Remaining tree entries keyed by project name.
+    all_projects : frozenset[str]
+        Complete set of project names being compared.
+    prefix : str
+        Current directory path prefix.
+
+    Returns
+    -------
+    tuple[NodeMatch, ...]
+        Matched nodes at this level and below, sorted by canonical path.
+    """
     dir_entries: dict[str, dict[str, str]] = {}  # canonical -> {project: actual}
     file_entries: dict[str, dict[str, str]] = {}
 
@@ -356,10 +637,26 @@ def _three_pass_match(
     is_directory: bool,
     prefix: str = "",
 ) -> list[NodeMatch]:
-    """Three-pass matching: exact → case-insensitive → fuzzy.
+    """Three-pass matching: exact, case-insensitive, then fuzzy.
 
     *prefix* is prepended to basenames to produce full canonical paths
-    (e.g. prefix ``"docs"`` + name ``"guide.md"`` → ``"docs/guide.md"``).
+    (e.g. prefix ``"docs"`` + name ``"guide.md"`` gives ``"docs/guide.md"``).
+
+    Parameters
+    ----------
+    items : dict[str, dict[str, str]]
+        Basename to ``{project: actual_path}`` mapping.
+    all_projects : frozenset[str]
+        Complete set of project names being compared.
+    is_directory : bool
+        Whether the items are directories.
+    prefix : str
+        Parent directory path prepended to canonical names.
+
+    Returns
+    -------
+    list[NodeMatch]
+        Matched nodes produced by the three passes.
     """
     results: list[NodeMatch] = []
     remaining: dict[str, dict[str, str]] = dict(items)
@@ -431,7 +728,21 @@ def _best_fuzzy_cluster(
     unmatched: dict[str, dict[str, str]],
     used: set[str],
 ) -> tuple[str, frozenset[str], dict[str, str], float] | None:
-    """Build the strongest fuzzy cluster available across distinct projects."""
+    """Build the strongest fuzzy cluster available across distinct projects.
+
+    Parameters
+    ----------
+    unmatched : dict[str, dict[str, str]]
+        Remaining single-project entries to cluster.
+    used : set[str]
+        Names already consumed by a previous cluster.
+
+    Returns
+    -------
+    tuple[str, frozenset[str], dict[str, str], float] | None
+        ``(canonical, member_names, merged_resolved, avg_similarity)``
+        or ``None`` if no cluster exceeds the threshold.
+    """
     available = sorted(name for name in unmatched if name not in used)
     best_cluster: tuple[str, frozenset[str], dict[str, str], float] | None = None
 
@@ -473,7 +784,20 @@ def _is_better_fuzzy_cluster(
     candidate: tuple[str, frozenset[str], dict[str, str], float],
     incumbent: tuple[str, frozenset[str], dict[str, str], float] | None,
 ) -> bool:
-    """Prefer clusters with more projects, then higher average similarity."""
+    """Prefer clusters with more projects, then higher average similarity.
+
+    Parameters
+    ----------
+    candidate : tuple[str, frozenset[str], dict[str, str], float]
+        Cluster being evaluated.
+    incumbent : tuple[str, frozenset[str], dict[str, str], float] | None
+        Current best cluster, or ``None``.
+
+    Returns
+    -------
+    bool
+        True if *candidate* should replace *incumbent*.
+    """
     if incumbent is None:
         return True
     candidate_name, candidate_members, _candidate_resolved, candidate_score = candidate
@@ -492,7 +816,18 @@ def _is_better_fuzzy_cluster(
 
 
 def _single_project_name(resolved: Mapping[str, str]) -> str:
-    """Return the sole project key for a single-project node candidate."""
+    """Return the sole project key for a single-project node candidate.
+
+    Parameters
+    ----------
+    resolved : Mapping[str, str]
+        Single-entry mapping from project name to actual path.
+
+    Returns
+    -------
+    str
+        The project name.
+    """
     return next(iter(resolved))
 
 
@@ -519,7 +854,20 @@ def _make_match(
 
 
 def _is_direct_child(path: str, prefix: str) -> bool:
-    """True if *path* is an immediate child of *prefix*."""
+    """True if *path* is an immediate child of *prefix*.
+
+    Parameters
+    ----------
+    path : str
+        Forward-slash relative path to test.
+    prefix : str
+        Parent directory path (empty string for root).
+
+    Returns
+    -------
+    bool
+        Whether *path* is a direct child of *prefix*.
+    """
     if prefix:
         if not path.startswith(prefix + "/"):
             return False
@@ -530,7 +878,18 @@ def _is_direct_child(path: str, prefix: str) -> bool:
 
 
 def _basename(path: str) -> str:
-    """Return the last component of a forward-slash path."""
+    """Return the last component of a forward-slash path.
+
+    Parameters
+    ----------
+    path : str
+        Forward-slash delimited path.
+
+    Returns
+    -------
+    str
+        Final path component.
+    """
     return path.rsplit("/", 1)[-1]
 
 
@@ -547,10 +906,15 @@ def diff_structured(
 
     Parameters
     ----------
-    contents
+    contents : Mapping[str, dict]
         ``{project_name: parsed_dict}`` for each project that has this file.
-    selectors
+    selectors : tuple[str, ...]
         Dotted field paths to limit the comparison. Empty means compare all.
+
+    Returns
+    -------
+    tuple[FieldDiff, ...]
+        Per-field comparison results.
     """
     if selectors:
         return tuple(_diff_selected_fields(contents, selectors))
@@ -578,7 +942,18 @@ def _diff_selected_fields(
 
 
 def _collect_all_paths(contents: Mapping[str, dict]) -> set[str]:
-    """Enumerate all dotted paths across every project's parsed dict."""
+    """Enumerate all dotted paths across every project's parsed dict.
+
+    Parameters
+    ----------
+    contents : Mapping[str, dict]
+        Per-project parsed dictionaries.
+
+    Returns
+    -------
+    set[str]
+        Union of all dotted leaf paths found across projects.
+    """
     paths: set[str] = set()
     for data in contents.values():
         _walk_dict(data, "", paths)
@@ -595,7 +970,20 @@ def _walk_dict(d: dict, prefix: str, out: set[str]) -> None:
 
 
 def _resolve_dotted(d: dict, path: str) -> str | None:
-    """Walk a nested dict by dotted path. Returns ``None`` if absent."""
+    """Walk a nested dict by dotted path. Returns ``None`` if absent.
+
+    Parameters
+    ----------
+    d : dict
+        Nested dictionary to traverse.
+    path : str
+        Dotted key path (e.g. ``"tool.poetry.name"``).
+
+    Returns
+    -------
+    str | None
+        Stringified leaf value, or ``None`` if the path does not exist.
+    """
     parts = path.split(".")
     current: object = d
     for part in parts:
@@ -616,6 +1004,16 @@ def group_variants(contents: Mapping[str, str]) -> tuple[VariantGroup, ...]:
     """Group projects by identical content.
 
     Returns groups sorted by descending size (largest group first).
+
+    Parameters
+    ----------
+    contents : Mapping[str, str]
+        Per-project raw file content.
+
+    Returns
+    -------
+    tuple[VariantGroup, ...]
+        Groups sorted by descending member count.
     """
     by_digest: dict[str, tuple[set[str], int]] = {}
     for project, text in contents.items():
@@ -634,7 +1032,18 @@ def group_variants(contents: Mapping[str, str]) -> tuple[VariantGroup, ...]:
 def compute_pairwise_similarity(
     contents: Mapping[str, str],
 ) -> tuple[PairwiseSimilarity, ...]:
-    """Compute SequenceMatcher ratio for every pair of projects."""
+    """Compute SequenceMatcher ratio for every pair of projects.
+
+    Parameters
+    ----------
+    contents : Mapping[str, str]
+        Per-project raw file content.
+
+    Returns
+    -------
+    tuple[PairwiseSimilarity, ...]
+        Similarity scores for all unique project pairs.
+    """
     projects = sorted(contents.keys())
     results: list[PairwiseSimilarity] = []
     for i, a in enumerate(projects):
@@ -648,7 +1057,20 @@ def compute_reference_diffs(
     contents: Mapping[str, str],
     reference_project: str,
 ) -> tuple[ReferenceDiff, ...]:
-    """Compute unified diffs from the reference project to every other project."""
+    """Compute unified diffs from the reference project to every other project.
+
+    Parameters
+    ----------
+    contents : Mapping[str, str]
+        Per-project raw file content.
+    reference_project : str
+        Project name used as the diff baseline.
+
+    Returns
+    -------
+    tuple[ReferenceDiff, ...]
+        Unified diffs for each non-reference project.
+    """
     if reference_project not in contents:
         raise ValueError(f"Reference project {reference_project!r} has no readable content.")
 
@@ -679,7 +1101,20 @@ def compute_tree_summary(
     matches: tuple[NodeMatch, ...],
     all_projects: frozenset[str],
 ) -> TreeSummary:
-    """Derive aggregate counts from matched nodes."""
+    """Derive aggregate counts from matched nodes.
+
+    Parameters
+    ----------
+    matches : tuple[NodeMatch, ...]
+        Top-level matched nodes (children are counted recursively).
+    all_projects : frozenset[str]
+        Complete set of project names being compared.
+
+    Returns
+    -------
+    TreeSummary
+        Aggregate presence and type counts.
+    """
     total = 0
     in_all = 0
     in_some = 0
@@ -716,7 +1151,18 @@ def compute_tree_summary(
 
 
 def compute_file_summary(results: tuple[FileDiffResult, ...]) -> FileSummary:
-    """Derive aggregate counts from file comparison results."""
+    """Derive aggregate counts from file comparison results.
+
+    Parameters
+    ----------
+    results : tuple[FileDiffResult, ...]
+        Per-file comparison results.
+
+    Returns
+    -------
+    FileSummary
+        Counts of identical, different, and errored files.
+    """
     errors = sum(1 for r in results if r.issue)
     identical = sum(1 for r in results if r.is_identical)
     differences = sum(1 for r in results if not r.issue and not r.is_identical)

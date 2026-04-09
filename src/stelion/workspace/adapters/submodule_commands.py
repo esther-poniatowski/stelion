@@ -1,4 +1,10 @@
-"""Typer command group for submodule operations."""
+"""Typer command group for submodule operations.
+
+Functions
+---------
+submodule_sync
+    Propagate a commit across all replicas of a submodule dependency.
+"""
 
 from __future__ import annotations
 
@@ -55,7 +61,25 @@ def submodule_sync(
         help="Branch name (for remote origin).",
     ),
 ) -> None:
-    """Propagate a commit across all replicas of a submodule dependency."""
+    """Propagate a commit across all replicas of a submodule dependency.
+
+    Parameters
+    ----------
+    dependency : str
+        Name of the dependency to synchronize.
+    from_source : str
+        Sync source: ``"local"``, ``"remote"``, or a superproject name.
+    no_commit : bool
+        Update submodule pointers without committing.
+    dry_run : bool
+        Preview updates without applying.
+    manifest : Path
+        Path to the workspace manifest.
+    remote : str
+        Remote name (for remote origin).
+    branch : str
+        Branch name (for remote origin).
+    """
     services = create_services()
     m = resolve_manifest(Path(manifest))
     ctx = build_workspace_context(m, services)
@@ -87,7 +111,18 @@ def submodule_sync(
 
 
 def _parse_origin(from_source: str) -> tuple[SyncOrigin, str | None]:
-    """Classify the --from value into a SyncOrigin and optional superproject name."""
+    """Classify the ``--from`` value into a SyncOrigin and optional superproject name.
+
+    Parameters
+    ----------
+    from_source : str
+        Raw ``--from`` CLI value.
+
+    Returns
+    -------
+    tuple[SyncOrigin, str | None]
+        Parsed origin kind and optional superproject name.
+    """
     if from_source == "local":
         return SyncOrigin.LOCAL, None
     if from_source == "remote":
@@ -96,7 +131,15 @@ def _parse_origin(from_source: str) -> tuple[SyncOrigin, str | None]:
 
 
 def _print_sync_result(result: SyncResult, dry_run: bool) -> None:
-    """Print sync outcomes as a Rich table."""
+    """Print sync outcomes as a Rich table.
+
+    Parameters
+    ----------
+    result : SyncResult
+        Aggregated sync outcomes for all replicas.
+    dry_run : bool
+        Whether the operation was a dry run (affects status labels).
+    """
     title = "Submodule Sync (dry run)" if dry_run else "Submodule Sync"
     table = Table(title=title)
     table.add_column("Replica")

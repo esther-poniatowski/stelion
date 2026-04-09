@@ -1,4 +1,12 @@
-"""Typer commands for cross-project comparison."""
+"""Typer commands for cross-project comparison.
+
+Functions
+---------
+compare_tree
+    Compare directory structures across projects.
+compare_files_cmd
+    Compare specific files across projects.
+"""
 
 from __future__ import annotations
 
@@ -57,6 +65,18 @@ def _resolve_format(fmt: str, output: str | None) -> str:
 
     When ``--output`` targets a ``.yml`` or ``.yaml`` file, YAML is used
     regardless of ``--format``.  Otherwise the explicit ``--format`` wins.
+
+    Parameters
+    ----------
+    fmt : str
+        Requested output format (e.g. ``"table"`` or ``"yaml"``).
+    output : str | None
+        Output file path, or ``None`` for stdout.
+
+    Returns
+    -------
+    str
+        Effective format string.
     """
     if output is not None:
         suffix = Path(output).suffix.lower()
@@ -66,7 +86,15 @@ def _resolve_format(fmt: str, output: str | None) -> str:
 
 
 def _write_output(content: str, output: str) -> None:
-    """Write *content* to *output* and print a confirmation to stderr."""
+    """Write *content* to *output* and print a confirmation to stderr.
+
+    Parameters
+    ----------
+    content : str
+        Text to write.
+    output : str
+        Destination file path.
+    """
     path = Path(output)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
@@ -74,7 +102,18 @@ def _write_output(content: str, output: str) -> None:
 
 
 def _capture_rich(*renderables: object) -> str:
-    """Render Rich objects to plain text (no ANSI codes)."""
+    """Render Rich objects to plain text (no ANSI codes).
+
+    Parameters
+    ----------
+    *renderables : object
+        Rich renderable objects to capture.
+
+    Returns
+    -------
+    str
+        Plain-text rendering of the objects.
+    """
     buf = StringIO()
     file_console = Console(file=buf, force_terminal=False, width=200)
     for r in renderables:
@@ -86,7 +125,15 @@ def _check_mutual_exclusivity(
     instruction: str | None,
     **cli_options: object,
 ) -> None:
-    """Fail if ``--instruction`` is combined with target/filter options."""
+    """Fail if ``--instruction`` is combined with target/filter options.
+
+    Parameters
+    ----------
+    instruction : str | None
+        Path to instruction YAML, or ``None``.
+    **cli_options : object
+        Remaining CLI options to check for conflicts.
+    """
     if instruction is None:
         return
     conflicts = [f"--{k.replace('_', '-')}" for k, v in cli_options.items() if v]
@@ -116,7 +163,33 @@ def compare_tree(
     output: Optional[str] = _opt_output,
     manifest: Path = _opt_manifest,
 ) -> None:
-    """Compare directory structures across projects."""
+    """Compare directory structures across projects.
+
+    Parameters
+    ----------
+    subtree : str | None
+        Limit scan to a subdirectory.
+    include : str | None
+        Comma-separated include glob patterns.
+    exclude_pattern : str | None
+        Comma-separated exclude glob patterns.
+    names : str | None
+        Comma-separated project names to include.
+    pattern : str | None
+        Regex pattern to match project names.
+    git_only : bool
+        Only include projects with a git repository.
+    exclude : str | None
+        Comma-separated project names to exclude.
+    instruction : str | None
+        Path to instruction YAML file.
+    fmt : str
+        Output format (``"table"`` or ``"yaml"``).
+    output : str | None
+        Save report to a file instead of printing.
+    manifest : Path
+        Path to the workspace manifest.
+    """
     _check_mutual_exclusivity(
         instruction, subtree=subtree, include=include, exclude_pattern=exclude_pattern,
         names=names, pattern=pattern, git_only=git_only, exclude_projects=exclude,
@@ -190,7 +263,33 @@ def compare_files_cmd(
     output: Optional[str] = _opt_output,
     manifest: Path = _opt_manifest,
 ) -> None:
-    """Compare specific files across projects."""
+    """Compare specific files across projects.
+
+    Parameters
+    ----------
+    paths : list[str]
+        Relative file paths to compare across projects.
+    granularity : str
+        Comparison granularity (``"survey"`` or ``"detail"``).
+    reference : str | None
+        Reference project for detail-mode diffs.
+    names : str | None
+        Comma-separated project names to include.
+    pattern : str | None
+        Regex pattern to match project names.
+    git_only : bool
+        Only include projects with a git repository.
+    exclude : str | None
+        Comma-separated project names to exclude.
+    instruction : str | None
+        Path to instruction YAML file.
+    fmt : str
+        Output format (``"table"`` or ``"yaml"``).
+    output : str | None
+        Save report to a file instead of printing.
+    manifest : Path
+        Path to the workspace manifest.
+    """
     _check_mutual_exclusivity(
         instruction, paths=paths, granularity=(granularity != "survey"),
         reference=reference, names=names, pattern=pattern, git_only=git_only, exclude_projects=exclude,
@@ -252,7 +351,18 @@ def compare_files_cmd(
 
 
 def _build_tree_table(report: TreeReport) -> tuple[Table, str]:
-    """Build the Rich table and summary line for a tree report."""
+    """Build the Rich table and summary line for a tree report.
+
+    Parameters
+    ----------
+    report : TreeReport
+        Comparison results to render.
+
+    Returns
+    -------
+    tuple[Table, str]
+        Rich table and a summary line.
+    """
     title = "Architecture Comparison"
     if report.subtree:
         title += f" ({report.subtree})"
@@ -277,14 +387,31 @@ def _build_tree_table(report: TreeReport) -> tuple[Table, str]:
 
 
 def _print_tree_report(report: TreeReport) -> None:
-    """Render a tree comparison as Rich tables to the terminal."""
+    """Render a tree comparison as Rich tables to the terminal.
+
+    Parameters
+    ----------
+    report : TreeReport
+        Comparison results to render.
+    """
     table, summary = _build_tree_table(report)
     console.print(table)
     console.print(f"\n[bold]{summary}[/bold]")
 
 
 def _capture_tree_report(report: TreeReport) -> str:
-    """Render a tree comparison to plain text for file output."""
+    """Render a tree comparison to plain text for file output.
+
+    Parameters
+    ----------
+    report : TreeReport
+        Comparison results to render.
+
+    Returns
+    -------
+    str
+        Plain-text representation of the tree report.
+    """
     table, summary = _build_tree_table(report)
     return _capture_rich(table) + "\n" + summary + "\n"
 
@@ -295,7 +422,19 @@ def _add_tree_rows(
     projects: tuple[str, ...],
     indent: int = 0,
 ) -> None:
-    """Recursively add rows for matched nodes."""
+    """Recursively add rows for matched nodes.
+
+    Parameters
+    ----------
+    table : Table
+        Rich table to populate.
+    matches : tuple[NodeMatch, ...]
+        Matched nodes to render.
+    projects : tuple[str, ...]
+        Ordered project names (column headers).
+    indent : int
+        Current indentation level for nested nodes.
+    """
     for node in matches:
         prefix = "  " * indent
         type_label = "dir" if node.is_directory else "file"
@@ -321,7 +460,18 @@ def _add_tree_rows(
 
 
 def _build_file_renderables(report: FileReport) -> tuple[list[object], str]:
-    """Build Rich renderables and summary line for a file report."""
+    """Build Rich renderables and summary line for a file report.
+
+    Parameters
+    ----------
+    report : FileReport
+        File comparison results to render.
+
+    Returns
+    -------
+    tuple[list[object], str]
+        List of Rich renderables and a summary line.
+    """
     renderables: list[object] = []
     for result in report.results:
         renderables.extend(_build_single_file_renderables(result, report.projects))
@@ -336,7 +486,13 @@ def _build_file_renderables(report: FileReport) -> tuple[list[object], str]:
 
 
 def _print_file_report(report: FileReport) -> None:
-    """Render a file comparison as Rich panels to the terminal."""
+    """Render a file comparison as Rich panels to the terminal.
+
+    Parameters
+    ----------
+    report : FileReport
+        File comparison results to render.
+    """
     renderables, summary = _build_file_renderables(report)
     for r in renderables:
         console.print(r)
@@ -344,13 +500,37 @@ def _print_file_report(report: FileReport) -> None:
 
 
 def _capture_file_report(report: FileReport) -> str:
-    """Render a file comparison to plain text for file output."""
+    """Render a file comparison to plain text for file output.
+
+    Parameters
+    ----------
+    report : FileReport
+        File comparison results to render.
+
+    Returns
+    -------
+    str
+        Plain-text representation of the file report.
+    """
     renderables, summary = _build_file_renderables(report)
     return _capture_rich(*renderables) + "\n" + summary + "\n"
 
 
 def _build_single_file_renderables(result: FileDiffResult, projects: tuple[str, ...]) -> list[object]:
-    """Build Rich renderables for one file's comparison result."""
+    """Build Rich renderables for one file's comparison result.
+
+    Parameters
+    ----------
+    result : FileDiffResult
+        Comparison result for a single file.
+    projects : tuple[str, ...]
+        Ordered project names.
+
+    Returns
+    -------
+    list[object]
+        Rich renderables for the file.
+    """
     status = "[green]identical[/green]" if result.is_identical else "[yellow]differs[/yellow]"
     if result.issue:
         status = "[red]error[/red]"
@@ -420,7 +600,20 @@ def _build_single_file_renderables(result: FileDiffResult, projects: tuple[str, 
 
 
 def _truncate(text: str, max_len: int) -> str:
-    """Truncate text with ellipsis if too long."""
+    """Truncate text with ellipsis if too long.
+
+    Parameters
+    ----------
+    text : str
+        Input text.
+    max_len : int
+        Maximum allowed length.
+
+    Returns
+    -------
+    str
+        Original or truncated text.
+    """
     if len(text) <= max_len:
         return text
     return text[:max_len - 1] + "\u2026"

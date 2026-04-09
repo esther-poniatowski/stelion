@@ -1,4 +1,12 @@
-"""Git-backed bootstrap helpers."""
+"""Git-backed bootstrap helpers.
+
+Functions
+---------
+read_git_identity
+    Read author identity from git config when available.
+init_repository
+    Initialize a git repository for a bootstrapped project.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +15,13 @@ import subprocess
 
 
 def read_git_identity() -> tuple[str, str]:
-    """Read author identity from git config when available."""
+    """Read author identity from git config when available.
+
+    Returns
+    -------
+    tuple[str, str]
+        A ``(name, email)`` pair, both empty if git config is unavailable.
+    """
     author_name = ""
     author_email = ""
     try:
@@ -23,7 +37,13 @@ def read_git_identity() -> tuple[str, str]:
 
 
 def init_repository(target_dir: Path) -> None:
-    """Initialize a git repository for a bootstrapped project."""
+    """Initialize a git repository for a bootstrapped project.
+
+    Parameters
+    ----------
+    target_dir : Path
+        Root directory of the newly created project.
+    """
     subprocess.run(["git", "init", "--quiet"], cwd=target_dir, check=True)
     subprocess.run(["git", "add", "."], cwd=target_dir, check=True)
     subprocess.run(

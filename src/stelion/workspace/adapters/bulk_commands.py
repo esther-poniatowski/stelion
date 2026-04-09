@@ -1,4 +1,14 @@
-"""Typer commands for bulk operations across workspace projects."""
+"""Typer commands for bulk operations across workspace projects.
+
+Functions
+---------
+workspace_exec
+    Run an arbitrary shell command in each project directory.
+workspace_commit
+    Stage tracked changes and commit across projects.
+workspace_push
+    Push the current branch to a remote across projects.
+"""
 
 from __future__ import annotations
 
@@ -25,7 +35,15 @@ console = Console(stderr=True)
 
 
 def _print_bulk_result(result: BulkResult, dry_run: bool) -> None:
-    """Render a BulkResult as a Rich table."""
+    """Render a BulkResult as a Rich table.
+
+    Parameters
+    ----------
+    result : BulkResult
+        Aggregated outcomes from a bulk operation.
+    dry_run : bool
+        Whether the operation was a dry run (affects the table title).
+    """
     title = f"{result.label} (dry run)" if dry_run else result.label
     table = Table(title=title)
     table.add_column("Project")
@@ -65,7 +83,21 @@ def _run_bulk_command(
     run_fn: Callable[..., BulkResult],
     **kwargs: Any,
 ) -> None:
-    """Shared workspace setup, error handling, and result printing for bulk commands."""
+    """Shared workspace setup, error handling, and result printing for bulk commands.
+
+    Parameters
+    ----------
+    manifest : str
+        Path to the workspace manifest file.
+    filter_ : ProjectFilter
+        Criteria for selecting which projects to include.
+    dry_run : bool
+        Preview without executing.
+    run_fn : Callable[..., BulkResult]
+        The bulk operation function to invoke.
+    **kwargs : Any
+        Additional keyword arguments forwarded to *run_fn*.
+    """
     try:
         ctx, _services = resolve_workspace(manifest)
         result = run_fn(ctx, filter_=filter_, dry_run=dry_run, **kwargs)
@@ -114,7 +146,25 @@ def workspace_exec(
     dry_run: bool = _opt_dry_run,
     manifest: Path = _opt_manifest,
 ) -> None:
-    """Run an arbitrary shell command in each project directory."""
+    """Run an arbitrary shell command in each project directory.
+
+    Parameters
+    ----------
+    command : str
+        Shell command to run in each project.
+    names : str | None
+        Comma-separated project names to include.
+    pattern : str | None
+        Regex pattern to match project names.
+    git_only : bool
+        Only include projects with a git repository.
+    exclude : str | None
+        Comma-separated project names to exclude.
+    dry_run : bool
+        Preview without executing.
+    manifest : Path
+        Path to the workspace manifest.
+    """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(str(manifest), filter_, dry_run, run_bulk_exec, command=command)
 
@@ -128,7 +178,25 @@ def workspace_commit(
     dry_run: bool = _opt_dry_run,
     manifest: Path = _opt_manifest,
 ) -> None:
-    """Stage tracked changes and commit across projects."""
+    """Stage tracked changes and commit across projects.
+
+    Parameters
+    ----------
+    message : str
+        Commit message to use.
+    names : str | None
+        Comma-separated project names to include.
+    pattern : str | None
+        Regex pattern to match project names.
+    git_only : bool
+        Only include projects with a git repository.
+    exclude : str | None
+        Comma-separated project names to exclude.
+    dry_run : bool
+        Preview without executing.
+    manifest : Path
+        Path to the workspace manifest.
+    """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(str(manifest), filter_, dry_run, run_bulk_commit, message=message)
 
@@ -143,7 +211,27 @@ def workspace_push(
     dry_run: bool = _opt_dry_run,
     manifest: Path = _opt_manifest,
 ) -> None:
-    """Push the current branch to a remote across projects."""
+    """Push the current branch to a remote across projects.
+
+    Parameters
+    ----------
+    remote : str
+        Remote name to push to.
+    branch : str
+        Branch to push.
+    names : str | None
+        Comma-separated project names to include.
+    pattern : str | None
+        Regex pattern to match project names.
+    git_only : bool
+        Only include projects with a git repository.
+    exclude : str | None
+        Comma-separated project names to exclude.
+    dry_run : bool
+        Preview without executing.
+    manifest : Path
+        Path to the workspace manifest.
+    """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(
         str(manifest), filter_, dry_run, run_bulk_push,

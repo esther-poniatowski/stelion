@@ -1,4 +1,16 @@
-"""Domain models for project metadata and inventory."""
+"""Domain models for project metadata and inventory.
+
+Classes
+-------
+MetadataStatus
+    Status of metadata extracted from a project directory.
+GithubSlug
+    A validated GitHub owner/repo identifier.
+ProjectMetadata
+    Metadata extracted from a single project's pyproject.toml and filesystem.
+ProjectInventory
+    Collection of discovered projects.
+"""
 
 from __future__ import annotations
 
@@ -21,7 +33,15 @@ class MetadataStatus(StrEnum):
 
 @dataclass(frozen=True)
 class GithubSlug:
-    """A validated GitHub owner/repo identifier."""
+    """A validated GitHub owner/repo identifier.
+
+    Attributes
+    ----------
+    owner : str
+        GitHub user or organisation name.
+    repo : str
+        Repository name.
+    """
 
     owner: str
     repo: str
@@ -29,6 +49,16 @@ class GithubSlug:
     @classmethod
     def parse(cls, raw: str) -> GithubSlug:
         """Parse an ``owner/repo`` string.
+
+        Parameters
+        ----------
+        raw : str
+            String in ``owner/repo`` format.
+
+        Returns
+        -------
+        GithubSlug
+            Parsed slug with owner and repo populated.
 
         Raises
         ------
@@ -49,6 +79,16 @@ class GithubSlug:
         Accepts HTTPS (``https://github.com/owner/repo``) and SSH
         (``git@github.com:owner/repo.git``) formats.  Returns ``None``
         if the URL does not match a GitHub pattern.
+
+        Parameters
+        ----------
+        url : str
+            GitHub URL in HTTPS or SSH format.
+
+        Returns
+        -------
+        GithubSlug | None
+            Parsed slug, or ``None`` if the URL is not a GitHub URL.
         """
         match = _GITHUB_URL_RE.search(url)
         if not match:
@@ -61,7 +101,31 @@ class GithubSlug:
 
 @dataclass(frozen=True)
 class ProjectMetadata:
-    """Metadata extracted from a single project's pyproject.toml and filesystem."""
+    """Metadata extracted from a single project's pyproject.toml and filesystem.
+
+    Attributes
+    ----------
+    name : str
+        Project name from pyproject.toml.
+    path : Path
+        Filesystem path to the project root.
+    description : str
+        Short project description.
+    version : str
+        Declared version string.
+    homepage : str | None
+        Project homepage URL.
+    github : GithubSlug | None
+        Parsed GitHub owner/repo identifier.
+    has_git : bool
+        Whether the project directory is a git repository.
+    languages : tuple[str, ...]
+        Programming languages detected in the project.
+    status : MetadataStatus
+        Parsing status of the metadata extraction.
+    issue : str
+        Error or warning message from metadata extraction.
+    """
 
     name: str
     path: Path
@@ -77,14 +141,32 @@ class ProjectMetadata:
 
 @dataclass(frozen=True)
 class ProjectInventory:
-    """Collection of discovered projects."""
+    """Collection of discovered projects.
+
+    Attributes
+    ----------
+    projects : tuple[ProjectMetadata, ...]
+        Discovered project metadata entries.
+    """
 
     projects: tuple[ProjectMetadata, ...] = ()
 
     def by_name(self) -> dict[str, ProjectMetadata]:
-        """Index projects by name."""
+        """Index projects by name.
+
+        Returns
+        -------
+        dict[str, ProjectMetadata]
+            Mapping from project name to metadata.
+        """
         return {p.name: p for p in self.projects}
 
     def by_path(self) -> dict[Path, ProjectMetadata]:
-        """Index projects by their resolved filesystem path."""
+        """Index projects by their resolved filesystem path.
+
+        Returns
+        -------
+        dict[Path, ProjectMetadata]
+            Mapping from resolved path to metadata.
+        """
         return {p.path.resolve(): p for p in self.projects}

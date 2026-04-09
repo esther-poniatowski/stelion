@@ -3,6 +3,13 @@
 Terminal rendering (Rich tables) lives in the adapters layer. This module
 handles only the machine-parseable YAML output, consistent with the
 existing split where ``renderers/yaml.py`` serializes workspace artifacts.
+
+Functions
+---------
+render_tree_yaml
+    Serialize a TreeReport to YAML.
+render_file_yaml
+    Serialize a FileReport to YAML.
 """
 
 from __future__ import annotations
@@ -24,7 +31,18 @@ from ...domain.comparison import (
 
 
 def render_tree_yaml(report: TreeReport) -> str:
-    """Serialize a :class:`TreeReport` to YAML."""
+    """Serialize a :class:`TreeReport` to YAML.
+
+    Parameters
+    ----------
+    report : TreeReport
+        Aggregated tree comparison report.
+
+    Returns
+    -------
+    str
+        YAML text with a descriptive header comment.
+    """
     data: dict = {
         "projects": list(report.projects),
         "subtree": report.subtree,
@@ -66,7 +84,18 @@ def _serialize_node(node: NodeMatch) -> dict:
 
 
 def render_file_yaml(report: FileReport) -> str:
-    """Serialize a :class:`FileReport` to YAML."""
+    """Serialize a :class:`FileReport` to YAML.
+
+    Parameters
+    ----------
+    report : FileReport
+        Aggregated file comparison report.
+
+    Returns
+    -------
+    str
+        YAML text with a descriptive header comment.
+    """
     data: dict = {
         "projects": list(report.projects),
         "summary": {

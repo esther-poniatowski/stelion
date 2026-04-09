@@ -1,4 +1,14 @@
-"""Concrete bulk operation implementations."""
+"""Concrete bulk operation implementations.
+
+Classes
+-------
+ShellOperation
+    Run an arbitrary shell command in each project directory.
+GitCommitOperation
+    Stage tracked changes and commit, skipping clean working trees.
+GitPushOperation
+    Push the current branch to a remote.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +18,15 @@ from ..domain.project import ProjectMetadata
 
 
 class ShellOperation:
-    """Run an arbitrary shell command in each project directory."""
+    """Run an arbitrary shell command in each project directory.
+
+    Parameters
+    ----------
+    command : str
+        Shell command string to execute.
+    runner : CommandRunner
+        Backend used to invoke shell processes.
+    """
 
     def __init__(self, command: str, runner: CommandRunner) -> None:
         self._command = command
@@ -16,6 +34,13 @@ class ShellOperation:
 
     @property
     def label(self) -> str:
+        """Human-readable label describing this operation.
+
+        Returns
+        -------
+        str
+            Formatted label prefixed with ``exec:``.
+        """
         return f"exec: {self._command}"
 
     def __call__(self, project: ProjectMetadata, *, dry_run: bool) -> ProjectOutcome:
@@ -37,7 +62,15 @@ class ShellOperation:
 
 
 class GitCommitOperation:
-    """Stage tracked changes and commit, skipping clean working trees."""
+    """Stage tracked changes and commit, skipping clean working trees.
+
+    Parameters
+    ----------
+    message : str
+        Commit message to use.
+    runner : CommandRunner
+        Backend used to invoke git processes.
+    """
 
     def __init__(self, message: str, runner: CommandRunner) -> None:
         self._message = message
@@ -45,6 +78,13 @@ class GitCommitOperation:
 
     @property
     def label(self) -> str:
+        """Human-readable label describing this operation.
+
+        Returns
+        -------
+        str
+            Formatted label prefixed with ``commit:``.
+        """
         return f"commit: {self._message}"
 
     def __call__(self, project: ProjectMetadata, *, dry_run: bool) -> ProjectOutcome:
@@ -91,7 +131,17 @@ class GitCommitOperation:
 
 
 class GitPushOperation:
-    """Push the current branch to a remote."""
+    """Push the current branch to a remote.
+
+    Parameters
+    ----------
+    remote : str
+        Remote name (e.g. ``"origin"``).
+    branch : str
+        Branch to push.
+    runner : CommandRunner
+        Backend used to invoke git processes.
+    """
 
     def __init__(self, remote: str, branch: str, runner: CommandRunner) -> None:
         self._remote = remote
@@ -100,6 +150,13 @@ class GitPushOperation:
 
     @property
     def label(self) -> str:
+        """Human-readable label describing this operation.
+
+        Returns
+        -------
+        str
+            Formatted label prefixed with ``push:``.
+        """
         return f"push: {self._remote}/{self._branch}"
 
     def __call__(self, project: ProjectMetadata, *, dry_run: bool) -> ProjectOutcome:

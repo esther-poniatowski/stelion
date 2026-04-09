@@ -1,4 +1,16 @@
-"""Manifest parsing, defaulting, and rendering infrastructure."""
+"""Manifest parsing, defaulting, and rendering infrastructure.
+
+Functions
+---------
+default_workspace_manifest
+    Create the canonical default manifest model for a new workspace.
+parse_workspace_manifest
+    Parse a raw manifest mapping into a typed workspace manifest.
+manifest_to_dict
+    Serialize a manifest model into YAML-safe primitives.
+render_manifest
+    Render a workspace manifest to YAML.
+"""
 
 from __future__ import annotations
 
@@ -29,7 +41,20 @@ from ..exceptions import ManifestValidationError
 
 
 def default_workspace_manifest(manifest_dir: Path, github_user: str = "") -> WorkspaceManifest:
-    """Create the canonical default manifest model for a new workspace."""
+    """Create the canonical default manifest model for a new workspace.
+
+    Parameters
+    ----------
+    manifest_dir : Path
+        Directory that will contain ``stelion.yml``.
+    github_user : str
+        GitHub username for ecosystem defaults.
+
+    Returns
+    -------
+    WorkspaceManifest
+        Manifest with all fields set to their canonical defaults.
+    """
     return WorkspaceManifest(
         discovery=DiscoveryConfig(
             scan_dirs=("../",),
@@ -53,7 +78,20 @@ def default_workspace_manifest(manifest_dir: Path, github_user: str = "") -> Wor
 
 
 def parse_workspace_manifest(raw: Mapping[str, Any], manifest_dir: Path) -> WorkspaceManifest:
-    """Parse a raw manifest mapping into a typed workspace manifest."""
+    """Parse a raw manifest mapping into a typed workspace manifest.
+
+    Parameters
+    ----------
+    raw : Mapping[str, Any]
+        Raw YAML-loaded mapping.
+    manifest_dir : Path
+        Directory containing the manifest file.
+
+    Returns
+    -------
+    WorkspaceManifest
+        Fully typed and validated manifest.
+    """
     raw = _to_mapping(raw, "manifest")
     _validate_manifest_mapping(raw)
     defaults = default_workspace_manifest(manifest_dir)
@@ -127,7 +165,18 @@ def parse_workspace_manifest(raw: Mapping[str, Any], manifest_dir: Path) -> Work
 
 
 def manifest_to_dict(manifest: WorkspaceManifest) -> dict[str, Any]:
-    """Serialize a manifest model into YAML-safe primitives."""
+    """Serialize a manifest model into YAML-safe primitives.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Fully typed manifest model.
+
+    Returns
+    -------
+    dict[str, Any]
+        Nested dictionary suitable for ``yaml.safe_dump``.
+    """
     return {
         "discovery": {
             "scan_dirs": list(manifest.discovery.scan_dirs),
@@ -191,7 +240,18 @@ def manifest_to_dict(manifest: WorkspaceManifest) -> dict[str, Any]:
 
 
 def render_manifest(manifest: WorkspaceManifest) -> str:
-    """Render a workspace manifest to YAML."""
+    """Render a workspace manifest to YAML.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Fully typed manifest model.
+
+    Returns
+    -------
+    str
+        YAML text representation.
+    """
     return yaml.safe_dump(manifest_to_dict(manifest), sort_keys=False)
 
 

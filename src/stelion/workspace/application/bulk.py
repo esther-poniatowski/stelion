@@ -1,4 +1,12 @@
-"""Application use-cases for bulk operations across projects."""
+"""Application use-cases for bulk operations across projects.
+
+Functions
+---------
+select_projects
+    Filter the project inventory to the target set.
+execute_bulk
+    Run an operation on each project, collecting all outcomes.
+"""
 
 from __future__ import annotations
 
@@ -23,6 +31,26 @@ def select_projects(
 
     Accepts either a ``ProjectFilter`` object or individual keyword arguments
     for backward compatibility.
+
+    Parameters
+    ----------
+    inventory : ProjectInventory
+        Full project inventory to filter.
+    filter_ : ProjectFilter | None
+        Optional filter object; overrides keyword arguments when provided.
+    names : tuple[str, ...]
+        Explicit project names to select.
+    pattern : str | None
+        Regex pattern to match against project names.
+    git_only : bool
+        If True, keep only projects with a git repository.
+    exclude : tuple[str, ...]
+        Project names to exclude from the result.
+
+    Returns
+    -------
+    tuple[ProjectMetadata, ...]
+        Sorted tuple of projects matching the filters.
 
     Raises
     ------
@@ -73,6 +101,20 @@ def execute_bulk(
     """Run an operation on each project, collecting all outcomes.
 
     Never short-circuits on failure: all projects are processed.
+
+    Parameters
+    ----------
+    projects : tuple[ProjectMetadata, ...]
+        Projects to operate on.
+    operation : BulkOperation
+        Operation to execute on each project.
+    dry_run : bool
+        If True, skip side effects.
+
+    Returns
+    -------
+    BulkResult
+        Aggregated outcomes from all projects.
     """
     outcomes: list[ProjectOutcome] = []
     for project in projects:

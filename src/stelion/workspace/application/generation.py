@@ -1,4 +1,25 @@
-"""Workspace artifact generation use-cases."""
+"""Workspace artifact generation use-cases.
+
+Classes
+-------
+GenerationResult
+    Outcome of generating a single file.
+GenerationArtifact
+    Identifier for a generated workspace artifact.
+ArtifactSpec
+    Identity and output path of a workspace artifact.
+GenerationTarget
+    A single file to generate: its output path and a renderer callable.
+
+Functions
+---------
+compute_artifact_specs
+    Compute the output paths for all generation artifacts.
+generate_all
+    Generate all enabled workspace artifacts.
+compute_drift
+    Compare generated content with existing files without writing.
+"""
 
 from __future__ import annotations
 
@@ -26,7 +47,19 @@ from .protocols import (
 
 @dataclass(frozen=True)
 class GenerationResult:
-    """Outcome of generating a single file."""
+    """Outcome of generating a single file.
+
+    Attributes
+    ----------
+    artifact : GenerationArtifact
+        Identifier of the generated artifact.
+    path : Path
+        Output path of the generated file.
+    written : bool
+        Whether the file was actually written to disk.
+    reason : str
+        Short label describing the outcome (e.g. ``"created"``, ``"current"``).
+    """
 
     artifact: "GenerationArtifact"
     path: Path
@@ -45,7 +78,15 @@ class GenerationArtifact(StrEnum):
 
 @dataclass(frozen=True)
 class ArtifactSpec:
-    """Identity and output path of a workspace artifact."""
+    """Identity and output path of a workspace artifact.
+
+    Attributes
+    ----------
+    artifact : GenerationArtifact
+        Artifact identifier.
+    output_path : Path
+        Resolved output path for this artifact.
+    """
 
     artifact: GenerationArtifact
     output_path: Path
@@ -53,7 +94,17 @@ class ArtifactSpec:
 
 @dataclass(frozen=True)
 class GenerationTarget:
-    """A single file to generate: its output path and a renderer callable."""
+    """A single file to generate: its output path and a renderer callable.
+
+    Attributes
+    ----------
+    artifact : GenerationArtifact
+        Artifact identifier.
+    path : Path
+        Output path of the file to generate.
+    render : Callable[[], str]
+        Zero-argument callable that produces the file content.
+    """
 
     artifact: GenerationArtifact
     path: Path
@@ -63,7 +114,18 @@ class GenerationTarget:
 def compute_artifact_specs(
     manifest: WorkspaceManifest,
 ) -> dict[GenerationArtifact, ArtifactSpec]:
-    """Compute the output paths for all generation artifacts."""
+    """Compute the output paths for all generation artifacts.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest configuration.
+
+    Returns
+    -------
+    dict[GenerationArtifact, ArtifactSpec]
+        Mapping from artifact identifier to its output spec.
+    """
     return {
         GenerationArtifact.WORKSPACE_FILE: ArtifactSpec(
             artifact=GenerationArtifact.WORKSPACE_FILE,
@@ -94,7 +156,32 @@ def _build_targets(
     render_dependency_yaml: DependencyYamlRenderer,
     render_environment: EnvironmentRenderer,
 ) -> tuple[GenerationTarget, ...]:
-    """Build the ordered list of generation targets from manifest config."""
+    """Build the ordered list of generation targets from manifest config.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest configuration.
+    inventory : ProjectInventory
+        All discovered projects.
+    graph : DependencyGraph
+        Project dependency graph.
+    environment : EnvironmentSpec
+        Merged shared environment specification.
+    render_workspace_file : WorkspaceFileRenderer
+        Renderer for the VS Code workspace file.
+    render_projects_yaml : ProjectsYamlRenderer
+        Renderer for the projects registry YAML.
+    render_dependency_yaml : DependencyYamlRenderer
+        Renderer for the dependency graph YAML.
+    render_environment : EnvironmentRenderer
+        Renderer for the shared Conda environment YAML.
+
+    Returns
+    -------
+    tuple[GenerationTarget, ...]
+        Ordered generation targets.
+    """
     specs = compute_artifact_specs(manifest)
     return (
         GenerationTarget(
@@ -133,6 +220,28 @@ def generate_all(
 
     Each target is rendered to a string, compared with the existing file via
     content hash, and written only if the content differs (or ``force`` is set).
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest configuration.
+    inventory : ProjectInventory
+        All discovered projects.
+    graph : DependencyGraph
+        Project dependency graph.
+    environment : EnvironmentSpec
+        Merged shared environment specification.
+    services : GenerationServices
+        Bundled infrastructure services.
+    force : bool
+        If True, write all files regardless of content hash.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset of artifacts to generate; empty means all.
+
+    Returns
+    -------
+    list[GenerationResult]
+        One result per artifact indicating whether it was written.
     """
     targets = _build_targets(
         manifest, inventory, graph, environment,
@@ -179,7 +288,28 @@ def compute_drift(
     services: GenerationServices,
     selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> DriftReport:
-    """Compare generated content with existing files without writing."""
+    """Compare generated content with existing files without writing.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest configuration.
+    inventory : ProjectInventory
+        All discovered projects.
+    graph : DependencyGraph
+        Project dependency graph.
+    environment : EnvironmentSpec
+        Merged shared environment specification.
+    services : GenerationServices
+        Bundled infrastructure services.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset of artifacts to check; empty means all.
+
+    Returns
+    -------
+    DriftReport
+        Per-artifact drift status.
+    """
     targets = _build_targets(
         manifest, inventory, graph, environment,
         services.render_workspace_file, services.render_projects_yaml,
@@ -206,7 +336,20 @@ def _select_targets(
     targets: tuple[GenerationTarget, ...],
     selected_targets: tuple[GenerationArtifact, ...],
 ) -> tuple[GenerationTarget, ...]:
-    """Return either all targets or the caller-selected subset."""
+    """Return either all targets or the caller-selected subset.
+
+    Parameters
+    ----------
+    targets : tuple[GenerationTarget, ...]
+        All available generation targets.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset to keep; empty means all.
+
+    Returns
+    -------
+    tuple[GenerationTarget, ...]
+        Filtered generation targets.
+    """
     if not selected_targets:
         return targets
     wanted = set(selected_targets)

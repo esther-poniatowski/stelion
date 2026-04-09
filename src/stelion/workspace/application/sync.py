@@ -1,4 +1,27 @@
-"""Submodule synchronization use-case."""
+"""Submodule synchronization use-case.
+
+Classes
+-------
+SyncOriginResolver
+    Strategy for resolving the source commit in a sync operation.
+LocalOriginResolver
+    Resolve sync origin from the local clone's HEAD.
+SuperprojectOriginResolver
+    Resolve sync origin from a superproject's submodule pointer.
+RemoteOriginResolver
+    Resolve sync origin from the remote tracking branch.
+
+Functions
+---------
+resolve_submodule_targets
+    Extract git-submodule edges for a dependency and resolve to filesystem targets.
+make_resolver
+    Factory for creating the appropriate resolver from an origin enum.
+plan_sync
+    Determine the source commit, local update, remote push, and submodule targets.
+execute_sync
+    Execute sync plan in order: local clone, remote push, submodule pointers.
+"""
 
 from __future__ import annotations
 
@@ -30,11 +53,33 @@ class SyncOriginResolver(Protocol):
         targets: tuple[SubmoduleTarget, ...],
         inventory: ProjectInventory,
         git: GitOperations,
-    ) -> SyncPlan: ...
+    ) -> SyncPlan:
+        """Resolve the source commit and build a sync plan.
+
+        Parameters
+        ----------
+        dependency : str
+            Name of the dependency project.
+        targets : tuple[SubmoduleTarget, ...]
+            Submodule targets to synchronize.
+        inventory : ProjectInventory
+            All discovered projects.
+        git : GitOperations
+            Git infrastructure operations.
+        """
+        ...
 
 
 class LocalOriginResolver:
-    """Resolve sync origin from the local clone's HEAD."""
+    """Resolve sync origin from the local clone's HEAD.
+
+    Parameters
+    ----------
+    remote : str
+        Remote name for the push spec.
+    branch : str
+        Branch name for the push spec.
+    """
 
     def __init__(self, remote: str = "origin", branch: str = "main") -> None:
         self._remote = remote
@@ -47,6 +92,24 @@ class LocalOriginResolver:
         inventory: ProjectInventory,
         git: GitOperations,
     ) -> SyncPlan:
+        """Resolve the source commit from the local clone's HEAD.
+
+        Parameters
+        ----------
+        dependency : str
+            Name of the dependency project.
+        targets : tuple[SubmoduleTarget, ...]
+            Submodule targets to synchronize.
+        inventory : ProjectInventory
+            All discovered projects.
+        git : GitOperations
+            Git infrastructure operations.
+
+        Returns
+        -------
+        SyncPlan
+            Sync plan with local HEAD as the source commit.
+        """
         dep_meta = inventory.by_name().get(dependency)
         local_dir = dep_meta.path if dep_meta else None
         if local_dir is None:
@@ -66,7 +129,17 @@ class LocalOriginResolver:
 
 
 class SuperprojectOriginResolver:
-    """Resolve sync origin from a superproject's submodule pointer."""
+    """Resolve sync origin from a superproject's submodule pointer.
+
+    Parameters
+    ----------
+    source_superproject : str
+        Name of the superproject to read the submodule pointer from.
+    remote : str
+        Remote name for the push spec.
+    branch : str
+        Branch name for the push spec.
+    """
 
     def __init__(
         self,
@@ -85,6 +158,24 @@ class SuperprojectOriginResolver:
         inventory: ProjectInventory,
         git: GitOperations,
     ) -> SyncPlan:
+        """Resolve the source commit from the superproject's submodule pointer.
+
+        Parameters
+        ----------
+        dependency : str
+            Name of the dependency project.
+        targets : tuple[SubmoduleTarget, ...]
+            Submodule targets to synchronize.
+        inventory : ProjectInventory
+            All discovered projects.
+        git : GitOperations
+            Git infrastructure operations.
+
+        Returns
+        -------
+        SyncPlan
+            Sync plan with the superproject's recorded commit as the source.
+        """
         dep_meta = inventory.by_name().get(dependency)
         local_dir = dep_meta.path if dep_meta else None
         source = _find_target(targets, self._source_superproject)
@@ -111,7 +202,15 @@ class SuperprojectOriginResolver:
 
 
 class RemoteOriginResolver:
-    """Resolve sync origin from the remote tracking branch."""
+    """Resolve sync origin from the remote tracking branch.
+
+    Parameters
+    ----------
+    remote : str
+        Remote name to fetch from and resolve HEAD.
+    branch : str
+        Branch name to resolve on the remote.
+    """
 
     def __init__(self, remote: str = "origin", branch: str = "main") -> None:
         self._remote = remote
@@ -124,6 +223,24 @@ class RemoteOriginResolver:
         inventory: ProjectInventory,
         git: GitOperations,
     ) -> SyncPlan:
+        """Resolve the source commit from the remote tracking branch.
+
+        Parameters
+        ----------
+        dependency : str
+            Name of the dependency project.
+        targets : tuple[SubmoduleTarget, ...]
+            Submodule targets to synchronize.
+        inventory : ProjectInventory
+            All discovered projects.
+        git : GitOperations
+            Git infrastructure operations.
+
+        Returns
+        -------
+        SyncPlan
+            Sync plan with the remote tracking branch HEAD as the source.
+        """
         dep_meta = inventory.by_name().get(dependency)
         local_dir = dep_meta.path if dep_meta else None
         if local_dir is None:
@@ -149,7 +266,24 @@ def resolve_submodule_targets(
     manifest: WorkspaceManifest,
     inventory: ProjectInventory | None = None,
 ) -> tuple[SubmoduleTarget, ...]:
-    """Extract git-submodule edges for a dependency and resolve to filesystem targets."""
+    """Extract git-submodule edges for a dependency and resolve to filesystem targets.
+
+    Parameters
+    ----------
+    dependency : str
+        Name of the dependency project.
+    graph : DependencyGraph
+        Project dependency graph.
+    manifest : WorkspaceManifest
+        Workspace manifest with superproject path configuration.
+    inventory : ProjectInventory | None
+        Optional project inventory for fallback resolution.
+
+    Returns
+    -------
+    tuple[SubmoduleTarget, ...]
+        Resolved submodule targets for the dependency.
+    """
     edges_by_dep = graph.by_dependency()
     edges = edges_by_dep.get(dependency, [])
     submodule_edges = [
@@ -180,7 +314,24 @@ def make_resolver(
     remote: str = "origin",
     branch: str = "main",
 ) -> SyncOriginResolver:
-    """Factory for creating the appropriate resolver from an origin enum."""
+    """Factory for creating the appropriate resolver from an origin enum.
+
+    Parameters
+    ----------
+    origin : SyncOrigin
+        How the source commit is determined.
+    source_superproject : str | None
+        Required when *origin* is ``SUPERPROJECT``.
+    remote : str
+        Remote name passed to the resolver.
+    branch : str
+        Branch name passed to the resolver.
+
+    Returns
+    -------
+    SyncOriginResolver
+        Resolver instance matching the origin strategy.
+    """
     if origin == SyncOrigin.LOCAL:
         return LocalOriginResolver(remote=remote, branch=branch)
     elif origin == SyncOrigin.SUPERPROJECT:
@@ -211,6 +362,32 @@ def plan_sync(
 
     When *resolver* is provided it is used directly; otherwise a resolver is
     constructed from *origin* and the keyword parameters.
+
+    Parameters
+    ----------
+    dependency : str
+        Name of the dependency project.
+    targets : tuple[SubmoduleTarget, ...]
+        Submodule targets to synchronize.
+    inventory : ProjectInventory
+        All discovered projects.
+    origin : SyncOrigin
+        How the source commit is determined.
+    git : GitOperations
+        Git infrastructure operations.
+    source_superproject : str | None
+        Required when *origin* is ``SUPERPROJECT``.
+    remote : str
+        Remote name passed to the resolver.
+    branch : str
+        Branch name passed to the resolver.
+    resolver : SyncOriginResolver | None
+        Pre-built resolver; overrides *origin* when provided.
+
+    Returns
+    -------
+    SyncPlan
+        Resolved sync plan.
     """
     if resolver is None:
         resolver = make_resolver(
@@ -229,7 +406,24 @@ def execute_sync(
     commit: bool = True,
     dry_run: bool = False,
 ) -> SyncResult:
-    """Execute sync plan in order: local clone, remote push, submodule pointers."""
+    """Execute sync plan in order: local clone, remote push, submodule pointers.
+
+    Parameters
+    ----------
+    plan : SyncPlan
+        Resolved sync plan to execute.
+    git : GitOperations
+        Git infrastructure operations.
+    commit : bool
+        If True, commit submodule pointer updates.
+    dry_run : bool
+        If True, skip all side effects.
+
+    Returns
+    -------
+    SyncResult
+        Aggregated outcomes of the sync operation.
+    """
     outcomes: list[SyncOutcome] = []
 
     if plan.local_dir is not None:
@@ -265,7 +459,28 @@ def _execute_sync_action(
     target_ref: str,
     dry_run: bool,
 ) -> SyncOutcome:
-    """Execute a sync action with the common try/check/apply/error pattern."""
+    """Execute a sync action with the common try/check/apply/error pattern.
+
+    Parameters
+    ----------
+    kind : OutcomeKind
+        Category of the sync action.
+    label : str
+        Human-readable label for the action.
+    get_current_ref : Callable[[], str]
+        Callable returning the current reference.
+    perform_action : Callable[[], None]
+        Callable that performs the sync action.
+    target_ref : str
+        Target reference to synchronize to.
+    dry_run : bool
+        If True, skip the action.
+
+    Returns
+    -------
+    SyncOutcome
+        Outcome of the sync action.
+    """
     try:
         current = get_current_ref()
         if current == target_ref:
@@ -296,7 +511,24 @@ def _execute_sync_action(
 def _sync_local(
     local_dir: Path, target_commit: str, git: GitOperations, dry_run: bool,
 ) -> SyncOutcome:
-    """Update the local clone to the target commit."""
+    """Update the local clone to the target commit.
+
+    Parameters
+    ----------
+    local_dir : Path
+        Path to the local clone.
+    target_commit : str
+        Commit hash to check out.
+    git : GitOperations
+        Git infrastructure operations.
+    dry_run : bool
+        If True, skip the update.
+
+    Returns
+    -------
+    SyncOutcome
+        Outcome of the local update.
+    """
     return _execute_sync_action(
         kind=OutcomeKind.LOCAL,
         label=str(local_dir.name),
@@ -310,7 +542,22 @@ def _sync_local(
 def _sync_remote(
     push_spec: PushSpec, git: GitOperations, dry_run: bool,
 ) -> SyncOutcome:
-    """Push the local clone to the remote."""
+    """Push the local clone to the remote.
+
+    Parameters
+    ----------
+    push_spec : PushSpec
+        Remote push parameters.
+    git : GitOperations
+        Git infrastructure operations.
+    dry_run : bool
+        If True, skip the push.
+
+    Returns
+    -------
+    SyncOutcome
+        Outcome of the remote push.
+    """
     label = f"{push_spec.remote}/{push_spec.branch}"
     current_head = git.head_commit(push_spec.repo_dir)
     return _execute_sync_action(
@@ -331,7 +578,28 @@ def _sync_submodule(
     commit: bool,
     dry_run: bool,
 ) -> SyncOutcome:
-    """Update a single submodule pointer in a superproject."""
+    """Update a single submodule pointer in a superproject.
+
+    Parameters
+    ----------
+    target : SubmoduleTarget
+        Superproject and submodule path to update.
+    dependency : str
+        Name of the dependency project.
+    target_commit : str
+        Commit hash to set the submodule pointer to.
+    git : GitOperations
+        Git infrastructure operations.
+    commit : bool
+        If True, commit the pointer update.
+    dry_run : bool
+        If True, skip the update.
+
+    Returns
+    -------
+    SyncOutcome
+        Outcome of the submodule update.
+    """
     label = f"{target.superproject_name}/{target.submodule_path}"
 
     def _perform() -> None:
@@ -366,6 +634,25 @@ def _resolve_superproject_dir(
 
     Falls back to the project inventory if the name is not found in
     ``dependencies.superproject_paths``.
+
+    Parameters
+    ----------
+    superproject_name : str
+        Name of the superproject to resolve.
+    manifest : WorkspaceManifest
+        Workspace manifest with superproject path configuration.
+    inventory : ProjectInventory | None
+        Optional project inventory for fallback resolution.
+
+    Returns
+    -------
+    Path
+        Absolute path to the superproject directory.
+
+    Raises
+    ------
+    SyncError
+        If the superproject is not found in configured paths or inventory.
     """
     for extra_dir_str in manifest.dependencies.superproject_paths:
         candidate = (manifest.manifest_dir / extra_dir_str).resolve()
@@ -386,7 +673,25 @@ def _find_target(
     targets: tuple[SubmoduleTarget, ...],
     superproject_name: str,
 ) -> SubmoduleTarget:
-    """Find a target by superproject name."""
+    """Find a target by superproject name.
+
+    Parameters
+    ----------
+    targets : tuple[SubmoduleTarget, ...]
+        Available submodule targets.
+    superproject_name : str
+        Name of the superproject to find.
+
+    Returns
+    -------
+    SubmoduleTarget
+        Matching target.
+
+    Raises
+    ------
+    SyncError
+        If no target matches the given superproject name.
+    """
     for t in targets:
         if t.superproject_name == superproject_name:
             return t

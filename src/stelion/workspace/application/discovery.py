@@ -18,11 +18,11 @@ def discover_projects(
 
     Parameters
     ----------
-    config
+    config : DiscoveryConfig
         Discovery rules from the workspace manifest.
-    extractor
+    extractor : MetadataExtractor
         Infrastructure implementation that reads pyproject.toml.
-    manifest_dir
+    manifest_dir : Path
         Absolute path to the directory containing stelion.yml.
 
     Returns
@@ -65,6 +65,18 @@ def _has_marker(directory: Path, markers: tuple[str, ...]) -> bool:
 
     Markers can be exact filenames (``pyproject.toml``) or glob patterns
     (``*.sty``, ``*.cls``) to match projects without standard Python packaging.
+
+    Parameters
+    ----------
+    directory : Path
+        Directory to inspect.
+    markers : tuple[str, ...]
+        Filenames or glob patterns to look for.
+
+    Returns
+    -------
+    bool
+        True if at least one marker is found.
     """
     try:
         for marker in markers:

@@ -1,4 +1,59 @@
-"""Composition root: constructs infrastructure and wires use-cases."""
+"""Composition root: constructs infrastructure and wires use-cases.
+
+Classes
+-------
+WorkspaceServices
+    Container holding all wired infrastructure implementations.
+WorkspaceContext
+    Fully resolved workspace state: manifest + discovered data.
+WorkspaceRegistrationResult
+    Result of registering a project into the workspace and regenerating artifacts.
+ComparisonServices
+    Container for cross-project comparison infrastructure.
+
+Functions
+---------
+create_services
+    Build and return the full set of workspace infrastructure services.
+create_bootstrap_services
+    Build the injected services for workspace project bootstrapping.
+create_manifest_init_services
+    Build the collaborators for initializing a workspace manifest.
+resolve_manifest
+    Load and return a validated workspace manifest.
+build_workspace_context
+    Discover projects, build the dependency graph, and merge environments.
+initialize_workspace_manifest
+    Create and optionally write a default manifest for a new workspace.
+run_generate
+    Generate all or a selected subset of workspace artifacts.
+run_drift_check
+    Compute drift without writing any files.
+target_output_paths
+    List generation target output paths using ``compute_artifact_specs``.
+target_paths
+    List generation target output paths (backward-compatible alias).
+register_workspace_project
+    Register a project, persist manifest updates, and regenerate artifacts.
+create_git_operations
+    Build the git operations infrastructure for submodule sync.
+run_submodule_sync
+    Resolve, plan, and execute a submodule sync for a dependency.
+create_command_runner
+    Build the command runner infrastructure for bulk operations.
+run_bulk_exec
+    Select projects and run an arbitrary shell command on each.
+run_bulk_commit
+    Select projects and commit tracked changes on each.
+run_bulk_push
+    Select projects and push to remote on each.
+run_compare_trees
+    Select projects and compare their directory structures.
+run_compare_files
+    Select projects and compare specific files across them.
+create_comparison_services
+    Build the infrastructure services for comparison operations.
+"""
 
 from __future__ import annotations
 
@@ -89,7 +144,31 @@ from .infrastructure.tree_scanner import LocalTreeScanner
 
 @dataclass(frozen=True)
 class WorkspaceServices:
-    """Container holding all wired infrastructure implementations."""
+    """Container holding all wired infrastructure implementations.
+
+    Attributes
+    ----------
+    extractor : MetadataExtractor
+        Extracts project metadata from project directories.
+    env_reader : EnvironmentReader
+        Reads Conda environment specs from project directories.
+    dependency_scanners : tuple[DependencyScanner, ...]
+        Scanners that detect inter-project dependency edges.
+    writer : FileWriter
+        Writes file content to disk.
+    reader : FileReader
+        Reads file content from disk.
+    hasher : FileHasher
+        Computes content hashes for drift detection.
+    render_workspace_file : WorkspaceFileRenderer
+        Renders the VS Code ``.code-workspace`` file.
+    render_projects_yaml : ProjectsYamlRenderer
+        Renders the projects registry YAML.
+    render_dependency_yaml : DependencyYamlRenderer
+        Renders the dependency graph YAML.
+    render_environment : EnvironmentRenderer
+        Renders the shared Conda environment YAML.
+    """
 
     extractor: MetadataExtractor
     env_reader: EnvironmentReader
@@ -105,7 +184,19 @@ class WorkspaceServices:
 
 @dataclass(frozen=True)
 class WorkspaceContext:
-    """Fully resolved workspace state: manifest + discovered data."""
+    """Fully resolved workspace state: manifest + discovered data.
+
+    Attributes
+    ----------
+    manifest : WorkspaceManifest
+        The loaded workspace manifest.
+    inventory : ProjectInventory
+        Discovered projects in the workspace.
+    graph : DependencyGraph
+        Inter-project dependency graph.
+    environment : EnvironmentSpec
+        Merged shared environment specification.
+    """
 
     manifest: WorkspaceManifest
     inventory: ProjectInventory
@@ -115,7 +206,19 @@ class WorkspaceContext:
 
 @dataclass(frozen=True)
 class WorkspaceRegistrationResult:
-    """Result of registering a project into the workspace and regenerating artifacts."""
+    """Result of registering a project into the workspace and regenerating artifacts.
+
+    Attributes
+    ----------
+    manifest : WorkspaceManifest
+        The workspace manifest after registration.
+    project : ProjectMetadata
+        Metadata of the newly registered project.
+    manifest_updated : bool
+        Whether the manifest was modified during registration.
+    generated : tuple[GenerationResult, ...]
+        Artifacts regenerated after registration.
+    """
 
     manifest: WorkspaceManifest
     project: ProjectMetadata
@@ -124,7 +227,13 @@ class WorkspaceRegistrationResult:
 
 
 def create_services() -> WorkspaceServices:
-    """Build and return the full set of workspace infrastructure services."""
+    """Build and return the full set of workspace infrastructure services.
+
+    Returns
+    -------
+    WorkspaceServices
+        Fully wired infrastructure service container.
+    """
     extractor = PyprojectExtractor()
     env_reader = CondaEnvironmentReader()
     data_loader = StelionDataLoader()
@@ -147,7 +256,18 @@ def create_services() -> WorkspaceServices:
 
 
 def _make_generation_services(services: WorkspaceServices) -> GenerationServices:
-    """Assemble a ``GenerationServices`` bundle from ``WorkspaceServices``."""
+    """Assemble a ``GenerationServices`` bundle from ``WorkspaceServices``.
+
+    Parameters
+    ----------
+    services : WorkspaceServices
+        The workspace infrastructure services to extract renderers from.
+
+    Returns
+    -------
+    GenerationServices
+        Bundle of generation-specific services.
+    """
     return GenerationServices(
         render_workspace_file=services.render_workspace_file,
         render_projects_yaml=services.render_projects_yaml,
@@ -160,7 +280,13 @@ def _make_generation_services(services: WorkspaceServices) -> GenerationServices
 
 
 def create_bootstrap_services() -> BootstrapServices:
-    """Build the injected services for workspace project bootstrapping."""
+    """Build the injected services for workspace project bootstrapping.
+
+    Returns
+    -------
+    BootstrapServices
+        Wired bootstrap infrastructure callbacks.
+    """
     return BootstrapServices(
         read_git_identity=read_git_identity,
         copy_template=copy_template,
@@ -171,7 +297,18 @@ def create_bootstrap_services() -> BootstrapServices:
 
 
 def create_manifest_init_services(writer: FileWriter) -> ManifestInitServices:
-    """Build the collaborators for initializing a workspace manifest."""
+    """Build the collaborators for initializing a workspace manifest.
+
+    Parameters
+    ----------
+    writer : FileWriter
+        File writer used to persist the manifest.
+
+    Returns
+    -------
+    ManifestInitServices
+        Wired manifest initialization collaborators.
+    """
     return ManifestInitServices(
         read_git_identity=read_git_identity,
         build_default_manifest=default_workspace_manifest,
@@ -181,7 +318,18 @@ def create_manifest_init_services(writer: FileWriter) -> ManifestInitServices:
 
 
 def resolve_manifest(manifest_path: Path) -> WorkspaceManifest:
-    """Load and return a validated workspace manifest."""
+    """Load and return a validated workspace manifest.
+
+    Parameters
+    ----------
+    manifest_path : Path
+        Path to the workspace manifest file.
+
+    Returns
+    -------
+    WorkspaceManifest
+        The parsed and validated manifest.
+    """
     return load_manifest(manifest_path.resolve())
 
 
@@ -193,6 +341,18 @@ def build_workspace_context(
 
     Pre-reads each project's environment spec exactly once and shares those
     specs with the dependency-graph builder and the shared-environment merger.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        The workspace manifest defining discovery rules.
+    services : WorkspaceServices
+        Infrastructure services for project discovery and scanning.
+
+    Returns
+    -------
+    WorkspaceContext
+        Fully resolved workspace state with inventory, graph, and environment.
     """
     inventory = discover_projects(
         manifest.discovery, services.extractor, manifest.manifest_dir,
@@ -224,7 +384,22 @@ def initialize_workspace_manifest(
     *,
     dry_run: bool = False,
 ) -> ManifestInitResult:
-    """Create and optionally write a default manifest for a new workspace."""
+    """Create and optionally write a default manifest for a new workspace.
+
+    Parameters
+    ----------
+    manifest_path : Path
+        Destination path for the new manifest file.
+    services : WorkspaceServices
+        Infrastructure services providing the file writer.
+    dry_run : bool
+        If True, build the manifest without writing to disk.
+
+    Returns
+    -------
+    ManifestInitResult
+        The generated manifest, discovered inventory, and write status.
+    """
     manifest_services = create_manifest_init_services(services.writer)
     return initialize_default_manifest(
         manifest_path,
@@ -241,7 +416,26 @@ def run_generate(
     selected_targets: tuple[GenerationArtifact, ...] = (),
     generation_services: GenerationServices | None = None,
 ) -> list[GenerationResult]:
-    """Generate all or a selected subset of workspace artifacts."""
+    """Generate all or a selected subset of workspace artifacts.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    services : WorkspaceServices
+        Infrastructure services for generation.
+    force : bool
+        If True, regenerate even when content is unchanged.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset of artifacts to generate; empty means all.
+    generation_services : GenerationServices | None
+        Pre-built generation services; built from *services* if None.
+
+    Returns
+    -------
+    list[GenerationResult]
+        Results for each generated artifact.
+    """
     gen_services = generation_services or _make_generation_services(services)
     return generate_all(
         manifest=ctx.manifest,
@@ -260,7 +454,24 @@ def run_drift_check(
     selected_targets: tuple[GenerationArtifact, ...] = (),
     generation_services: GenerationServices | None = None,
 ) -> DriftReport:
-    """Compute drift without writing any files."""
+    """Compute drift without writing any files.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    services : WorkspaceServices
+        Infrastructure services for generation.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset of artifacts to check; empty means all.
+    generation_services : GenerationServices | None
+        Pre-built generation services; built from *services* if None.
+
+    Returns
+    -------
+    DriftReport
+        Report describing which artifacts have drifted.
+    """
     gen_services = generation_services or _make_generation_services(services)
     return compute_drift(
         manifest=ctx.manifest,
@@ -276,7 +487,20 @@ def target_output_paths(
     manifest: WorkspaceManifest,
     selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> list[Path]:
-    """List generation target output paths using ``compute_artifact_specs``."""
+    """List generation target output paths using ``compute_artifact_specs``.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        The workspace manifest defining artifact output locations.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset of artifacts to include; empty means all.
+
+    Returns
+    -------
+    list[Path]
+        Output paths for the selected (or all) generation targets.
+    """
     specs = compute_artifact_specs(manifest)
     if not selected_targets:
         return [spec.output_path for spec in specs.values()]
@@ -288,7 +512,20 @@ def target_paths(
     manifest: WorkspaceManifest,
     selected_targets: tuple[GenerationArtifact, ...] = (),
 ) -> list[Path]:
-    """List generation target output paths (backward-compatible alias)."""
+    """List generation target output paths (backward-compatible alias).
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        The workspace manifest defining artifact output locations.
+    selected_targets : tuple[GenerationArtifact, ...]
+        Subset of artifacts to include; empty means all.
+
+    Returns
+    -------
+    list[Path]
+        Output paths for the selected (or all) generation targets.
+    """
     return target_output_paths(manifest, selected_targets)
 
 
@@ -303,6 +540,20 @@ def register_workspace_project(
     ``application.registration.execute_registration``. Provides the
     infrastructure callbacks (discovery, context build + generate,
     manifest persistence).
+
+    Parameters
+    ----------
+    manifest_path : Path
+        Path to the workspace manifest file.
+    project_dir : Path
+        Directory of the project to register.
+    services : WorkspaceServices
+        Infrastructure services for discovery, generation, and persistence.
+
+    Returns
+    -------
+    WorkspaceRegistrationResult
+        Registration outcome including manifest, project, and generated artifacts.
     """
     manifest_path = manifest_path.resolve()
     manifest = resolve_manifest(manifest_path)
@@ -340,7 +591,13 @@ def register_workspace_project(
 
 
 def create_git_operations() -> SubprocessGitOperations:
-    """Build the git operations infrastructure for submodule sync."""
+    """Build the git operations infrastructure for submodule sync.
+
+    Returns
+    -------
+    SubprocessGitOperations
+        Git operations implemented via subprocess calls.
+    """
     return SubprocessGitOperations()
 
 
@@ -355,7 +612,32 @@ def run_submodule_sync(
     commit: bool = True,
     dry_run: bool = False,
 ) -> SyncResult:
-    """Resolve, plan, and execute a submodule sync for a dependency."""
+    """Resolve, plan, and execute a submodule sync for a dependency.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    dependency : str
+        Name of the dependency project to sync.
+    origin : SyncOrigin
+        Source of the target commit (local HEAD or remote).
+    source_superproject : str | None
+        Name of the superproject supplying the source commit.
+    remote : str
+        Git remote name to fetch from.
+    branch : str
+        Git branch name to resolve the remote HEAD.
+    commit : bool
+        If True, commit submodule pointer updates.
+    dry_run : bool
+        If True, plan without executing filesystem changes.
+
+    Returns
+    -------
+    SyncResult
+        Outcome of the sync operation.
+    """
     git = create_git_operations()
     targets = resolve_submodule_targets(
         dependency, ctx.graph, ctx.manifest, inventory=ctx.inventory,
@@ -374,7 +656,13 @@ def run_submodule_sync(
 
 
 def create_command_runner() -> SubprocessCommandRunner:
-    """Build the command runner infrastructure for bulk operations."""
+    """Build the command runner infrastructure for bulk operations.
+
+    Returns
+    -------
+    SubprocessCommandRunner
+        Command runner implemented via subprocess calls.
+    """
     return SubprocessCommandRunner()
 
 
@@ -385,7 +673,24 @@ def run_bulk_exec(
     filter_: ProjectFilter | None = None,
     dry_run: bool = False,
 ) -> BulkResult:
-    """Select projects and run an arbitrary shell command on each."""
+    """Select projects and run an arbitrary shell command on each.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    command : str
+        Shell command to execute in each project directory.
+    filter_ : ProjectFilter | None
+        Optional filter to narrow the target project set.
+    dry_run : bool
+        If True, select projects without executing the command.
+
+    Returns
+    -------
+    BulkResult
+        Aggregated outcomes from all targeted projects.
+    """
     runner = create_command_runner()
     return _run_bulk(
         ctx,
@@ -402,7 +707,24 @@ def run_bulk_commit(
     filter_: ProjectFilter | None = None,
     dry_run: bool = False,
 ) -> BulkResult:
-    """Select projects and commit tracked changes on each."""
+    """Select projects and commit tracked changes on each.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    message : str
+        Commit message to use for each project.
+    filter_ : ProjectFilter | None
+        Optional filter to narrow the target project set.
+    dry_run : bool
+        If True, select projects without committing.
+
+    Returns
+    -------
+    BulkResult
+        Aggregated outcomes from all targeted projects.
+    """
     runner = create_command_runner()
     return _run_bulk(
         ctx,
@@ -420,7 +742,26 @@ def run_bulk_push(
     filter_: ProjectFilter | None = None,
     dry_run: bool = False,
 ) -> BulkResult:
-    """Select projects and push to remote on each."""
+    """Select projects and push to remote on each.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    remote : str
+        Git remote name to push to.
+    branch : str
+        Git branch name to push.
+    filter_ : ProjectFilter | None
+        Optional filter to narrow the target project set.
+    dry_run : bool
+        If True, select projects without pushing.
+
+    Returns
+    -------
+    BulkResult
+        Aggregated outcomes from all targeted projects.
+    """
     runner = create_command_runner()
     return _run_bulk(
         ctx,
@@ -437,7 +778,24 @@ def _run_bulk(
     filter_: ProjectFilter,
     dry_run: bool,
 ) -> BulkResult:
-    """Resolve the target project set and execute a bulk operation."""
+    """Resolve the target project set and execute a bulk operation.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    operation : BulkOperation
+        Operation to execute on each selected project.
+    filter_ : ProjectFilter
+        Filter to narrow the target project set.
+    dry_run : bool
+        If True, select projects without executing the operation.
+
+    Returns
+    -------
+    BulkResult
+        Aggregated outcomes from all targeted projects.
+    """
     projects = select_projects(ctx.inventory, filter_=filter_)
     return execute_bulk(projects, operation, dry_run=dry_run)
 
@@ -447,7 +805,19 @@ def _run_bulk(
 
 @dataclass(frozen=True)
 class ComparisonServices:
-    """Container for cross-project comparison infrastructure."""
+    """Container for cross-project comparison infrastructure.
+
+    Attributes
+    ----------
+    scanner : TreeScanner
+        Scans project directories for file-tree snapshots.
+    parser : StructuredParser
+        Parses structured file content into nested dicts.
+    spec_loader : SpecLoader
+        Loads comparison instruction files into typed specifications.
+    reader : FileReader
+        Reads file content from disk.
+    """
 
     scanner: TreeScanner
     parser: StructuredParser
@@ -456,7 +826,13 @@ class ComparisonServices:
 
 
 def create_comparison_services() -> ComparisonServices:
-    """Build the infrastructure services for comparison operations."""
+    """Build the infrastructure services for comparison operations.
+
+    Returns
+    -------
+    ComparisonServices
+        Wired comparison infrastructure container.
+    """
     return ComparisonServices(
         scanner=LocalTreeScanner(),
         parser=DispatchingParser({
@@ -478,7 +854,24 @@ def run_compare_trees(
     *,
     filter_: ProjectFilter | None = None,
 ) -> TreeReport:
-    """Select projects and compare their directory structures."""
+    """Select projects and compare their directory structures.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    services : ComparisonServices
+        Infrastructure services for tree scanning.
+    target : TreeTarget
+        Specification of the tree comparison to perform.
+    filter_ : ProjectFilter | None
+        Optional filter to narrow the target project set.
+
+    Returns
+    -------
+    TreeReport
+        Cross-project tree comparison report.
+    """
     projects = _select_comparison_projects(ctx, filter_ or ProjectFilter())
     return compare_trees(projects, target, services.scanner)
 
@@ -490,7 +883,24 @@ def run_compare_files(
     *,
     filter_: ProjectFilter | None = None,
 ) -> FileReport:
-    """Select projects and compare specific files across them."""
+    """Select projects and compare specific files across them.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    services : ComparisonServices
+        Infrastructure services for file reading and parsing.
+    target : FileTarget
+        Specification of the file comparison to perform.
+    filter_ : ProjectFilter | None
+        Optional filter to narrow the target project set.
+
+    Returns
+    -------
+    FileReport
+        Cross-project file comparison report.
+    """
     projects = _select_comparison_projects(ctx, filter_ or ProjectFilter())
     return compare_files(projects, target, services.reader, services.parser)
 
@@ -499,7 +909,20 @@ def _select_comparison_projects(
     ctx: WorkspaceContext,
     filter_: ProjectFilter,
 ) -> tuple[ProjectMetadata, ...]:
-    """Select and validate that at least 2 projects are available."""
+    """Select and validate that at least 2 projects are available.
+
+    Parameters
+    ----------
+    ctx : WorkspaceContext
+        Resolved workspace state.
+    filter_ : ProjectFilter
+        Filter to narrow the target project set.
+
+    Returns
+    -------
+    tuple[ProjectMetadata, ...]
+        Selected projects (guaranteed at least 2).
+    """
     projects = select_projects(ctx.inventory, filter_=filter_)
     if len(projects) < 2:
         raise WorkspaceError("Comparison requires at least 2 projects.")

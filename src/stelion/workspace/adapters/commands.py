@@ -1,4 +1,18 @@
-"""Typer command group for workspace management."""
+"""Typer command group for workspace management.
+
+Functions
+---------
+workspace_init
+    Initialize or regenerate a workspace from its manifest.
+workspace_sync
+    Re-scan projects and update generated workspace files.
+workspace_register
+    Register an existing project into workspace artifacts.
+workspace_new
+    Bootstrap a new project from the template.
+workspace_status
+    Show which generated files are out of date.
+"""
 
 from __future__ import annotations
 
@@ -41,7 +55,15 @@ def workspace_init(
     ),
     dry_run: bool = typer.Option(False, "--dry-run", help="Preview actions without writing."),
 ) -> None:
-    """Initialize or regenerate a workspace from its manifest."""
+    """Initialize or regenerate a workspace from its manifest.
+
+    Parameters
+    ----------
+    manifest : Path
+        Path to the workspace manifest file.
+    dry_run : bool
+        Preview actions without writing.
+    """
     manifest_path = Path(manifest).resolve()
     services = create_services()
 
@@ -75,7 +97,19 @@ def workspace_sync(
     dry_run: bool = typer.Option(False, "--dry-run"),
     force: bool = typer.Option(False, "--force", help="Overwrite even if current."),
 ) -> None:
-    """Re-scan projects and update generated workspace files."""
+    """Re-scan projects and update generated workspace files.
+
+    Parameters
+    ----------
+    manifest : Path
+        Path to the workspace manifest file.
+    target : str | None
+        Single generation target to sync.
+    dry_run : bool
+        Preview without writing.
+    force : bool
+        Overwrite even if current.
+    """
     services = create_services()
     m = resolve_manifest(Path(manifest))
     ctx = build_workspace_context(m, services)
@@ -100,7 +134,15 @@ def workspace_register(
     path: str = typer.Argument(..., help="Path to the project directory."),
     manifest: Path = typer.Option("stelion.yml", "--manifest", "-m"),
 ) -> None:
-    """Register an existing project into workspace artifacts."""
+    """Register an existing project into workspace artifacts.
+
+    Parameters
+    ----------
+    path : str
+        Path to the project directory.
+    manifest : Path
+        Path to the workspace manifest file.
+    """
     services = create_services()
     project_dir = Path(path).resolve()
 
@@ -127,7 +169,23 @@ def workspace_new(
     dry_run: bool = typer.Option(False, "--dry-run"),
     no_git: bool = typer.Option(False, "--no-git", help="Skip git init."),
 ) -> None:
-    """Bootstrap a new project from the template."""
+    """Bootstrap a new project from the template.
+
+    Parameters
+    ----------
+    name : str
+        Project name (lowercase, underscores).
+    description : str
+        One-line project description.
+    manifest : Path
+        Path to the workspace manifest file.
+    destination : str | None
+        Target discovery root relative to the manifest.
+    dry_run : bool
+        Preview without writing.
+    no_git : bool
+        Skip git init.
+    """
     m = resolve_manifest(Path(manifest))
     request = WorkspaceBootstrapRequest(
         manifest_dir=m.manifest_dir,
@@ -163,7 +221,13 @@ def workspace_new(
 def workspace_status(
     manifest: Path = typer.Option("stelion.yml", "--manifest", "-m"),
 ) -> None:
-    """Show which generated files are out of date."""
+    """Show which generated files are out of date.
+
+    Parameters
+    ----------
+    manifest : Path
+        Path to the workspace manifest file.
+    """
     services = create_services()
     m = resolve_manifest(Path(manifest))
     ctx = build_workspace_context(m, services)
@@ -176,7 +240,15 @@ def workspace_status(
 
 
 def _print_drift(report: DriftReport, manifest_dir: Path) -> None:
-    """Print a drift report as a Rich table."""
+    """Print a drift report as a Rich table.
+
+    Parameters
+    ----------
+    report : DriftReport
+        Drift report to display.
+    manifest_dir : Path
+        Workspace root used to compute relative file paths.
+    """
     table = Table(title="Workspace Status")
     table.add_column("File")
     table.add_column("Status")
@@ -197,7 +269,17 @@ def _print_generation_results(
     results: list[GenerationResult] | tuple[GenerationResult, ...],
     manifest_dir: Path,
 ) -> None:
-    """Render generation results as a Rich table."""
+    """Render generation results as a Rich table.
+
+    Parameters
+    ----------
+    title : str
+        Table title displayed above the results.
+    results : list[GenerationResult] | tuple[GenerationResult, ...]
+        Generation outcomes to display.
+    manifest_dir : Path
+        Workspace root used to compute relative file paths.
+    """
     table = Table(title=title)
     table.add_column("File")
     table.add_column("Status")
@@ -208,7 +290,14 @@ def _print_generation_results(
 
 
 def _print_manifest_init(result) -> None:
-    """Print the outcome of default manifest initialization."""
+    """Print the outcome of default manifest initialization.
+
+    Parameters
+    ----------
+    result : object
+        Result object from manifest initialization, carrying ``written``,
+        ``manifest_path``, and ``project_names`` attributes.
+    """
     if not result.written:
         console.print(f"[bold]Dry run:[/bold] would create {result.manifest_path}")
         console.print(
@@ -226,7 +315,13 @@ def _print_manifest_init(result) -> None:
 
 
 def _print_registration_result(result: WorkspaceRegistrationResult) -> None:
-    """Render the outcome of project registration."""
+    """Render the outcome of project registration.
+
+    Parameters
+    ----------
+    result : WorkspaceRegistrationResult
+        Registration outcome containing the registered project and generated artifacts.
+    """
     console.print(f"Registered [bold]{result.project.name}[/bold] at {result.project.path}")
     if result.project.issue:
         console.print(f"[yellow]Metadata warning:[/yellow] {result.project.issue}")
@@ -236,7 +331,18 @@ def _print_registration_result(result: WorkspaceRegistrationResult) -> None:
 
 
 def _parse_generation_targets(target: str | None) -> tuple[GenerationArtifact, ...]:
-    """Translate the CLI target option into generation artifact identifiers."""
+    """Translate the CLI target option into generation artifact identifiers.
+
+    Parameters
+    ----------
+    target : str | None
+        CLI ``--target`` value, or ``None`` to select all targets.
+
+    Returns
+    -------
+    tuple[GenerationArtifact, ...]
+        Matching artifact identifiers, or empty tuple for all.
+    """
     if not target:
         return ()
     try:

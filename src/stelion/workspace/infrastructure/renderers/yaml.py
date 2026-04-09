@@ -1,4 +1,14 @@
-"""Render YAML workspace artifacts: dependencies.yml, projects.yml, environment.yml."""
+"""Render YAML workspace artifacts: dependencies.yml, projects.yml, environment.yml.
+
+Functions
+---------
+render_dependency_yaml
+    Generate dependencies.yml as a structured YAML file.
+render_projects_yaml
+    Generate projects.yml as a structured YAML registry.
+render_environment
+    Generate a shared Conda environment.yml.
+"""
 
 from __future__ import annotations
 
@@ -13,7 +23,18 @@ from ...domain.project import ProjectInventory
 
 
 def render_dependency_yaml(graph: DependencyGraph) -> str:
-    """Generate dependencies.yml as a structured YAML file."""
+    """Generate dependencies.yml as a structured YAML file.
+
+    Parameters
+    ----------
+    graph : DependencyGraph
+        Detected and manual dependency edges.
+
+    Returns
+    -------
+    str
+        YAML text with a descriptive header comment.
+    """
     data: dict = {}
 
     if graph.detected:
@@ -48,7 +69,20 @@ def render_dependency_yaml(graph: DependencyGraph) -> str:
 
 
 def render_projects_yaml(inventory: ProjectInventory, manifest_dir: Path) -> str:
-    """Generate projects.yml as a structured YAML registry."""
+    """Generate projects.yml as a structured YAML registry.
+
+    Parameters
+    ----------
+    inventory : ProjectInventory
+        Discovered projects with metadata.
+    manifest_dir : Path
+        Directory containing the workspace manifest, used for relative paths.
+
+    Returns
+    -------
+    str
+        YAML text with a descriptive header comment.
+    """
     data: dict = {}
     projects: dict = {}
     for p in sorted(inventory.projects, key=lambda x: x.name):
@@ -79,7 +113,18 @@ def render_projects_yaml(inventory: ProjectInventory, manifest_dir: Path) -> str
 
 
 def render_environment(environment: EnvironmentSpec) -> str:
-    """Generate a shared Conda environment.yml."""
+    """Generate a shared Conda environment.yml.
+
+    Parameters
+    ----------
+    environment : EnvironmentSpec
+        Merged environment specification.
+
+    Returns
+    -------
+    str
+        YAML text, prefixed with warning comments if issues were detected.
+    """
     data: dict = {"name": environment.name}
 
     if environment.channels:

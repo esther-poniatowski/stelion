@@ -1,4 +1,10 @@
-"""Parse Conda environment.yml files into EnvironmentSpec."""
+"""Parse Conda environment.yml files into EnvironmentSpec.
+
+Classes
+-------
+CondaEnvironmentReader
+    Read and parse a project's environment.yml.
+"""
 
 from __future__ import annotations
 
@@ -18,7 +24,15 @@ class CondaEnvironmentReader:
     def read(self, project_dir: Path) -> EnvironmentSpec | None:
         """Parse environment.yml from a project directory.
 
-        Returns None if the file does not exist.
+        Parameters
+        ----------
+        project_dir : Path
+            Root directory of the project.
+
+        Returns
+        -------
+        EnvironmentSpec | None
+            Parsed environment, or ``None`` if the file does not exist.
         """
         env_path = project_dir / "environment.yml"
         if not env_path.exists():
@@ -97,7 +111,24 @@ def _coerce_str_sequence(
     field: str,
     issues: list[str],
 ) -> tuple[str, ...]:
-    """Return the valid string items from *value* and record structural issues."""
+    """Return the valid string items from *value* and record structural issues.
+
+    Parameters
+    ----------
+    value : object
+        Raw value to coerce into a string sequence.
+    project_name : str
+        Project name used in diagnostic messages.
+    field : str
+        Field name used in diagnostic messages.
+    issues : list[str]
+        Mutable list to which structural issues are appended.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Valid string items extracted from *value*.
+    """
     if value is None:
         return ()
     if not isinstance(value, list):

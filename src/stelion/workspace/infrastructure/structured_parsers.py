@@ -2,7 +2,31 @@
 
 All parsers consume **text content** (not file paths) and return a
 nested ``dict``.  The :class:`DispatchingParser` maps file extensions
-to concrete parsers — the extension seam for new formats.
+to concrete parsers -- the extension seam for new formats.
+
+Classes
+-------
+ContentParser
+    Protocol for parsing text content into a dict.
+TomlParser
+    Parse TOML text into a dict.
+YamlParser
+    Parse YAML text into a dict.
+JsonParser
+    Parse JSON text into a dict.
+MarkdownSectionParser
+    Parse Markdown into a nested dict keyed by header text.
+DispatchingParser
+    Route parsing to the correct backend based on file extension or hint.
+
+Functions
+---------
+_split_sections
+    Split Markdown into (level, title, body) triples.
+_build_section_tree
+    Build a nested dict from a flat list of (level, title, body).
+_reconcile
+    Merge child-accumulation dicts into their parent entries.
 """
 
 from __future__ import annotations
@@ -19,13 +43,38 @@ from ..exceptions import ComparisonError
 class ContentParser(Protocol):
     """Protocol for parsing text content into a dict."""
 
-    def parse(self, content: str) -> dict: ...
+    def parse(self, content: str) -> dict:
+        """Parse text content and return a dictionary.
+
+        Parameters
+        ----------
+        content : str
+            Raw text to parse.
+
+        Returns
+        -------
+        dict
+            Parsed content as a dictionary.
+        """
+        ...
 
 
 class TomlParser:
     """Parse TOML text into a dict."""
 
     def parse(self, content: str) -> dict:
+        """Parse TOML text and return a dictionary.
+
+        Parameters
+        ----------
+        content : str
+            Raw TOML text.
+
+        Returns
+        -------
+        dict
+            Parsed TOML data.
+        """
         try:
             return tomllib.loads(content)
         except tomllib.TOMLDecodeError as exc:
@@ -36,6 +85,18 @@ class YamlParser:
     """Parse YAML text into a dict."""
 
     def parse(self, content: str) -> dict:
+        """Parse YAML text and return a dictionary.
+
+        Parameters
+        ----------
+        content : str
+            Raw YAML text.
+
+        Returns
+        -------
+        dict
+            Parsed YAML mapping.
+        """
         try:
             result = yaml.safe_load(content)
         except yaml.YAMLError as exc:
@@ -49,6 +110,18 @@ class JsonParser:
     """Parse JSON text into a dict."""
 
     def parse(self, content: str) -> dict:
+        """Parse JSON text and return a dictionary.
+
+        Parameters
+        ----------
+        content : str
+            Raw JSON text.
+
+        Returns
+        -------
+        dict
+            Parsed JSON object.
+        """
         try:
             result = json.loads(content)
         except json.JSONDecodeError as exc:
@@ -78,12 +151,35 @@ class MarkdownSectionParser:
     """
 
     def parse(self, content: str) -> dict:
+        """Parse Markdown text into a section-keyed dictionary.
+
+        Parameters
+        ----------
+        content : str
+            Raw Markdown text.
+
+        Returns
+        -------
+        dict
+            Nested dictionary keyed by section headers.
+        """
         sections = _split_sections(content)
         return _build_section_tree(sections)
 
 
 def _split_sections(content: str) -> list[tuple[int, str, str]]:
-    """Split Markdown into ``(level, title, body)`` triples."""
+    """Split Markdown into ``(level, title, body)`` triples.
+
+    Parameters
+    ----------
+    content : str
+        Raw Markdown text.
+
+    Returns
+    -------
+    list[tuple[int, str, str]]
+        Triples of ``(header_level, title, body_text)``.
+    """
     sections: list[tuple[int, str, list[str]]] = []
     current: tuple[int, str, list[str]] | None = None
 
@@ -111,7 +207,18 @@ def _split_sections(content: str) -> list[tuple[int, str, str]]:
 
 
 def _build_section_tree(sections: list[tuple[int, str, str]]) -> dict:
-    """Build a nested dict from a flat list of ``(level, title, body)``."""
+    """Build a nested dict from a flat list of ``(level, title, body)``.
+
+    Parameters
+    ----------
+    sections : list[tuple[int, str, str]]
+        Flat section triples produced by :func:`_split_sections`.
+
+    Returns
+    -------
+    dict
+        Nested dictionary keyed by section titles.
+    """
     root: dict = {}
     # Stack of (level, dict_node) — the dict where children should be added.
     stack: list[tuple[int, dict]] = [(0, root)]
@@ -147,7 +254,13 @@ def _build_section_tree(sections: list[tuple[int, str, str]]) -> dict:
 
 
 def _reconcile(d: dict) -> None:
-    """Merge child-accumulation dicts into their parent entries."""
+    """Merge child-accumulation dicts into their parent entries.
+
+    Parameters
+    ----------
+    d : dict
+        Mutable section dictionary to reconcile in place.
+    """
     keys = [k for k in d if not k.startswith("\x00")]
     for key in keys:
         child_key = f"\x00{key}"
@@ -171,9 +284,14 @@ class DispatchingParser:
 
     Parameters
     ----------
-    parsers
+    parsers : dict[str, ContentParser]
         Mapping from extension (including dot, e.g. ``".toml"``) to a parser
         instance.
+
+    Attributes
+    ----------
+    _parsers : dict[str, ContentParser]
+        Registered parser backends keyed by file extension.
     """
 
     def __init__(self, parsers: dict[str, ContentParser]) -> None:
@@ -184,13 +302,18 @@ class DispatchingParser:
 
         Parameters
         ----------
-        content
+        content : str
             Raw file text.
-        extension
+        extension : str
             File extension including the dot (e.g. ``".toml"``).
-        hint
+        hint : str | None
             Parser name override (e.g. ``"toml"``), takes precedence over
             *extension*.
+
+        Returns
+        -------
+        dict
+            Parsed content as a nested dictionary.
         """
         key = f".{hint}" if hint else extension.lower()
         parser = self._parsers.get(key)

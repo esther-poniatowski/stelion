@@ -19,6 +19,22 @@ def build_shared_environment(
     When *env_specs* is provided, uses pre-read specs instead of calling
     *env_reader* per project. Otherwise reads each project's
     ``environment.yml`` via *env_reader*.
+
+    Parameters
+    ----------
+    manifest : WorkspaceManifest
+        Workspace manifest with shared environment configuration.
+    inventory : ProjectInventory
+        All discovered projects.
+    env_reader : EnvironmentReader
+        Infrastructure reader for Conda environment specs.
+    env_specs : dict[str, EnvironmentSpec | None] | None
+        Pre-read environment specs keyed by project name.
+
+    Returns
+    -------
+    EnvironmentSpec
+        Merged shared environment specification.
     """
     specs: list[EnvironmentSpec] = []
     for project in inventory.projects:

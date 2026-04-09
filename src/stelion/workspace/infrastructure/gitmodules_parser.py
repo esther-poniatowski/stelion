@@ -12,6 +12,18 @@ def scan_gitmodules(project_dir: Path, all_project_names: set[str]) -> list[Depe
     """Scan a project's .gitmodules for ecosystem-internal submodule dependencies.
 
     Only submodules whose name matches a known ecosystem project are returned.
+
+    Parameters
+    ----------
+    project_dir : Path
+        Root directory of the project containing ``.gitmodules``.
+    all_project_names : set[str]
+        Known project names in the ecosystem.
+
+    Returns
+    -------
+    list[DependencyEdge]
+        Dependency edges for submodules that reference ecosystem projects.
     """
     gitmodules_path = project_dir / ".gitmodules"
     if not gitmodules_path.exists():

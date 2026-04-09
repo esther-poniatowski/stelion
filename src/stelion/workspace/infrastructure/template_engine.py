@@ -5,6 +5,17 @@ patterns (GitHub Actions ``${{ }}``, Conda Jinja2 ``{{ pyproject.* }}``).
 
 This is a standalone Phase 1 implementation. When stelion's full template
 engine is built, this module can be replaced via the protocol interface.
+
+Functions
+---------
+substitute_in_file
+    Replace placeholder strings in a single file.
+substitute_in_directory
+    Replace placeholders in all text files under a directory.
+copy_template
+    Copy a template directory, excluding .git.
+rename_paths
+    Rename directories and files according to the rename mapping.
 """
 
 from __future__ import annotations
@@ -32,13 +43,13 @@ def substitute_in_file(
 
     Parameters
     ----------
-    path
+    path : Path
         File to process.
-    bindings
-        Mapping from placeholder string (including delimiters) to value.
-    delimiters
+    bindings : dict[str, str]
+        Mapping from placeholder name to replacement value.
+    delimiters : tuple[str, str]
         Opening and closing placeholder delimiters.
-    exclude_patterns
+    exclude_patterns : Sequence[str] | None
         Regex patterns whose matches should be protected from substitution.
 
     Returns
@@ -89,7 +100,21 @@ def substitute_in_directory(
 ) -> int:
     """Replace placeholders in all text files under a directory.
 
-    Returns the total number of replacements across all files.
+    Parameters
+    ----------
+    root : Path
+        Directory to process recursively.
+    bindings : dict[str, str]
+        Mapping from placeholder name to replacement value.
+    delimiters : tuple[str, str]
+        Opening and closing placeholder delimiters.
+    exclude_patterns : Sequence[str] | None
+        Regex patterns whose matches should be protected from substitution.
+
+    Returns
+    -------
+    int
+        Total number of replacements across all files.
     """
     total = 0
     for path in root.rglob("*"):
@@ -99,7 +124,15 @@ def substitute_in_directory(
 
 
 def copy_template(source: Path, target: Path) -> None:
-    """Copy a template directory, excluding .git."""
+    """Copy a template directory, excluding .git.
+
+    Parameters
+    ----------
+    source : Path
+        Template directory to copy from.
+    target : Path
+        Destination directory (must not already exist).
+    """
     if target.exists():
         raise FileExistsError(f"Target directory already exists: {target}")
 
@@ -117,7 +150,21 @@ def rename_paths(
     The rename values may contain placeholder references that are resolved
     against ``bindings``.
 
-    Returns the number of renames performed.
+    Parameters
+    ----------
+    root : Path
+        Base directory containing the paths to rename.
+    renames : dict[str, str]
+        Mapping from old relative path to new relative path template.
+    bindings : dict[str, str]
+        Placeholder values used to resolve templates in rename targets.
+    delimiters : tuple[str, str]
+        Opening and closing placeholder delimiters.
+
+    Returns
+    -------
+    int
+        Number of renames performed.
     """
     count = 0
     placeholders = _materialize_bindings(bindings, delimiters)
@@ -140,6 +187,19 @@ def _materialize_bindings(
     bindings: dict[str, str],
     delimiters: tuple[str, str],
 ) -> dict[str, str]:
-    """Expand logical binding names into concrete placeholder tokens."""
+    """Expand logical binding names into concrete placeholder tokens.
+
+    Parameters
+    ----------
+    bindings : dict[str, str]
+        Mapping from placeholder name to replacement value.
+    delimiters : tuple[str, str]
+        Opening and closing delimiter strings.
+
+    Returns
+    -------
+    dict[str, str]
+        Mapping from delimited placeholder tokens to values.
+    """
     start, end = delimiters
     return {f"{start}{name}{end}": value for name, value in bindings.items()}
