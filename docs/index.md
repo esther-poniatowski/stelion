@@ -2,36 +2,24 @@
 
 Keeps multiple Python projects consistent within a shared workspace.
 
-```{toctree}
-:maxdepth: 2
-:caption: User Guide
+## User Guide
 
-guide/installation
-guide/usage
-guide/cli-reference
-guide/bulk-operations
-guide/submodule-sync
-guide/comparison
-guide/integration-policy
-```
+- [Installation](guide/installation.md)
+- [Usage](guide/usage.md)
+- [CLI Reference](guide/cli-reference.md)
+- [Bulk Operations](guide/bulk-operations.md)
+- [Submodule Synchronization](guide/submodule-sync.md)
+- [Cross-Project Comparison](guide/comparison.md)
+- [Integration Policy](guide/integration-policy.md)
 
-```{toctree}
-:maxdepth: 2
-:caption: API Reference
+## API Reference
 
-api/index
-```
+- [API Reference](api/index.md)
 
-```{toctree}
-:maxdepth: 2
-:caption: Developer Internals
+## Developer Internals
 
-internals/index
-```
+- [Internals](internals/index.md)
 
-```{toctree}
-:maxdepth: 1
-:caption: Architecture Decisions
+## Architecture Decisions
 
-adr/adr-template
-```
+- [ADR Template](adr/adr-template.md)
