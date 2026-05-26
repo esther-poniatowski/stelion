@@ -1,24 +1,4 @@
 """Workspace artifact generation use-cases.
-
-Classes
--------
-GenerationResult
-    Outcome of generating a single file.
-GenerationArtifact
-    Identifier for a generated workspace artifact.
-ArtifactSpec
-    Identity and output path of a workspace artifact.
-GenerationTarget
-    A single file to generate: its output path and a renderer callable.
-
-Functions
----------
-compute_artifact_specs
-    Compute the output paths for all generation artifacts.
-generate_all
-    Generate all enabled workspace artifacts.
-compute_drift
-    Compare generated content with existing files without writing.
 """
 
 from __future__ import annotations
@@ -48,23 +28,16 @@ from .protocols import (
 @dataclass(frozen=True)
 class GenerationResult:
     """Outcome of generating a single file.
-
-    Attributes
-    ----------
-    artifact : GenerationArtifact
-        Identifier of the generated artifact.
-    path : Path
-        Output path of the generated file.
-    written : bool
-        Whether the file was actually written to disk.
-    reason : str
-        Short label describing the outcome (e.g. ``"created"``, ``"current"``).
     """
 
     artifact: "GenerationArtifact"
+    """Identifier of the generated artifact."""
     path: Path
+    """Output path of the generated file."""
     written: bool
+    """Whether the file was actually written to disk."""
     reason: str
+    """Short label describing the outcome (e.g. ``"created"``, ``"current"``)."""
 
 
 class GenerationArtifact(StrEnum):
@@ -79,36 +52,25 @@ class GenerationArtifact(StrEnum):
 @dataclass(frozen=True)
 class ArtifactSpec:
     """Identity and output path of a workspace artifact.
-
-    Attributes
-    ----------
-    artifact : GenerationArtifact
-        Artifact identifier.
-    output_path : Path
-        Resolved output path for this artifact.
     """
 
     artifact: GenerationArtifact
+    """Artifact identifier."""
     output_path: Path
+    """Resolved output path for this artifact."""
 
 
 @dataclass(frozen=True)
 class GenerationTarget:
     """A single file to generate: its output path and a renderer callable.
-
-    Attributes
-    ----------
-    artifact : GenerationArtifact
-        Artifact identifier.
-    path : Path
-        Output path of the file to generate.
-    render : Callable[[], str]
-        Zero-argument callable that produces the file content.
     """
 
     artifact: GenerationArtifact
+    """Artifact identifier."""
     path: Path
+    """Output path of the file to generate."""
     render: Callable[[], str]
+    """Zero-argument callable that produces the file content."""
 
 
 def compute_artifact_specs(

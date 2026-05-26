@@ -1,13 +1,4 @@
 """Domain models for workspace drift detection.
-
-Classes
--------
-FileStatus
-    Status of a generated file relative to its expected content.
-DriftEntry
-    Drift status for a single generated file.
-DriftReport
-    Aggregated drift report for all generated workspace files.
 """
 
 from __future__ import annotations
@@ -28,33 +19,23 @@ class FileStatus(Enum):
 @dataclass(frozen=True)
 class DriftEntry:
     """Drift status for a single generated file.
-
-    Attributes
-    ----------
-    path : Path
-        Filesystem path of the generated file.
-    status : FileStatus
-        Whether the file is current, stale, or missing.
-    detail : str
-        Human-readable explanation of the drift.
     """
 
     path: Path
+    """Filesystem path of the generated file."""
     status: FileStatus
+    """Whether the file is current, stale, or missing."""
     detail: str = ""
+    """Human-readable explanation of the drift."""
 
 
 @dataclass(frozen=True)
 class DriftReport:
     """Aggregated drift report for all generated workspace files.
-
-    Attributes
-    ----------
-    entries : tuple[DriftEntry, ...]
-        Individual drift entries for each generated file.
     """
 
     entries: tuple[DriftEntry, ...] = ()
+    """Individual drift entries for each generated file."""
 
     @property
     def has_drift(self) -> bool:

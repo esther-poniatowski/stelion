@@ -1,16 +1,4 @@
 """Default manifest generation use-case.
-
-Classes
--------
-ManifestInitServices
-    Injected collaborators for initializing a new workspace manifest.
-ManifestInitResult
-    Result of creating a default workspace manifest.
-
-Functions
----------
-initialize_default_manifest
-    Build and optionally persist a default manifest for a new workspace.
 """
 
 from __future__ import annotations
@@ -28,48 +16,33 @@ from .protocols import MetadataExtractor
 @dataclass(frozen=True)
 class ManifestInitServices:
     """Injected collaborators for initializing a new workspace manifest.
-
-    Attributes
-    ----------
-    read_git_identity : Callable[[], tuple[str, str]]
-        Read the git user name and email.
-    build_default_manifest : Callable[[Path, str], WorkspaceManifest]
-        Build a default manifest for the given directory.
-    render_manifest : Callable[[WorkspaceManifest], str]
-        Render a manifest to YAML text.
-    write_manifest : Callable[[Path, str], None]
-        Write manifest content to disk.
     """
 
     read_git_identity: Callable[[], tuple[str, str]]
+    """Read the git user name and email."""
     build_default_manifest: Callable[[Path, str], WorkspaceManifest]
+    """Build a default manifest for the given directory."""
     render_manifest: Callable[[WorkspaceManifest], str]
+    """Render a manifest to YAML text."""
     write_manifest: Callable[[Path, str], None]
+    """Write manifest content to disk."""
 
 
 @dataclass(frozen=True)
 class ManifestInitResult:
     """Result of creating a default workspace manifest.
-
-    Attributes
-    ----------
-    manifest_path : Path
-        Absolute path to the manifest file.
-    manifest : WorkspaceManifest
-        The generated workspace manifest.
-    inventory : ProjectInventory
-        Projects discovered during initialization.
-    content : str
-        Rendered YAML content of the manifest.
-    written : bool
-        Whether the manifest was written to disk.
     """
 
     manifest_path: Path
+    """Absolute path to the manifest file."""
     manifest: WorkspaceManifest
+    """The generated workspace manifest."""
     inventory: ProjectInventory
+    """Projects discovered during initialization."""
     content: str
+    """Rendered YAML content of the manifest."""
     written: bool
+    """Whether the manifest was written to disk."""
 
     @property
     def project_names(self) -> tuple[str, ...]:

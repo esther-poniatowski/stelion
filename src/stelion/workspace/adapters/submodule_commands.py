@@ -1,9 +1,4 @@
 """Typer command group for submodule operations.
-
-Functions
----------
-submodule_sync
-    Propagate a commit across all replicas of a submodule dependency.
 """
 
 from __future__ import annotations

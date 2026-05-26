@@ -3,30 +3,6 @@
 All parsers consume **text content** (not file paths) and return a
 nested ``dict``.  The :class:`DispatchingParser` maps file extensions
 to concrete parsers -- the extension seam for new formats.
-
-Classes
--------
-ContentParser
-    Protocol for parsing text content into a dict.
-TomlParser
-    Parse TOML text into a dict.
-YamlParser
-    Parse YAML text into a dict.
-JsonParser
-    Parse JSON text into a dict.
-MarkdownSectionParser
-    Parse Markdown into a nested dict keyed by header text.
-DispatchingParser
-    Route parsing to the correct backend based on file extension or hint.
-
-Functions
----------
-_split_sections
-    Split Markdown into (level, title, body) triples.
-_build_section_tree
-    Build a nested dict from a flat list of (level, title, body).
-_reconcile
-    Merge child-accumulation dicts into their parent entries.
 """
 
 from __future__ import annotations
@@ -287,11 +263,6 @@ class DispatchingParser:
     parsers : dict[str, ContentParser]
         Mapping from extension (including dot, e.g. ``".toml"``) to a parser
         instance.
-
-    Attributes
-    ----------
-    _parsers : dict[str, ContentParser]
-        Registered parser backends keyed by file extension.
     """
 
     def __init__(self, parsers: dict[str, ContentParser]) -> None:

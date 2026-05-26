@@ -2,30 +2,6 @@
 
 Copies a template project, substitutes placeholders, renames directories
 and files, and optionally initializes a git repository.
-
-Classes
--------
-BootstrapResult
-    Outcome of bootstrapping a new project.
-BootstrapRequest
-    Validated request for creating a project from a workspace template.
-WorkspaceBootstrapRequest
-    High-level request for bootstrapping a project within a workspace.
-PlaceholderBindings
-    Resolved template placeholder bindings.
-BootstrapServices
-    Injected infrastructure for the project bootstrap workflow.
-
-Functions
----------
-plan_bootstrap_request
-    Resolve manifest-relative bootstrap paths into an executable request.
-build_placeholder_bindings
-    Build the placeholder-to-value mapping for template substitution.
-bootstrap_project
-    Bootstrap a new project from the template via injected infrastructure.
-bootstrap_workspace_project
-    Bootstrap a new project from a workspace-scoped request.
 """
 
 from __future__ import annotations
@@ -42,110 +18,75 @@ from ..exceptions import BootstrapError
 @dataclass(frozen=True)
 class BootstrapResult:
     """Outcome of bootstrapping a new project.
-
-    Attributes
-    ----------
-    name : str
-        Project name.
-    target_dir : Path
-        Absolute path to the created project directory.
-    placeholders_replaced : int
-        Number of placeholder substitutions performed.
-    files_renamed : int
-        Number of files and directories renamed.
-    git_initialized : bool
-        Whether a git repository was initialized.
     """
 
     name: str
+    """Project name."""
     target_dir: Path
+    """Absolute path to the created project directory."""
     placeholders_replaced: int
+    """Number of placeholder substitutions performed."""
     files_renamed: int
+    """Number of files and directories renamed."""
     git_initialized: bool
+    """Whether a git repository was initialized."""
 
 
 @dataclass(frozen=True)
 class BootstrapRequest:
     """Validated request for creating a project from a workspace template.
-
-    Attributes
-    ----------
-    name : str
-        Project name.
-    description : str
-        One-line project description.
-    template_source : Path
-        Absolute path to the template directory.
-    target_dir : Path
-        Absolute path to the target directory.
-    template : TemplateConfig
-        Template configuration from the manifest.
-    defaults : EcosystemDefaults
-        Ecosystem-level defaults from the manifest.
-    initialize_git : bool
-        Whether to initialize a git repository.
-    dry_run : bool
-        Whether to skip side effects.
     """
 
     name: str
+    """Project name."""
     description: str
+    """One-line project description."""
     template_source: Path
+    """Absolute path to the template directory."""
     target_dir: Path
+    """Absolute path to the target directory."""
     template: TemplateConfig
+    """Template configuration from the manifest."""
     defaults: EcosystemDefaults
+    """Ecosystem-level defaults from the manifest."""
     initialize_git: bool = True
+    """Whether to initialize a git repository."""
     dry_run: bool = False
+    """Whether to skip side effects."""
 
 
 @dataclass(frozen=True)
 class WorkspaceBootstrapRequest:
     """High-level request for bootstrapping a project within a workspace.
-
-    Attributes
-    ----------
-    manifest_dir : Path
-        Absolute path to the workspace manifest directory.
-    name : str
-        Project name.
-    description : str
-        One-line project description.
-    template : TemplateConfig
-        Template configuration from the manifest.
-    defaults : EcosystemDefaults
-        Ecosystem-level defaults from the manifest.
-    discovery_scan_dirs : tuple[str, ...]
-        Scan directories declared in the manifest discovery section.
-    destination_root : str or None
-        Override for the destination scan directory.
-    initialize_git : bool
-        Whether to initialize a git repository.
-    dry_run : bool
-        Whether to skip side effects.
     """
 
     manifest_dir: Path
+    """Absolute path to the workspace manifest directory."""
     name: str
+    """Project name."""
     description: str
+    """One-line project description."""
     template: TemplateConfig
+    """Template configuration from the manifest."""
     defaults: EcosystemDefaults
+    """Ecosystem-level defaults from the manifest."""
     discovery_scan_dirs: tuple[str, ...]
+    """Scan directories declared in the manifest discovery section."""
     destination_root: str | None = None
+    """Override for the destination scan directory."""
     initialize_git: bool = True
+    """Whether to initialize a git repository."""
     dry_run: bool = False
+    """Whether to skip side effects."""
 
 
 @dataclass(frozen=True)
 class PlaceholderBindings:
     """Resolved template placeholder bindings.
-
-    Attributes
-    ----------
-    mappings : dict[str, str]
-        Placeholder-to-value mapping.
     """
 
     mappings: dict[str, str]
+    """Placeholder-to-value mapping."""
 
     def as_dict(self) -> dict[str, str]:
         """Return a plain dict copy of the bindings.
@@ -173,26 +114,18 @@ class PlaceholderBindings:
 @dataclass(frozen=True)
 class BootstrapServices:
     """Injected infrastructure for the project bootstrap workflow.
-
-    Attributes
-    ----------
-    read_git_identity : Callable[[], tuple[str, str]]
-        Read the git user name and email.
-    copy_template : Callable[[Path, Path], None]
-        Copy a template directory to a target directory.
-    substitute_directory : Callable[[Path, dict[str, str], tuple[str, str], tuple[str, ...]], int]
-        Substitute placeholders in all files under a directory.
-    rename_paths : Callable[[Path, dict[str, str], dict[str, str], tuple[str, str]], int]
-        Rename files and directories using the bindings.
-    init_repository : Callable[[Path], None]
-        Initialize a git repository in the given directory.
     """
 
     read_git_identity: Callable[[], tuple[str, str]]
+    """Read the git user name and email."""
     copy_template: Callable[[Path, Path], None]
+    """Copy a template directory to a target directory."""
     substitute_directory: Callable[[Path, dict[str, str], tuple[str, str], tuple[str, ...]], int]
+    """Substitute placeholders in all files under a directory."""
     rename_paths: Callable[[Path, dict[str, str], dict[str, str], tuple[str, str]], int]
+    """Rename files and directories using the bindings."""
     init_repository: Callable[[Path], None]
+    """Initialize a git repository in the given directory."""
 
 
 def plan_bootstrap_request(request: WorkspaceBootstrapRequest) -> BootstrapRequest:

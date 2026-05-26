@@ -1,45 +1,4 @@
 """Protocol interfaces for workspace infrastructure capabilities.
-
-Classes
--------
-MetadataExtractor
-    Extract project metadata from a directory.
-DependencyScanner
-    Scan a project directory for inter-project dependency edges.
-EnvironmentReader
-    Read a Conda environment spec from a project directory.
-FileReader
-    Read file content from disk.
-FileWriter
-    Write file content to disk.
-FileHasher
-    Compute a content hash for drift detection.
-PackageDataLoader
-    Load bundled package data resources.
-WorkspaceFileRenderer
-    Render a VS Code .code-workspace file.
-ProjectsYamlRenderer
-    Render the projects registry YAML.
-DependencyYamlRenderer
-    Render the dependency graph YAML.
-EnvironmentRenderer
-    Render the shared Conda environment YAML.
-GenerationServices
-    Bundled infrastructure services for workspace artifact generation.
-GitOperations
-    Git operations needed for submodule synchronization.
-CommandResult
-    Captured output from a subprocess execution.
-CommandRunner
-    Run a command in a working directory and capture its output.
-BulkOperation
-    Operation executable on a single project within a bulk run.
-TreeScanner
-    Scan a project directory and return its file-tree snapshot.
-StructuredParser
-    Parse structured text content into a nested dict.
-SpecLoader
-    Load a comparison instruction file into a typed specification.
 """
 
 from __future__ import annotations
@@ -205,32 +164,22 @@ class EnvironmentRenderer(Protocol):
 @dataclass(frozen=True)
 class GenerationServices:
     """Bundled infrastructure services for workspace artifact generation.
-
-    Attributes
-    ----------
-    render_workspace_file : WorkspaceFileRenderer
-        Renderer for the VS Code workspace file.
-    render_projects_yaml : ProjectsYamlRenderer
-        Renderer for the projects registry YAML.
-    render_dependency_yaml : DependencyYamlRenderer
-        Renderer for the dependency graph YAML.
-    render_environment : EnvironmentRenderer
-        Renderer for the shared Conda environment YAML.
-    writer : FileWriter
-        File writer for generated artifacts.
-    reader : FileReader
-        File reader for existing artifacts.
-    hasher : FileHasher
-        Content hasher for drift detection.
     """
 
     render_workspace_file: WorkspaceFileRenderer
+    """Renderer for the VS Code workspace file."""
     render_projects_yaml: ProjectsYamlRenderer
+    """Renderer for the projects registry YAML."""
     render_dependency_yaml: DependencyYamlRenderer
+    """Renderer for the dependency graph YAML."""
     render_environment: EnvironmentRenderer
+    """Renderer for the shared Conda environment YAML."""
     writer: FileWriter
+    """File writer for generated artifacts."""
     reader: FileReader
+    """File reader for existing artifacts."""
     hasher: FileHasher
+    """Content hasher for drift detection."""
 
 
 # --- Git operations -----------------------------------------------------------
@@ -363,20 +312,14 @@ class GitOperations(Protocol):
 @dataclass(frozen=True)
 class CommandResult:
     """Captured output from a subprocess execution.
-
-    Attributes
-    ----------
-    return_code : int
-        Process exit code.
-    stdout : str
-        Captured standard output.
-    stderr : str
-        Captured standard error.
     """
 
     return_code: int
+    """Process exit code."""
     stdout: str
+    """Captured standard output."""
     stderr: str
+    """Captured standard error."""
 
 
 class CommandRunner(Protocol):

@@ -1,11 +1,4 @@
 """Typer commands for cross-project comparison.
-
-Functions
----------
-compare_tree
-    Compare directory structures across projects.
-compare_files_cmd
-    Compare specific files across projects.
 """
 
 from __future__ import annotations

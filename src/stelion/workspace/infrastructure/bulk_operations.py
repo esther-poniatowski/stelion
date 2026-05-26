@@ -1,13 +1,4 @@
 """Concrete bulk operation implementations.
-
-Classes
--------
-ShellOperation
-    Run an arbitrary shell command in each project directory.
-GitCommitOperation
-    Stage tracked changes and commit, skipping clean working trees.
-GitPushOperation
-    Push the current branch to a remote.
 """
 
 from __future__ import annotations

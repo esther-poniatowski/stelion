@@ -1,9 +1,4 @@
 """Loader for comparison instruction files.
-
-Classes
--------
-YamlSpecLoader
-    Load and validate a comparison instruction YAML file.
 """
 
 from __future__ import annotations

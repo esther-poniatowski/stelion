@@ -1,17 +1,4 @@
 """Typer command group for workspace management.
-
-Functions
----------
-workspace_init
-    Initialize or regenerate a workspace from its manifest.
-workspace_sync
-    Re-scan projects and update generated workspace files.
-workspace_register
-    Register an existing project into workspace artifacts.
-workspace_new
-    Bootstrap a new project from the template.
-workspace_status
-    Show which generated files are out of date.
 """
 
 from __future__ import annotations

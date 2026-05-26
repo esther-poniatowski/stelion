@@ -1,13 +1,4 @@
 """File system operations: read, write, copy, hash.
-
-Classes
--------
-LocalFileReader
-    Read file content from the local filesystem.
-LocalFileWriter
-    Write file content to the local filesystem.
-SHA256Hasher
-    Compute SHA-256 hash of string content for drift detection.
 """
 
 from __future__ import annotations

@@ -1,23 +1,4 @@
 """Domain models for submodule synchronization.
-
-Classes
--------
-SyncOrigin
-    How the source commit for synchronization is determined.
-Superproject
-    A project that consumes dependencies as git submodules.
-SubmoduleTarget
-    A superproject containing a submodule that should be updated.
-PushSpec
-    Remote push parameters.
-SyncPlan
-    Resolved plan for propagating a commit across all replicas of a dependency.
-OutcomeKind
-    Which replica kind a sync outcome refers to.
-SyncOutcome
-    Result of a single synchronization action.
-SyncResult
-    Aggregated outcomes from executing a sync plan.
 """
 
 from __future__ import annotations
@@ -38,86 +19,59 @@ class SyncOrigin(Enum):
 @dataclass(frozen=True)
 class Superproject:
     """A project that consumes dependencies as git submodules.
-
-    Attributes
-    ----------
-    name : str
-        Project name.
-    path : Path
-        Filesystem path to the superproject root.
     """
 
     name: str
+    """Project name."""
     path: Path
+    """Filesystem path to the superproject root."""
 
 
 @dataclass(frozen=True)
 class SubmoduleTarget:
     """A superproject containing a submodule that should be updated.
-
-    Attributes
-    ----------
-    superproject_name : str
-        Name of the superproject.
-    superproject_dir : Path
-        Filesystem path to the superproject root.
-    submodule_path : str
-        Relative path of the submodule within the superproject.
     """
 
     superproject_name: str
+    """Name of the superproject."""
     superproject_dir: Path
+    """Filesystem path to the superproject root."""
     submodule_path: str
+    """Relative path of the submodule within the superproject."""
 
 
 @dataclass(frozen=True)
 class PushSpec:
     """Remote push parameters.
-
-    Attributes
-    ----------
-    repo_dir : Path
-        Filesystem path to the repository.
-    remote : str
-        Name of the git remote.
-    branch : str
-        Branch to push.
     """
 
     repo_dir: Path
+    """Filesystem path to the repository."""
     remote: str
+    """Name of the git remote."""
     branch: str
+    """Branch to push."""
 
 
 @dataclass(frozen=True)
 class SyncPlan:
     """Resolved plan for propagating a commit across all replicas of a dependency.
-
-    Attributes
-    ----------
-    dependency : str
-        Name of the dependency being synchronized.
-    origin : SyncOrigin
-        How the source commit was determined.
-    source_label : str
-        Human-readable description of the commit source.
-    target_commit : str
-        Git commit hash to propagate.
-    submodule_targets : tuple[SubmoduleTarget, ...]
-        Superprojects whose submodule pointers should be updated.
-    local_dir : Path | None
-        Local clone directory, if the dependency has one.
-    push_spec : PushSpec | None
-        Remote push parameters, if a push is planned.
     """
 
     dependency: str
+    """Name of the dependency being synchronized."""
     origin: SyncOrigin
+    """How the source commit was determined."""
     source_label: str
+    """Human-readable description of the commit source."""
     target_commit: str
+    """Git commit hash to propagate."""
     submodule_targets: tuple[SubmoduleTarget, ...]
+    """Superprojects whose submodule pointers should be updated."""
     local_dir: Path | None = None
+    """Local clone directory, if the dependency has one."""
     push_spec: PushSpec | None = None
+    """Remote push parameters, if a push is planned."""
 
 
 class OutcomeKind(Enum):
@@ -131,48 +85,33 @@ class OutcomeKind(Enum):
 @dataclass(frozen=True)
 class SyncOutcome:
     """Result of a single synchronization action.
-
-    Attributes
-    ----------
-    kind : OutcomeKind
-        Which replica kind was targeted.
-    label : str
-        Human-readable identifier for the target.
-    old_ref : str
-        Git ref before the sync action.
-    new_ref : str
-        Git ref after the sync action.
-    applied : bool
-        Whether the action actually changed the replica.
-    error : str
-        Error message, empty on success.
     """
 
     kind: OutcomeKind
+    """Which replica kind was targeted."""
     label: str
+    """Human-readable identifier for the target."""
     old_ref: str
+    """Git ref before the sync action."""
     new_ref: str
+    """Git ref after the sync action."""
     applied: bool
+    """Whether the action actually changed the replica."""
     error: str = ""
+    """Error message, empty on success."""
 
 
 @dataclass(frozen=True)
 class SyncResult:
     """Aggregated outcomes from executing a sync plan.
-
-    Attributes
-    ----------
-    dependency : str
-        Name of the dependency that was synchronized.
-    target_commit : str
-        Git commit hash that was propagated.
-    outcomes : tuple[SyncOutcome, ...]
-        Per-replica outcomes in execution order.
     """
 
     dependency: str
+    """Name of the dependency that was synchronized."""
     target_commit: str
+    """Git commit hash that was propagated."""
     outcomes: tuple[SyncOutcome, ...] = ()
+    """Per-replica outcomes in execution order."""
 
     @property
     def applied_count(self) -> int:

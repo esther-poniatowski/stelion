@@ -1,9 +1,4 @@
 """Concrete git operations for submodule synchronization.
-
-Classes
--------
-SubprocessGitOperations
-    Git operations implemented via subprocess calls.
 """
 
 from __future__ import annotations

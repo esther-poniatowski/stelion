@@ -1,11 +1,4 @@
 """Application use-cases for cross-project comparison.
-
-Functions
----------
-compare_trees
-    Scan each project's file tree and match nodes hierarchically.
-compare_files
-    Compare specific files across projects.
 """
 
 from __future__ import annotations

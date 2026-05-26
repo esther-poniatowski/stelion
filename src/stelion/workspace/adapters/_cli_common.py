@@ -1,11 +1,4 @@
 """Shared CLI utilities for adapter commands.
-
-Functions
----------
-parse_project_filter
-    Convert CLI option strings into a ``ProjectFilter``.
-resolve_workspace
-    Load a manifest and build the full workspace context.
 """
 
 from __future__ import annotations

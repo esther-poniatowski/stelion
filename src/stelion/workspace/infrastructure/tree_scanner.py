@@ -1,9 +1,4 @@
 """Filesystem tree scanner for cross-project comparison.
-
-Classes
--------
-LocalTreeScanner
-    Scan a project directory and return a TreeSnapshot.
 """
 
 from __future__ import annotations

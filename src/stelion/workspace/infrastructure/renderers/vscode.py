@@ -1,14 +1,4 @@
 """Render VS Code .code-workspace files (JSON with comments).
-
-Classes
--------
-VSCodeWorkspaceFileRenderer
-    Render a VS Code workspace file using injected package data loading.
-
-Functions
----------
-_relative_path
-    Compute a relative path from the manifest directory to the project.
 """
 
 from __future__ import annotations

@@ -5,17 +5,6 @@ patterns (GitHub Actions ``${{ }}``, Conda Jinja2 ``{{ pyproject.* }}``).
 
 This is a standalone Phase 1 implementation. When stelion's full template
 engine is built, this module can be replaced via the protocol interface.
-
-Functions
----------
-substitute_in_file
-    Replace placeholder strings in a single file.
-substitute_in_directory
-    Replace placeholders in all text files under a directory.
-copy_template
-    Copy a template directory, excluding .git.
-rename_paths
-    Rename directories and files according to the rename mapping.
 """
 
 from __future__ import annotations

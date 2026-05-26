@@ -23,11 +23,6 @@ To programmatically retrieve the package version:
     >>> import stelion
     >>> stelion.__version__
     '0.1.0'
-
-Functions
----------
-info() -> str
-    Format diagnostic information about the package and platform.
 """
 from importlib.metadata import version, PackageNotFoundError
 import platform

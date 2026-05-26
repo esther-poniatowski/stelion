@@ -1,11 +1,4 @@
 """Concrete dependency scanners used by the workspace graph builder.
-
-Classes
--------
-EditablePipDependencyScanner
-    Detect editable pip dependencies from environment.yml files.
-GitmodulesDependencyScanner
-    Detect git submodule dependencies.
 """
 
 from __future__ import annotations
@@ -62,11 +55,6 @@ class EditablePipDependencyScanner:
     Parameters
     ----------
     env_reader : EnvironmentReader
-        Reader used to load environment specs from disk.
-
-    Attributes
-    ----------
-    _env_reader : EnvironmentReader
         Reader used to load environment specs from disk.
     """
 

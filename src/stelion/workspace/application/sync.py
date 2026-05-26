@@ -1,26 +1,4 @@
 """Submodule synchronization use-case.
-
-Classes
--------
-SyncOriginResolver
-    Strategy for resolving the source commit in a sync operation.
-LocalOriginResolver
-    Resolve sync origin from the local clone's HEAD.
-SuperprojectOriginResolver
-    Resolve sync origin from a superproject's submodule pointer.
-RemoteOriginResolver
-    Resolve sync origin from the remote tracking branch.
-
-Functions
----------
-resolve_submodule_targets
-    Extract git-submodule edges for a dependency and resolve to filesystem targets.
-make_resolver
-    Factory for creating the appropriate resolver from an origin enum.
-plan_sync
-    Determine the source commit, local update, remote push, and submodule targets.
-execute_sync
-    Execute sync plan in order: local clone, remote push, submodule pointers.
 """
 
 from __future__ import annotations

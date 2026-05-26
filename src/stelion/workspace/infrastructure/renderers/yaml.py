@@ -1,13 +1,4 @@
 """Render YAML workspace artifacts: dependencies.yml, projects.yml, environment.yml.
-
-Functions
----------
-render_dependency_yaml
-    Generate dependencies.yml as a structured YAML file.
-render_projects_yaml
-    Generate projects.yml as a structured YAML registry.
-render_environment
-    Generate a shared Conda environment.yml.
 """
 
 from __future__ import annotations

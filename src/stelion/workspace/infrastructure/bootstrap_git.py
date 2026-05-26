@@ -1,11 +1,4 @@
 """Git-backed bootstrap helpers.
-
-Functions
----------
-read_git_identity
-    Read author identity from git config when available.
-init_repository
-    Initialize a git repository for a bootstrapped project.
 """
 
 from __future__ import annotations

@@ -1,14 +1,4 @@
 """Domain models and logic for Conda environment specifications.
-
-Classes
--------
-EnvironmentSpec
-    Parsed content of a Conda environment.yml file.
-
-Functions
----------
-merge_environments
-    Merge multiple environment specs into one, de-duplicating entries.
 """
 
 from __future__ import annotations
@@ -19,26 +9,18 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class EnvironmentSpec:
     """Parsed content of a Conda environment.yml file.
-
-    Attributes
-    ----------
-    name : str
-        Environment name.
-    channels : tuple[str, ...]
-        Conda channels in priority order.
-    dependencies : tuple[str, ...]
-        Conda package specifications.
-    pip_dependencies : tuple[str, ...]
-        Pip package specifications.
-    issues : tuple[str, ...]
-        Parsing warnings or errors encountered during extraction.
     """
 
     name: str = ""
+    """Environment name."""
     channels: tuple[str, ...] = ()
+    """Conda channels in priority order."""
     dependencies: tuple[str, ...] = ()
+    """Conda package specifications."""
     pip_dependencies: tuple[str, ...] = ()
+    """Pip package specifications."""
     issues: tuple[str, ...] = ()
+    """Parsing warnings or errors encountered during extraction."""
 
 
 def merge_environments(specs: list[EnvironmentSpec], name: str) -> EnvironmentSpec:

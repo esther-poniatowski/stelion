@@ -1,58 +1,4 @@
 """Composition root: constructs infrastructure and wires use-cases.
-
-Classes
--------
-WorkspaceServices
-    Container holding all wired infrastructure implementations.
-WorkspaceContext
-    Fully resolved workspace state: manifest + discovered data.
-WorkspaceRegistrationResult
-    Result of registering a project into the workspace and regenerating artifacts.
-ComparisonServices
-    Container for cross-project comparison infrastructure.
-
-Functions
----------
-create_services
-    Build and return the full set of workspace infrastructure services.
-create_bootstrap_services
-    Build the injected services for workspace project bootstrapping.
-create_manifest_init_services
-    Build the collaborators for initializing a workspace manifest.
-resolve_manifest
-    Load and return a validated workspace manifest.
-build_workspace_context
-    Discover projects, build the dependency graph, and merge environments.
-initialize_workspace_manifest
-    Create and optionally write a default manifest for a new workspace.
-run_generate
-    Generate all or a selected subset of workspace artifacts.
-run_drift_check
-    Compute drift without writing any files.
-target_output_paths
-    List generation target output paths using ``compute_artifact_specs``.
-target_paths
-    List generation target output paths (backward-compatible alias).
-register_workspace_project
-    Register a project, persist manifest updates, and regenerate artifacts.
-create_git_operations
-    Build the git operations infrastructure for submodule sync.
-run_submodule_sync
-    Resolve, plan, and execute a submodule sync for a dependency.
-create_command_runner
-    Build the command runner infrastructure for bulk operations.
-run_bulk_exec
-    Select projects and run an arbitrary shell command on each.
-run_bulk_commit
-    Select projects and commit tracked changes on each.
-run_bulk_push
-    Select projects and push to remote on each.
-run_compare_trees
-    Select projects and compare their directory structures.
-run_compare_files
-    Select projects and compare specific files across them.
-create_comparison_services
-    Build the infrastructure services for comparison operations.
 """
 
 from __future__ import annotations
@@ -145,85 +91,58 @@ from .infrastructure.tree_scanner import LocalTreeScanner
 @dataclass(frozen=True)
 class WorkspaceServices:
     """Container holding all wired infrastructure implementations.
-
-    Attributes
-    ----------
-    extractor : MetadataExtractor
-        Extracts project metadata from project directories.
-    env_reader : EnvironmentReader
-        Reads Conda environment specs from project directories.
-    dependency_scanners : tuple[DependencyScanner, ...]
-        Scanners that detect inter-project dependency edges.
-    writer : FileWriter
-        Writes file content to disk.
-    reader : FileReader
-        Reads file content from disk.
-    hasher : FileHasher
-        Computes content hashes for drift detection.
-    render_workspace_file : WorkspaceFileRenderer
-        Renders the VS Code ``.code-workspace`` file.
-    render_projects_yaml : ProjectsYamlRenderer
-        Renders the projects registry YAML.
-    render_dependency_yaml : DependencyYamlRenderer
-        Renders the dependency graph YAML.
-    render_environment : EnvironmentRenderer
-        Renders the shared Conda environment YAML.
     """
 
     extractor: MetadataExtractor
+    """Extracts project metadata from project directories."""
     env_reader: EnvironmentReader
+    """Reads Conda environment specs from project directories."""
     dependency_scanners: tuple[DependencyScanner, ...]
+    """Scanners that detect inter-project dependency edges."""
     writer: FileWriter
+    """Writes file content to disk."""
     reader: FileReader
+    """Reads file content from disk."""
     hasher: FileHasher
+    """Computes content hashes for drift detection."""
     render_workspace_file: WorkspaceFileRenderer
+    """Renders the VS Code ``.code-workspace`` file."""
     render_projects_yaml: ProjectsYamlRenderer
+    """Renders the projects registry YAML."""
     render_dependency_yaml: DependencyYamlRenderer
+    """Renders the dependency graph YAML."""
     render_environment: EnvironmentRenderer
+    """Renders the shared Conda environment YAML."""
 
 
 @dataclass(frozen=True)
 class WorkspaceContext:
     """Fully resolved workspace state: manifest + discovered data.
-
-    Attributes
-    ----------
-    manifest : WorkspaceManifest
-        The loaded workspace manifest.
-    inventory : ProjectInventory
-        Discovered projects in the workspace.
-    graph : DependencyGraph
-        Inter-project dependency graph.
-    environment : EnvironmentSpec
-        Merged shared environment specification.
     """
 
     manifest: WorkspaceManifest
+    """The loaded workspace manifest."""
     inventory: ProjectInventory
+    """Discovered projects in the workspace."""
     graph: DependencyGraph
+    """Inter-project dependency graph."""
     environment: EnvironmentSpec
+    """Merged shared environment specification."""
 
 
 @dataclass(frozen=True)
 class WorkspaceRegistrationResult:
     """Result of registering a project into the workspace and regenerating artifacts.
-
-    Attributes
-    ----------
-    manifest : WorkspaceManifest
-        The workspace manifest after registration.
-    project : ProjectMetadata
-        Metadata of the newly registered project.
-    manifest_updated : bool
-        Whether the manifest was modified during registration.
-    generated : tuple[GenerationResult, ...]
-        Artifacts regenerated after registration.
     """
 
     manifest: WorkspaceManifest
+    """The workspace manifest after registration."""
     project: ProjectMetadata
+    """Metadata of the newly registered project."""
     manifest_updated: bool
+    """Whether the manifest was modified during registration."""
     generated: tuple[GenerationResult, ...]
+    """Artifacts regenerated after registration."""
 
 
 def create_services() -> WorkspaceServices:
@@ -806,23 +725,16 @@ def _run_bulk(
 @dataclass(frozen=True)
 class ComparisonServices:
     """Container for cross-project comparison infrastructure.
-
-    Attributes
-    ----------
-    scanner : TreeScanner
-        Scans project directories for file-tree snapshots.
-    parser : StructuredParser
-        Parses structured file content into nested dicts.
-    spec_loader : SpecLoader
-        Loads comparison instruction files into typed specifications.
-    reader : FileReader
-        Reads file content from disk.
     """
 
     scanner: TreeScanner
+    """Scans project directories for file-tree snapshots."""
     parser: StructuredParser
+    """Parses structured file content into nested dicts."""
     spec_loader: SpecLoader
+    """Loads comparison instruction files into typed specifications."""
     reader: FileReader
+    """Reads file content from disk."""
 
 
 def create_comparison_services() -> ComparisonServices:

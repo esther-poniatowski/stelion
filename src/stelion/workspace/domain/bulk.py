@@ -1,15 +1,4 @@
 """Domain models for bulk operations across projects.
-
-Classes
--------
-ProjectFilter
-    Criteria for selecting a subset of projects.
-OutcomeStatus
-    Result status for a single project within a bulk operation.
-ProjectOutcome
-    Outcome of executing a bulk operation on a single project.
-BulkResult
-    Aggregated outcomes from a bulk operation across projects.
 """
 
 from __future__ import annotations
@@ -22,23 +11,16 @@ from pathlib import Path
 @dataclass(frozen=True)
 class ProjectFilter:
     """Criteria for selecting a subset of projects.
-
-    Attributes
-    ----------
-    names : tuple[str, ...]
-        Explicit project names to include.
-    pattern : str | None
-        Glob pattern for matching project names.
-    git_only : bool
-        If true, restrict to projects with a git repository.
-    exclude : tuple[str, ...]
-        Project names to exclude from selection.
     """
 
     names: tuple[str, ...] = ()
+    """Explicit project names to include."""
     pattern: str | None = None
+    """Glob pattern for matching project names."""
     git_only: bool = False
+    """If true, restrict to projects with a git repository."""
     exclude: tuple[str, ...] = ()
+    """Project names to exclude from selection."""
 
 
 class OutcomeStatus(Enum):
@@ -52,42 +34,29 @@ class OutcomeStatus(Enum):
 @dataclass(frozen=True)
 class ProjectOutcome:
     """Outcome of executing a bulk operation on a single project.
-
-    Attributes
-    ----------
-    project : str
-        Name of the project.
-    path : Path
-        Filesystem path to the project directory.
-    status : OutcomeStatus
-        Result status of the operation.
-    detail : str
-        Human-readable description of the outcome.
-    error : str
-        Error message, empty if the operation succeeded.
     """
 
     project: str
+    """Name of the project."""
     path: Path
+    """Filesystem path to the project directory."""
     status: OutcomeStatus
+    """Result status of the operation."""
     detail: str
+    """Human-readable description of the outcome."""
     error: str = ""
+    """Error message, empty if the operation succeeded."""
 
 
 @dataclass(frozen=True)
 class BulkResult:
     """Aggregated outcomes from a bulk operation across projects.
-
-    Attributes
-    ----------
-    label : str
-        Human-readable label describing the bulk operation.
-    outcomes : tuple[ProjectOutcome, ...]
-        Per-project outcomes in execution order.
     """
 
     label: str
+    """Human-readable label describing the bulk operation."""
     outcomes: tuple[ProjectOutcome, ...] = ()
+    """Per-project outcomes in execution order."""
 
     @property
     def success_count(self) -> int:

@@ -1,18 +1,4 @@
 """Domain models for inter-project dependency tracking.
-
-Classes
--------
-DependencyMechanism
-    How one project depends on another.
-DependencyEdge
-    A resolved dependency between two projects.
-DependencyGraph
-    Complete dependency graph: auto-detected and manual edges.
-
-Functions
----------
-manual_edge_to_dependency_edge
-    Convert a manifest ManualEdge to a resolved DependencyEdge.
 """
 
 from __future__ import annotations
@@ -34,39 +20,27 @@ class DependencyMechanism(Enum):
 @dataclass(frozen=True)
 class DependencyEdge:
     """A resolved dependency between two projects.
-
-    Attributes
-    ----------
-    dependent : str
-        Name of the downstream project.
-    dependency : str
-        Name of the upstream project.
-    mechanism : DependencyMechanism
-        How the dependency is realized.
-    detail : str
-        Additional context about the edge.
     """
 
     dependent: str
+    """Name of the downstream project."""
     dependency: str
+    """Name of the upstream project."""
     mechanism: DependencyMechanism
+    """How the dependency is realized."""
     detail: str = ""
+    """Additional context about the edge."""
 
 
 @dataclass(frozen=True)
 class DependencyGraph:
     """Complete dependency graph: auto-detected and manual edges.
-
-    Attributes
-    ----------
-    detected : tuple[DependencyEdge, ...]
-        Edges discovered automatically from project configuration files.
-    manual : tuple[DependencyEdge, ...]
-        Edges declared explicitly in the workspace manifest.
     """
 
     detected: tuple[DependencyEdge, ...] = ()
+    """Edges discovered automatically from project configuration files."""
     manual: tuple[DependencyEdge, ...] = ()
+    """Edges declared explicitly in the workspace manifest."""
 
     @property
     def all_edges(self) -> tuple[DependencyEdge, ...]:

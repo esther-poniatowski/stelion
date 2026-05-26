@@ -1,15 +1,4 @@
 """Domain models for project metadata and inventory.
-
-Classes
--------
-MetadataStatus
-    Status of metadata extracted from a project directory.
-GithubSlug
-    A validated GitHub owner/repo identifier.
-ProjectMetadata
-    Metadata extracted from a single project's pyproject.toml and filesystem.
-ProjectInventory
-    Collection of discovered projects.
 """
 
 from __future__ import annotations
@@ -34,17 +23,12 @@ class MetadataStatus(StrEnum):
 @dataclass(frozen=True)
 class GithubSlug:
     """A validated GitHub owner/repo identifier.
-
-    Attributes
-    ----------
-    owner : str
-        GitHub user or organisation name.
-    repo : str
-        Repository name.
     """
 
     owner: str
+    """GitHub user or organisation name."""
     repo: str
+    """Repository name."""
 
     @classmethod
     def parse(cls, raw: str) -> GithubSlug:
@@ -102,54 +86,37 @@ class GithubSlug:
 @dataclass(frozen=True)
 class ProjectMetadata:
     """Metadata extracted from a single project's pyproject.toml and filesystem.
-
-    Attributes
-    ----------
-    name : str
-        Project name from pyproject.toml.
-    path : Path
-        Filesystem path to the project root.
-    description : str
-        Short project description.
-    version : str
-        Declared version string.
-    homepage : str | None
-        Project homepage URL.
-    github : GithubSlug | None
-        Parsed GitHub owner/repo identifier.
-    has_git : bool
-        Whether the project directory is a git repository.
-    languages : tuple[str, ...]
-        Programming languages detected in the project.
-    status : MetadataStatus
-        Parsing status of the metadata extraction.
-    issue : str
-        Error or warning message from metadata extraction.
     """
 
     name: str
+    """Project name from pyproject.toml."""
     path: Path
+    """Filesystem path to the project root."""
     description: str = ""
+    """Short project description."""
     version: str = "0.0.0"
+    """Declared version string."""
     homepage: str | None = None
+    """Project homepage URL."""
     github: GithubSlug | None = None
+    """Parsed GitHub owner/repo identifier."""
     has_git: bool = False
+    """Whether the project directory is a git repository."""
     languages: tuple[str, ...] = ()
+    """Programming languages detected in the project."""
     status: MetadataStatus = MetadataStatus.CURRENT
+    """Parsing status of the metadata extraction."""
     issue: str = ""
+    """Error or warning message from metadata extraction."""
 
 
 @dataclass(frozen=True)
 class ProjectInventory:
     """Collection of discovered projects.
-
-    Attributes
-    ----------
-    projects : tuple[ProjectMetadata, ...]
-        Discovered project metadata entries.
     """
 
     projects: tuple[ProjectMetadata, ...] = ()
+    """Discovered project metadata entries."""
 
     def by_name(self) -> dict[str, ProjectMetadata]:
         """Index projects by name.

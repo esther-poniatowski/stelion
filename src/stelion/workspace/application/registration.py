@@ -2,22 +2,6 @@
 
 Registers an existing project into workspace artifacts without regenerating
 everything. Used for copy-pasted, imported, or manually created projects.
-
-Classes
--------
-RegistrationResult
-    Outcome of registering a project.
-ExecuteRegistrationResult
-    Full outcome of registering and regenerating workspace artifacts.
-
-Functions
----------
-register_project
-    Extract metadata from a project directory for registration.
-apply_registration
-    Return the manifest state needed to include a project in the workspace.
-execute_registration
-    Full registration use-case: inspect, update manifest, regenerate artifacts.
 """
 
 from __future__ import annotations
@@ -37,42 +21,29 @@ from .protocols import GenerationServices, MetadataExtractor
 @dataclass(frozen=True)
 class RegistrationResult:
     """Outcome of registering a project.
-
-    Attributes
-    ----------
-    manifest : WorkspaceManifest
-        Workspace manifest after registration (may be unchanged).
-    project : ProjectMetadata
-        Metadata of the registered project.
-    manifest_updated : bool
-        Whether the manifest was modified to include the project.
     """
 
     manifest: WorkspaceManifest
+    """Workspace manifest after registration (may be unchanged)."""
     project: ProjectMetadata
+    """Metadata of the registered project."""
     manifest_updated: bool
+    """Whether the manifest was modified to include the project."""
 
 
 @dataclass(frozen=True)
 class ExecuteRegistrationResult:
     """Full outcome of registering and regenerating workspace artifacts.
-
-    Attributes
-    ----------
-    manifest : WorkspaceManifest
-        Workspace manifest after registration.
-    project : ProjectMetadata
-        Metadata of the registered project.
-    manifest_updated : bool
-        Whether the manifest was modified to include the project.
-    generated : tuple[GenerationResult, ...]
-        Results of regenerating workspace artifacts.
     """
 
     manifest: WorkspaceManifest
+    """Workspace manifest after registration."""
     project: ProjectMetadata
+    """Metadata of the registered project."""
     manifest_updated: bool
+    """Whether the manifest was modified to include the project."""
     generated: tuple[GenerationResult, ...]
+    """Results of regenerating workspace artifacts."""
 
 
 def register_project(

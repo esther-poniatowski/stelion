@@ -1,9 +1,4 @@
 """Extract ProjectMetadata from a project's pyproject.toml.
-
-Classes
--------
-PyprojectExtractor
-    Read pyproject.toml and produce a ProjectMetadata instance.
 """
 
 from __future__ import annotations

@@ -1,24 +1,18 @@
-"""
-Command-line interface for the `stelion` package.
+"""Command-line interface for the `stelion` package.
 
-Defines commands available via `python -m stelion` or `stelion` if installed as a script.
+Defines commands available via ``python -m stelion`` or ``stelion`` if installed as a script.
 
-Commands
---------
-info : Display diagnostic information.
-workspace : Multi-project workspace management.
+Top-level commands:
+
+- ``info``: Display diagnostic information.
+- ``workspace``: Multi-project workspace management.
+- ``submodule``: Submodule synchronization commands.
+- ``compare``: Cross-project comparison commands.
 
 See Also
 --------
 typer.Typer
     Library for building CLI applications: https://typer.tiangolo.com/
-
-Functions
----------
-cli_info
-    Display version and platform diagnostics.
-main_callback
-    Root command for the package command-line interface.
 """
 
 import typer

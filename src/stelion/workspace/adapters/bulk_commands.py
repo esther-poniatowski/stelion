@@ -1,13 +1,4 @@
 """Typer commands for bulk operations across workspace projects.
-
-Functions
----------
-workspace_exec
-    Run an arbitrary shell command in each project directory.
-workspace_commit
-    Stage tracked changes and commit across projects.
-workspace_push
-    Push the current branch to a remote across projects.
 """
 
 from __future__ import annotations

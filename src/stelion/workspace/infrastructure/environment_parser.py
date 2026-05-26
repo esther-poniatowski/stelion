@@ -1,9 +1,4 @@
 """Parse Conda environment.yml files into EnvironmentSpec.
-
-Classes
--------
-CondaEnvironmentReader
-    Read and parse a project's environment.yml.
 """
 
 from __future__ import annotations

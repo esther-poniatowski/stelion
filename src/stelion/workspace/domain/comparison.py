@@ -1,62 +1,4 @@
 """Immutable domain models and pure functions for cross-project comparison.
-
-Classes
--------
-MatchMethod
-    How correspondence between nodes was established.
-ContentKind
-    Dispatches the comparison strategy for file content.
-FileGranularity
-    Level of detail for file content comparison.
-TreeTarget
-    Target specification for architecture (tree) comparison.
-FileTargetEntry
-    One logical file to compare across projects.
-FileTarget
-    Target specification for file content comparison.
-ComparisonSpec
-    Full declarative specification for a comparison operation.
-TreeEntry
-    A single node within a project's file tree.
-TreeSnapshot
-    Complete file-tree scan for one project.
-NodeMatch
-    An N-way mapping of one logical node across projects.
-TreeSummary
-    Aggregate counts for a tree comparison.
-TreeReport
-    Full architecture comparison result.
-FieldDiff
-    One structured field compared across N projects.
-VariantGroup
-    Projects with identical content for an unstructured file.
-PairwiseSimilarity
-    Similarity score between two projects for an unstructured file.
-ReferenceDiff
-    Unified diff against the reference project for one compared file.
-FileDiffResult
-    Comparison result for one logical file across projects.
-FileSummary
-    Aggregate counts for a file comparison.
-FileReport
-    Full file comparison result.
-
-Functions
----------
-match_tree_nodes
-    Match file-tree nodes across projects hierarchically.
-diff_structured
-    Compare parsed structured data field by field across projects.
-group_variants
-    Group projects by identical content.
-compute_pairwise_similarity
-    Compute SequenceMatcher ratio for every pair of projects.
-compute_reference_diffs
-    Compute unified diffs from the reference project to every other project.
-compute_tree_summary
-    Derive aggregate counts from matched nodes.
-compute_file_summary
-    Derive aggregate counts from file comparison results.
 """
 
 from __future__ import annotations
@@ -104,42 +46,29 @@ class FileGranularity(StrEnum):
 @dataclass(frozen=True)
 class TreeTarget:
     """Target specification for architecture (tree) comparison.
-
-    Attributes
-    ----------
-    subtree : str | None
-        Relative path prefix to restrict the comparison scope.
-    include_patterns : tuple[str, ...]
-        Glob patterns for paths to include.
-    exclude_patterns : tuple[str, ...]
-        Glob patterns for paths to exclude.
     """
 
     subtree: str | None = None
+    """Relative path prefix to restrict the comparison scope."""
     include_patterns: tuple[str, ...] = ()
+    """Glob patterns for paths to include."""
     exclude_patterns: tuple[str, ...] = ()
+    """Glob patterns for paths to exclude."""
 
 
 @dataclass(frozen=True)
 class FileTargetEntry:
     """One logical file to compare across projects.
-
-    Attributes
-    ----------
-    canonical : str
-        The standard relative path (e.g. ``pyproject.toml``).
-    overrides : Mapping[str, str]
-        Project-specific path remappings: ``{project_name: actual_path}``.
-    selectors : tuple[str, ...]
-        Dotted field paths to compare for structured files (empty = all).
-    parser_hint : str | None
-        Force a parser regardless of extension (e.g. ``"toml"``).
     """
 
     canonical: str
+    """The standard relative path (e.g. ``pyproject.toml``)."""
     overrides: Mapping[str, str] = field(default_factory=dict)
+    """Project-specific path remappings as ``{project_name: actual_path}``."""
     selectors: tuple[str, ...] = ()
+    """Dotted field paths to compare for structured files (empty = all)."""
     parser_hint: str | None = None
+    """Force a parser regardless of extension (e.g. ``"toml"``)."""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "overrides", MappingProxyType(dict(self.overrides)))
@@ -148,20 +77,14 @@ class FileTargetEntry:
 @dataclass(frozen=True)
 class FileTarget:
     """Target specification for file content comparison.
-
-    Attributes
-    ----------
-    entries : tuple[FileTargetEntry, ...]
-        Logical files to compare.
-    granularity : FileGranularity
-        Level of detail for the comparison.
-    reference_project : str | None
-        Project used as the baseline for detail-level diffs.
     """
 
     entries: tuple[FileTargetEntry, ...]
+    """Logical files to compare."""
     granularity: FileGranularity = FileGranularity.SURVEY
+    """Level of detail for the comparison."""
     reference_project: str | None = None
+    """Project used as the baseline for detail-level diffs."""
 
     def __post_init__(self) -> None:
         if not self.entries:
@@ -183,17 +106,12 @@ class ComparisonSpec:
     Constructed from an instruction file or from CLI arguments.
     ``target`` is either a :class:`TreeTarget` or a :class:`FileTarget`
     --- the tagged union makes invalid states unrepresentable.
-
-    Attributes
-    ----------
-    project_names : tuple[str, ...]
-        Names of projects to compare.
-    target : TreeTarget | FileTarget
-        What to compare (architecture tree or file contents).
     """
 
     project_names: tuple[str, ...]
+    """Names of projects to compare."""
     target: TreeTarget | FileTarget
+    """What to compare (architecture tree or file contents)."""
 
 
 # ---------------------------------------------------------------------------
@@ -204,39 +122,27 @@ class ComparisonSpec:
 @dataclass(frozen=True)
 class TreeEntry:
     """A single node within a project's file tree.
-
-    Attributes
-    ----------
-    relative_path : str
-        Forward-slash path relative to the project root.
-    project : str
-        Name of the project this entry belongs to.
-    is_directory : bool
-        Whether the node is a directory.
     """
 
     relative_path: str
+    """Forward-slash path relative to the project root."""
     project: str
+    """Name of the project this entry belongs to."""
     is_directory: bool
+    """Whether the node is a directory."""
 
 
 @dataclass(frozen=True)
 class TreeSnapshot:
     """Complete file-tree scan for one project.
-
-    Attributes
-    ----------
-    project : str
-        Project name.
-    root : str
-        Filesystem root used for the scan.
-    entries : tuple[TreeEntry, ...]
-        All nodes discovered in the tree.
     """
 
     project: str
+    """Project name."""
     root: str
+    """Filesystem root used for the scan."""
     entries: tuple[TreeEntry, ...]
+    """All nodes discovered in the tree."""
 
 
 @dataclass(frozen=True)
@@ -245,35 +151,24 @@ class NodeMatch:
 
     Presence is explicit: ``present_in`` lists projects that contain this
     node, ``absent_from`` lists selected projects that do not.
-
-    Attributes
-    ----------
-    canonical_path : str
-        Normalized path used as the canonical key.
-    resolved : Mapping[str, str]
-        Mapping from project name to actual relative path.
-    present_in : frozenset[str]
-        Projects that contain this node.
-    absent_from : frozenset[str]
-        Selected projects that lack this node.
-    method : MatchMethod
-        How correspondence was established.
-    similarity : float
-        Match confidence score (1.0 for exact).
-    is_directory : bool
-        Whether the node is a directory.
-    children : tuple[NodeMatch, ...]
-        Recursively matched child nodes (directories only).
     """
 
     canonical_path: str
+    """Normalized path used as the canonical key."""
     resolved: Mapping[str, str]
+    """Mapping from project name to actual relative path."""
     present_in: frozenset[str]
+    """Projects that contain this node."""
     absent_from: frozenset[str]
+    """Selected projects that lack this node."""
     method: MatchMethod
+    """How correspondence was established."""
     similarity: float
+    """Match confidence score (1.0 for exact)."""
     is_directory: bool
+    """Whether the node is a directory."""
     children: tuple[NodeMatch, ...] = ()
+    """Recursively matched child nodes (directories only)."""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "resolved", MappingProxyType(dict(self.resolved)))
@@ -282,51 +177,35 @@ class NodeMatch:
 @dataclass(frozen=True)
 class TreeSummary:
     """Aggregate counts for a tree comparison.
-
-    Attributes
-    ----------
-    total_nodes : int
-        Total number of matched logical nodes.
-    in_all : int
-        Nodes present in every compared project.
-    in_some : int
-        Nodes present in more than one but not all projects.
-    in_one : int
-        Nodes unique to a single project.
-    directories_matched : int
-        Number of directory nodes.
-    files_matched : int
-        Number of file nodes.
     """
 
     total_nodes: int
+    """Total number of matched logical nodes."""
     in_all: int
+    """Nodes present in every compared project."""
     in_some: int
+    """Nodes present in more than one but not all projects."""
     in_one: int
+    """Nodes unique to a single project."""
     directories_matched: int
+    """Number of directory nodes."""
     files_matched: int
+    """Number of file nodes."""
 
 
 @dataclass(frozen=True)
 class TreeReport:
     """Full architecture comparison result.
-
-    Attributes
-    ----------
-    projects : tuple[str, ...]
-        Names of the compared projects.
-    subtree : str | None
-        Subtree prefix that was compared, or ``None`` for the full tree.
-    matches : tuple[NodeMatch, ...]
-        Top-level matched nodes.
-    summary : TreeSummary
-        Aggregate counts.
     """
 
     projects: tuple[str, ...]
+    """Names of the compared projects."""
     subtree: str | None
+    """Subtree prefix that was compared, or ``None`` for the full tree."""
     matches: tuple[NodeMatch, ...]
+    """Top-level matched nodes."""
     summary: TreeSummary
+    """Aggregate counts."""
 
 
 # ---------------------------------------------------------------------------
@@ -340,17 +219,12 @@ class FieldDiff:
 
     Status is derived from the values: all equal means identical, some
     ``None`` means partial presence, all different means diverged.
-
-    Attributes
-    ----------
-    path : str
-        Dotted field path within the structured document.
-    values : Mapping[str, str | None]
-        Per-project stringified values (``None`` if absent).
     """
 
     path: str
+    """Dotted field path within the structured document."""
     values: Mapping[str, str | None]
+    """Per-project stringified values (``None`` if absent)."""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "values", MappingProxyType(dict(self.values)))
@@ -382,98 +256,67 @@ class FieldDiff:
 @dataclass(frozen=True)
 class VariantGroup:
     """Projects with identical content for an unstructured file.
-
-    Attributes
-    ----------
-    projects : frozenset[str]
-        Project names sharing the same content.
-    digest : str
-        Truncated SHA-256 hex digest of the content.
-    line_count : int
-        Number of lines in the content.
     """
 
     projects: frozenset[str]
+    """Project names sharing the same content."""
     digest: str
+    """Truncated SHA-256 hex digest of the content."""
     line_count: int
+    """Number of lines in the content."""
 
 
 @dataclass(frozen=True)
 class PairwiseSimilarity:
     """Similarity score between two projects for an unstructured file.
-
-    Attributes
-    ----------
-    project_a : str
-        First project name.
-    project_b : str
-        Second project name.
-    score : float
-        SequenceMatcher ratio between the two files.
     """
 
     project_a: str
+    """First project name."""
     project_b: str
+    """Second project name."""
     score: float
+    """SequenceMatcher ratio between the two files."""
 
 
 @dataclass(frozen=True)
 class ReferenceDiff:
     """Unified diff against the reference project for one compared file.
-
-    Attributes
-    ----------
-    project : str
-        Name of the project being compared to the reference.
-    diff_lines : tuple[str, ...]
-        Lines of the unified diff output.
     """
 
     project: str
+    """Name of the project being compared to the reference."""
     diff_lines: tuple[str, ...]
+    """Lines of the unified diff output."""
 
 
 @dataclass(frozen=True)
 class FileDiffResult:
     """Comparison result for one logical file across projects.
-
-    Attributes
-    ----------
-    canonical_path : str
-        Normalized file path used as the comparison key.
-    actual_paths : Mapping[str, str]
-        Per-project resolved file paths.
-    present_in : frozenset[str]
-        Projects where the file exists.
-    absent_from : frozenset[str]
-        Projects where the file is missing.
-    content_kind : ContentKind
-        Whether the file was compared as structured or unstructured.
-    field_diffs : tuple[FieldDiff, ...]
-        Per-field diffs (structured files only).
-    variants : tuple[VariantGroup, ...]
-        Content groups (unstructured files only).
-    similarities : tuple[PairwiseSimilarity, ...]
-        Pairwise similarity scores (unstructured files only).
-    reference_project : str | None
-        Baseline project for detail-level diffs.
-    reference_diffs : tuple[ReferenceDiff, ...]
-        Unified diffs against the reference project.
-    issue : str
-        Error message if comparison failed for this file.
     """
 
     canonical_path: str
+    """Normalized file path used as the comparison key."""
     actual_paths: Mapping[str, str]
+    """Per-project resolved file paths."""
     present_in: frozenset[str]
+    """Projects where the file exists."""
     absent_from: frozenset[str]
+    """Projects where the file is missing."""
     content_kind: ContentKind
+    """Whether the file was compared as structured or unstructured."""
     field_diffs: tuple[FieldDiff, ...] = ()
+    """Per-field diffs (structured files only)."""
     variants: tuple[VariantGroup, ...] = ()
+    """Content groups (unstructured files only)."""
     similarities: tuple[PairwiseSimilarity, ...] = ()
+    """Pairwise similarity scores (unstructured files only)."""
     reference_project: str | None = None
+    """Baseline project for detail-level diffs."""
     reference_diffs: tuple[ReferenceDiff, ...] = ()
+    """Unified diffs against the reference project."""
     issue: str = ""
+    """Error message if comparison failed for this file."""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "actual_paths", MappingProxyType(dict(self.actual_paths)))
@@ -497,42 +340,29 @@ class FileDiffResult:
 @dataclass(frozen=True)
 class FileSummary:
     """Aggregate counts for a file comparison.
-
-    Attributes
-    ----------
-    files_compared : int
-        Total number of logical files compared.
-    fully_identical : int
-        Files identical across all projects.
-    with_differences : int
-        Files with at least one difference.
-    with_errors : int
-        Files that could not be compared due to errors.
     """
 
     files_compared: int
+    """Total number of logical files compared."""
     fully_identical: int
+    """Files identical across all projects."""
     with_differences: int
+    """Files with at least one difference."""
     with_errors: int
+    """Files that could not be compared due to errors."""
 
 
 @dataclass(frozen=True)
 class FileReport:
     """Full file comparison result.
-
-    Attributes
-    ----------
-    projects : tuple[str, ...]
-        Names of the compared projects.
-    results : tuple[FileDiffResult, ...]
-        Per-file comparison results.
-    summary : FileSummary
-        Aggregate counts.
     """
 
     projects: tuple[str, ...]
+    """Names of the compared projects."""
     results: tuple[FileDiffResult, ...]
+    """Per-file comparison results."""
     summary: FileSummary
+    """Aggregate counts."""
 
 
 # ---------------------------------------------------------------------------

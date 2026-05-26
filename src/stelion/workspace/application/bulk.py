@@ -1,11 +1,4 @@
 """Application use-cases for bulk operations across projects.
-
-Functions
----------
-select_projects
-    Filter the project inventory to the target set.
-execute_bulk
-    Run an operation on each project, collecting all outcomes.
 """
 
 from __future__ import annotations

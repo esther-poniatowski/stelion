@@ -1,15 +1,4 @@
 """Manifest parsing, defaulting, and rendering infrastructure.
-
-Functions
----------
-default_workspace_manifest
-    Create the canonical default manifest model for a new workspace.
-parse_workspace_manifest
-    Parse a raw manifest mapping into a typed workspace manifest.
-manifest_to_dict
-    Serialize a manifest model into YAML-safe primitives.
-render_manifest
-    Render a workspace manifest to YAML.
 """
 
 from __future__ import annotations
