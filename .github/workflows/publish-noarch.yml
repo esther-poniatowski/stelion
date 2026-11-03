@@ -20,6 +20,9 @@
 # - CHANNEL_TOKEN   : GitHub Personal Access Token to the channel, with `repo` scope.
 # - CHANNEL_USERNAME: Username associated with the token.
 #
+# A repository without both secrets skips the build job, and the run reports a notice instead of
+# failing, so publishing starts once both secrets are set.
+#
 # Notes
 # -----
 # Trigger: On every push to the `main` branch.
@@ -60,7 +63,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - name: Check Channel Secrets
+        id: check
+        env:
+          CHANNEL_TOKEN: ${{ secrets.CHANNEL_TOKEN }}
+          CHANNEL_USERNAME: ${{ secrets.CHANNEL_USERNAME }}
+        run: |
+          if [ -n "$CHANNEL_TOKEN" ] && [ -n "$CHANNEL_USERNAME" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy skipped::CHANNEL_TOKEN or CHANNEL_USERNAME is not set; nothing was published."
+          fi
   build:
+    needs: secrets
+    if: needs.secrets.outputs.available == 'true'
     runs-on: ubuntu-latest
 
     env:
