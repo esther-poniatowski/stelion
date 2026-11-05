@@ -1,12 +1,16 @@
-"""Concrete dependency scanners used by the workspace graph builder.
-"""
+"""Concrete dependency scanners used by the workspace graph builder."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 from ..application.protocols import DependencyScanner, EnvironmentReader
-from ..domain.dependency import DependencyEdge, DependencyMechanism
+from ..domain.dependency import (
+    DependencyEdge,
+    DependencyKind,
+    DependencyMechanism,
+    EdgeProvenance,
+)
 from ..domain.environment import EnvironmentSpec
 from .gitmodules_parser import scan_gitmodules
 
@@ -42,8 +46,13 @@ def _extract_editable_pip_edges(
                     DependencyEdge(
                         dependent=project_name,
                         dependency=dep_name,
+                        kind=DependencyKind.RUNTIME_PACKAGE,
                         mechanism=DependencyMechanism.EDITABLE_PIP,
-                        detail="environment.yml",
+                        source_declaration=f"environment.yml:pip:{stripped}",
+                        version_policy="workspace_checkout",
+                        optional=False,
+                        provenance=EdgeProvenance.AUTOMATIC,
+                        integration_path=stripped,
                     )
                 )
     return edges
@@ -145,8 +154,13 @@ class GitmodulesDependencyScanner:
             DependencyEdge(
                 dependent=project_name,
                 dependency=edge.dependency,
+                kind=edge.kind,
                 mechanism=edge.mechanism,
-                detail=edge.detail,
+                source_declaration=edge.source_declaration,
+                version_policy=edge.version_policy,
+                optional=edge.optional,
+                provenance=edge.provenance,
+                integration_path=edge.integration_path,
             )
             for edge in edges
         ]

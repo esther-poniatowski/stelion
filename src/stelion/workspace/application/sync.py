@@ -1,5 +1,4 @@
-"""Submodule synchronization use-case.
-"""
+"""Submodule synchronization use-case."""
 
 from __future__ import annotations
 
@@ -102,7 +101,9 @@ class LocalOriginResolver:
             target_commit=target_commit,
             submodule_targets=targets,
             local_dir=None,
-            push_spec=PushSpec(repo_dir=local_dir, remote=self._remote, branch=self._branch),
+            push_spec=PushSpec(
+                repo_dir=local_dir, remote=self._remote, branch=self._branch
+            ),
         )
 
 
@@ -158,7 +159,8 @@ class SuperprojectOriginResolver:
         local_dir = dep_meta.path if dep_meta else None
         source = _find_target(targets, self._source_superproject)
         target_commit = git.submodule_commit(
-            source.superproject_dir, source.submodule_path,
+            source.superproject_dir,
+            source.submodule_path,
         )
         source_label = f"{source.superproject_name}/{source.submodule_path}"
         submodule_targets = tuple(
@@ -166,7 +168,8 @@ class SuperprojectOriginResolver:
         )
         push_spec: PushSpec | None = (
             PushSpec(repo_dir=local_dir, remote=self._remote, branch=self._branch)
-            if local_dir else None
+            if local_dir
+            else None
         )
         return SyncPlan(
             dependency=dependency,
@@ -274,12 +277,14 @@ def resolve_submodule_targets(
         )
     targets: list[SubmoduleTarget] = []
     for edge in submodule_edges:
-        superproject_dir = _resolve_superproject_dir(edge.dependent, manifest, inventory)
+        superproject_dir = _resolve_superproject_dir(
+            edge.dependent, manifest, inventory
+        )
         targets.append(
             SubmoduleTarget(
                 superproject_name=edge.dependent,
                 superproject_dir=superproject_dir,
-                submodule_path=edge.detail,
+                submodule_path=edge.integration_path,
             )
         )
     return tuple(targets)
@@ -316,7 +321,9 @@ def make_resolver(
         if source_superproject is None:
             raise SyncError("Superproject origin requires --from <superproject>.")
         return SuperprojectOriginResolver(
-            source_superproject=source_superproject, remote=remote, branch=branch,
+            source_superproject=source_superproject,
+            remote=remote,
+            branch=branch,
         )
     elif origin == SyncOrigin.REMOTE:
         return RemoteOriginResolver(remote=remote, branch=branch)
@@ -416,7 +423,9 @@ def execute_sync(
 
     for target in plan.submodule_targets:
         outcomes.append(
-            _sync_submodule(target, plan.dependency, plan.target_commit, git, commit, dry_run),
+            _sync_submodule(
+                target, plan.dependency, plan.target_commit, git, commit, dry_run
+            ),
         )
 
     return SyncResult(
@@ -463,23 +472,36 @@ def _execute_sync_action(
         current = get_current_ref()
         if current == target_ref:
             return SyncOutcome(
-                kind=kind, label=label,
-                old_ref=current, new_ref=target_ref, applied=False,
+                kind=kind,
+                label=label,
+                old_ref=current,
+                new_ref=target_ref,
+                applied=False,
             )
         if dry_run:
             return SyncOutcome(
-                kind=kind, label=label,
-                old_ref=current, new_ref=target_ref, applied=False,
+                kind=kind,
+                label=label,
+                old_ref=current,
+                new_ref=target_ref,
+                applied=False,
             )
         perform_action()
         return SyncOutcome(
-            kind=kind, label=label,
-            old_ref=current, new_ref=target_ref, applied=True,
+            kind=kind,
+            label=label,
+            old_ref=current,
+            new_ref=target_ref,
+            applied=True,
         )
     except SyncError as exc:
         return SyncOutcome(
-            kind=kind, label=label,
-            old_ref="", new_ref=target_ref, applied=False, error=str(exc),
+            kind=kind,
+            label=label,
+            old_ref="",
+            new_ref=target_ref,
+            applied=False,
+            error=str(exc),
         )
 
 
@@ -487,7 +509,10 @@ def _execute_sync_action(
 
 
 def _sync_local(
-    local_dir: Path, target_commit: str, git: GitOperations, dry_run: bool,
+    local_dir: Path,
+    target_commit: str,
+    git: GitOperations,
+    dry_run: bool,
 ) -> SyncOutcome:
     """Update the local clone to the target commit.
 
@@ -518,7 +543,9 @@ def _sync_local(
 
 
 def _sync_remote(
-    push_spec: PushSpec, git: GitOperations, dry_run: bool,
+    push_spec: PushSpec,
+    git: GitOperations,
+    dry_run: bool,
 ) -> SyncOutcome:
     """Push the local clone to the remote.
 
@@ -541,8 +568,12 @@ def _sync_remote(
     return _execute_sync_action(
         kind=OutcomeKind.REMOTE,
         label=label,
-        get_current_ref=lambda: git.remote_head(push_spec.repo_dir, push_spec.remote, push_spec.branch),
-        perform_action=lambda: git.push_to_remote(push_spec.repo_dir, push_spec.remote, push_spec.branch),
+        get_current_ref=lambda: git.remote_head(
+            push_spec.repo_dir, push_spec.remote, push_spec.branch
+        ),
+        perform_action=lambda: git.push_to_remote(
+            push_spec.repo_dir, push_spec.remote, push_spec.branch
+        ),
         target_ref=current_head,
         dry_run=dry_run,
     )
@@ -582,18 +613,24 @@ def _sync_submodule(
 
     def _perform() -> None:
         git.update_submodule_pointer(
-            target.superproject_dir, target.submodule_path, target_commit,
+            target.superproject_dir,
+            target.submodule_path,
+            target_commit,
         )
         if commit:
             git.commit_submodule_update(
-                target.superproject_dir, target.submodule_path,
-                dependency, target_commit[:8],
+                target.superproject_dir,
+                target.submodule_path,
+                dependency,
+                target_commit[:8],
             )
 
     return _execute_sync_action(
         kind=OutcomeKind.SUBMODULE,
         label=label,
-        get_current_ref=lambda: git.submodule_commit(target.superproject_dir, target.submodule_path),
+        get_current_ref=lambda: git.submodule_commit(
+            target.superproject_dir, target.submodule_path
+        ),
         perform_action=_perform,
         target_ref=target_commit,
         dry_run=dry_run,

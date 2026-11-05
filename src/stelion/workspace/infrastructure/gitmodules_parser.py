@@ -5,10 +5,17 @@ from __future__ import annotations
 import configparser
 from pathlib import Path
 
-from ..domain.dependency import DependencyEdge, DependencyMechanism
+from ..domain.dependency import (
+    DependencyEdge,
+    DependencyKind,
+    DependencyMechanism,
+    EdgeProvenance,
+)
 
 
-def scan_gitmodules(project_dir: Path, all_project_names: set[str]) -> list[DependencyEdge]:
+def scan_gitmodules(
+    project_dir: Path, all_project_names: set[str]
+) -> list[DependencyEdge]:
     """Scan a project's .gitmodules for ecosystem-internal submodule dependencies.
 
     Only submodules whose name matches a known ecosystem project are returned.
@@ -39,11 +46,18 @@ def scan_gitmodules(project_dir: Path, all_project_names: set[str]) -> list[Depe
         dep_name = Path(submodule_path).name if submodule_path else ""
 
         if dep_name in all_project_names:
-            edges.append(DependencyEdge(
-                dependent=project_dir.name,
-                dependency=dep_name,
-                mechanism=DependencyMechanism.GIT_SUBMODULE,
-                detail=submodule_path,
-            ))
+            edges.append(
+                DependencyEdge(
+                    dependent=project_dir.name,
+                    dependency=dep_name,
+                    kind=DependencyKind.CONTENT_SUBMODULE,
+                    mechanism=DependencyMechanism.GIT_SUBMODULE,
+                    source_declaration=f".gitmodules:{section}",
+                    version_policy="pinned_commit",
+                    optional=False,
+                    provenance=EdgeProvenance.AUTOMATIC,
+                    integration_path=submodule_path,
+                )
+            )
 
     return edges

@@ -17,7 +17,7 @@ File system operations: read, write, copy, hash.
 
 ### *class* stelion.workspace.infrastructure.file_ops.LocalFileReader
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Read file content from the local filesystem.
 
@@ -32,13 +32,13 @@ Read the full text content of a file.
 * **Returns:**
   UTF-8 decoded file content.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.file_ops.LocalFileWriter"></a>
 
 ### *class* stelion.workspace.infrastructure.file_ops.LocalFileWriter
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Write file content to the local filesystem.
 
@@ -50,13 +50,13 @@ Write text content to a file, creating parent directories as needed.
 
 * **Parameters:**
   * **path** (*Path*) – Destination file path.
-  * **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Text to write.
+  * **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Text to write.
 
 <a id="stelion.workspace.infrastructure.file_ops.SHA256Hasher"></a>
 
 ### *class* stelion.workspace.infrastructure.file_ops.SHA256Hasher
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Compute SHA-256 hash of string content for drift detection.
 
@@ -67,11 +67,11 @@ Compute SHA-256 hash of string content for drift detection.
 Compute a SHA-256 hex digest of *content*.
 
 * **Parameters:**
-  **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Text to hash.
+  **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Text to hash.
 * **Returns:**
   Hexadecimal SHA-256 digest.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="module-stelion.workspace.infrastructure.command_runner"></a>
 
@@ -85,7 +85,7 @@ Subprocess-based command runner for bulk operations.
 
 ### *class* stelion.workspace.infrastructure.command_runner.SubprocessCommandRunner
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Run commands via subprocess with captured output.
 
@@ -96,7 +96,7 @@ Run commands via subprocess with captured output.
 Execute *args* in *cwd* and return the captured result.
 
 * **Parameters:**
-  * **args** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,*  *...* *]*) – Command and arguments to execute.
+  * **args** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,*  *...* *]*) – Command and arguments to execute.
   * **cwd** (*Path*) – Working directory for the subprocess.
 * **Returns:**
   Captured stdout, stderr, and return code.
@@ -115,7 +115,7 @@ Load bundled package data resources via importlib.resources.
 
 ### *class* stelion.workspace.infrastructure.data_loader.StelionDataLoader
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Load files from the stelion.data package.
 
@@ -126,13 +126,13 @@ Load files from the stelion.data package.
 Load a text resource from the data directory.
 
 * **Parameters:**
-  **resource_path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Dot-separated or slash-separated path relative to stelion/data/.
+  **resource_path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Dot-separated or slash-separated path relative to stelion/data/.
   Examples: `"references/design-principles.md"`,
   `"vscode/settings.json"`.
 * **Returns:**
   UTF-8 decoded text content of the resource.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.data_loader.StelionDataLoader.load_json"></a>
 
@@ -141,7 +141,7 @@ Load a text resource from the data directory.
 Load and parse a JSON resource from the data directory.
 
 * **Parameters:**
-  **resource_path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Slash-separated path relative to stelion/data/.
+  **resource_path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Slash-separated path relative to stelion/data/.
 * **Returns:**
   Deserialized JSON content.
 * **Return type:**
@@ -169,13 +169,13 @@ Replace placeholder strings in a single file.
 
 * **Parameters:**
   * **path** (*Path*) – File to process.
-  * **bindings** ([*dict*](https://docs.python.org/3/library/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Mapping from placeholder name to replacement value.
-  * **delimiters** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Opening and closing placeholder delimiters.
-  * **exclude_patterns** (*Sequence* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*  *|* *None*) – Regex patterns whose matches should be protected from substitution.
+  * **bindings** ([*dict*](https://docs.python.org/3/builtins/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Mapping from placeholder name to replacement value.
+  * **delimiters** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Opening and closing placeholder delimiters.
+  * **exclude_patterns** (*Sequence* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*  *|* *None*) – Regex patterns whose matches should be protected from substitution.
 * **Returns:**
   Number of replacements made.
 * **Return type:**
-  [int](https://docs.python.org/3/library/functions.html#int)
+  [int](https://docs.python.org/3/builtins/functions.html#int)
 
 <a id="stelion.workspace.infrastructure.template_engine.substitute_in_directory"></a>
 
@@ -185,13 +185,13 @@ Replace placeholders in all text files under a directory.
 
 * **Parameters:**
   * **root** (*Path*) – Directory to process recursively.
-  * **bindings** ([*dict*](https://docs.python.org/3/library/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Mapping from placeholder name to replacement value.
-  * **delimiters** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Opening and closing placeholder delimiters.
-  * **exclude_patterns** (*Sequence* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*  *|* *None*) – Regex patterns whose matches should be protected from substitution.
+  * **bindings** ([*dict*](https://docs.python.org/3/builtins/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Mapping from placeholder name to replacement value.
+  * **delimiters** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Opening and closing placeholder delimiters.
+  * **exclude_patterns** (*Sequence* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*  *|* *None*) – Regex patterns whose matches should be protected from substitution.
 * **Returns:**
   Total number of replacements across all files.
 * **Return type:**
-  [int](https://docs.python.org/3/library/functions.html#int)
+  [int](https://docs.python.org/3/builtins/functions.html#int)
 
 <a id="stelion.workspace.infrastructure.template_engine.copy_template"></a>
 
@@ -214,13 +214,13 @@ against `bindings`.
 
 * **Parameters:**
   * **root** (*Path*) – Base directory containing the paths to rename.
-  * **renames** ([*dict*](https://docs.python.org/3/library/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Mapping from old relative path to new relative path template.
-  * **bindings** ([*dict*](https://docs.python.org/3/library/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Placeholder values used to resolve templates in rename targets.
-  * **delimiters** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Opening and closing placeholder delimiters.
+  * **renames** ([*dict*](https://docs.python.org/3/builtins/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Mapping from old relative path to new relative path template.
+  * **bindings** ([*dict*](https://docs.python.org/3/builtins/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Placeholder values used to resolve templates in rename targets.
+  * **delimiters** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Opening and closing placeholder delimiters.
 * **Returns:**
   Number of renames performed.
 * **Return type:**
-  [int](https://docs.python.org/3/library/functions.html#int)
+  [int](https://docs.python.org/3/builtins/functions.html#int)
 
 <a id="module-stelion.workspace.infrastructure.tree_scanner"></a>
 
@@ -234,7 +234,7 @@ Filesystem tree scanner for cross-project comparison.
 
 ### *class* stelion.workspace.infrastructure.tree_scanner.LocalTreeScanner
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Scan a project directory and return a `TreeSnapshot`.
 
@@ -250,10 +250,10 @@ Scan a project directory and return a tree snapshot.
 
 * **Parameters:**
   * **project_dir** (*Path*) – Root directory of the project.
-  * **subtree** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Optional subdirectory to restrict the scan to.
-  * **include** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,*  *...* *]*) – Glob patterns for files to include (empty means all).
-  * **exclude** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,*  *...* *]*) – Glob patterns for entries to skip.
-  * **project_name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Override for the project key (defaults to directory name).
+  * **subtree** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Optional subdirectory to restrict the scan to.
+  * **include** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,*  *...* *]*) – Glob patterns for files to include (empty means all).
+  * **exclude** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,*  *...* *]*) – Glob patterns for entries to skip.
+  * **project_name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Override for the project key (defaults to directory name).
 * **Returns:**
   Snapshot of the scanned file tree.
 * **Return type:**
@@ -266,6 +266,23 @@ Scan a project directory and return a tree snapshot.
 ## Manifest Loader
 
 Parse stelion.yml into a WorkspaceManifest.
+
+<a id="stelion.workspace.infrastructure.manifest_loader.load_manifest_mapping"></a>
+
+### stelion.workspace.infrastructure.manifest_loader.load_manifest_mapping(path, \*, label='Manifest')
+
+Load a YAML mapping used as a manifest or manifest overlay.
+
+* **Parameters:**
+  * **path** (*Path*) – YAML file to load.
+  * **label** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Object name used in validation errors.
+* **Returns:**
+  Parsed top-level mapping.
+* **Return type:**
+  Mapping[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [object](https://docs.python.org/3/builtins/functions.html#object)]
+* **Raises:**
+  * [**FileNotFoundError**](https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError) – If *path* does not exist.
+  * [**ManifestValidationError**](workspace-exceptions.md#stelion.workspace.exceptions.ManifestValidationError) – If the YAML is invalid or its top level is not a mapping.
 
 <a id="stelion.workspace.infrastructure.manifest_loader.load_manifest"></a>
 
@@ -280,8 +297,8 @@ Load and validate a workspace manifest from a YAML file.
 * **Return type:**
   [WorkspaceManifest](workspace-domain.md#stelion.workspace.domain.manifest.WorkspaceManifest)
 * **Raises:**
-  * [**FileNotFoundError**](https://docs.python.org/3/library/exceptions.html#FileNotFoundError) – If the manifest file does not exist.
-  * [**ValueError**](https://docs.python.org/3/library/exceptions.html#ValueError) – If required fields are missing or invalid.
+  * [**FileNotFoundError**](https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError) – If the manifest file does not exist.
+  * [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If required fields are missing or invalid.
 
 <a id="module-stelion.workspace.infrastructure.manifest_codec"></a>
 
@@ -299,7 +316,7 @@ Create the canonical default manifest model for a new workspace.
 
 * **Parameters:**
   * **manifest_dir** (*Path*) – Directory that will contain `stelion.yml`.
-  * **github_user** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – GitHub username for ecosystem defaults.
+  * **github_user** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – GitHub username for ecosystem defaults.
 * **Returns:**
   Manifest with all fields set to their canonical defaults.
 * **Return type:**
@@ -312,7 +329,7 @@ Create the canonical default manifest model for a new workspace.
 Parse a raw manifest mapping into a typed workspace manifest.
 
 * **Parameters:**
-  * **raw** (*Mapping* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* *Any* *]*) – Raw YAML-loaded mapping.
+  * **raw** (*Mapping* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* *Any* *]*) – Raw YAML-loaded mapping.
   * **manifest_dir** (*Path*) – Directory containing the manifest file.
 * **Returns:**
   Fully typed and validated manifest.
@@ -330,7 +347,7 @@ Serialize a manifest model into YAML-safe primitives.
 * **Returns:**
   Nested dictionary suitable for `yaml.safe_dump`.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)[[str](https://docs.python.org/3/library/stdtypes.html#str), Any]
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), Any]
 
 <a id="stelion.workspace.infrastructure.manifest_codec.render_manifest"></a>
 
@@ -343,7 +360,7 @@ Render a workspace manifest to YAML.
 * **Returns:**
   YAML text representation.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="module-stelion.workspace.infrastructure.spec_loader"></a>
 
@@ -357,7 +374,7 @@ Loader for comparison instruction files.
 
 ### *class* stelion.workspace.infrastructure.spec_loader.YamlSpecLoader
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Load and validate a comparison instruction YAML file.
 
@@ -388,7 +405,7 @@ Extract ProjectMetadata from a project’s pyproject.toml.
 
 ### *class* stelion.workspace.infrastructure.pyproject_parser.PyprojectExtractor
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Read pyproject.toml and produce a ProjectMetadata instance.
 
@@ -424,7 +441,7 @@ Parse Conda environment.yml files into EnvironmentSpec.
 
 ### *class* stelion.workspace.infrastructure.environment_parser.CondaEnvironmentReader
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Read and parse a project’s environment.yml.
 
@@ -468,17 +485,17 @@ Protocol for parsing text content into a dict.
 Parse text content and return a dictionary.
 
 * **Parameters:**
-  **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Raw text to parse.
+  **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Raw text to parse.
 * **Returns:**
   Parsed content as a dictionary.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 <a id="stelion.workspace.infrastructure.structured_parsers.TomlParser"></a>
 
 ### *class* stelion.workspace.infrastructure.structured_parsers.TomlParser
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Parse TOML text into a dict.
 
@@ -489,17 +506,17 @@ Parse TOML text into a dict.
 Parse TOML text and return a dictionary.
 
 * **Parameters:**
-  **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Raw TOML text.
+  **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Raw TOML text.
 * **Returns:**
   Parsed TOML data.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 <a id="stelion.workspace.infrastructure.structured_parsers.YamlParser"></a>
 
 ### *class* stelion.workspace.infrastructure.structured_parsers.YamlParser
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Parse YAML text into a dict.
 
@@ -510,17 +527,17 @@ Parse YAML text into a dict.
 Parse YAML text and return a dictionary.
 
 * **Parameters:**
-  **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Raw YAML text.
+  **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Raw YAML text.
 * **Returns:**
   Parsed YAML mapping.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 <a id="stelion.workspace.infrastructure.structured_parsers.JsonParser"></a>
 
 ### *class* stelion.workspace.infrastructure.structured_parsers.JsonParser
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Parse JSON text into a dict.
 
@@ -531,17 +548,17 @@ Parse JSON text into a dict.
 Parse JSON text and return a dictionary.
 
 * **Parameters:**
-  **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Raw JSON text.
+  **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Raw JSON text.
 * **Returns:**
   Parsed JSON object.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 <a id="stelion.workspace.infrastructure.structured_parsers.MarkdownSectionParser"></a>
 
 ### *class* stelion.workspace.infrastructure.structured_parsers.MarkdownSectionParser
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Parse Markdown into a nested dict keyed by header text.
 
@@ -569,22 +586,22 @@ Example:
 Parse Markdown text into a section-keyed dictionary.
 
 * **Parameters:**
-  **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Raw Markdown text.
+  **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Raw Markdown text.
 * **Returns:**
   Nested dictionary keyed by section headers.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 <a id="stelion.workspace.infrastructure.structured_parsers.DispatchingParser"></a>
 
 ### *class* stelion.workspace.infrastructure.structured_parsers.DispatchingParser(parsers)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Route parsing to the correct backend based on file extension or hint.
 
 * **Parameters:**
-  **parsers** ([*dict*](https://docs.python.org/3/library/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*ContentParser*](#stelion.workspace.infrastructure.structured_parsers.ContentParser) *]*) – Mapping from extension (including dot, e.g. `".toml"`) to a parser
+  **parsers** ([*dict*](https://docs.python.org/3/builtins/stdtypes.html#dict) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*ContentParser*](#stelion.workspace.infrastructure.structured_parsers.ContentParser) *]*) – Mapping from extension (including dot, e.g. `".toml"`) to a parser
   instance.
 
 <a id="stelion.workspace.infrastructure.structured_parsers.DispatchingParser.parse"></a>
@@ -594,14 +611,14 @@ Route parsing to the correct backend based on file extension or hint.
 Parse *content* using the parser identified by *hint* or *extension*.
 
 * **Parameters:**
-  * **content** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Raw file text.
-  * **extension** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – File extension including the dot (e.g. `".toml"`).
-  * **hint** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Parser name override (e.g. `"toml"`), takes precedence over
+  * **content** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Raw file text.
+  * **extension** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – File extension including the dot (e.g. `".toml"`).
+  * **hint** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Parser name override (e.g. `"toml"`), takes precedence over
     *extension*.
 * **Returns:**
   Parsed content as a nested dictionary.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 <a id="module-stelion.workspace.infrastructure.gitmodules_parser"></a>
 
@@ -621,11 +638,11 @@ Only submodules whose name matches a known ecosystem project are returned.
 
 * **Parameters:**
   * **project_dir** (*Path*) – Root directory of the project containing `.gitmodules`.
-  * **all_project_names** ([*set*](https://docs.python.org/3/library/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Known project names in the ecosystem.
+  * **all_project_names** ([*set*](https://docs.python.org/3/builtins/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Known project names in the ecosystem.
 * **Returns:**
   Dependency edges for submodules that reference ecosystem projects.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
 
 <a id="module-stelion.workspace.infrastructure.git_operations"></a>
 
@@ -639,7 +656,7 @@ Concrete git operations for submodule synchronization.
 
 ### *class* stelion.workspace.infrastructure.git_operations.SubprocessGitOperations
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Git operations implemented via subprocess calls.
 
@@ -654,7 +671,7 @@ Read HEAD commit SHA from a repository.
 * **Returns:**
   Full SHA of the HEAD commit.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.git_operations.SubprocessGitOperations.submodule_commit"></a>
 
@@ -664,11 +681,11 @@ Read the recorded commit SHA for a submodule in a superproject.
 
 * **Parameters:**
   * **superproject_dir** (*Path*) – Root directory of the superproject.
-  * **submodule_path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Relative path to the submodule within the superproject.
+  * **submodule_path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Relative path to the submodule within the superproject.
 * **Returns:**
   Commit SHA recorded in the superproject tree.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.git_operations.SubprocessGitOperations.fetch_remote"></a>
 
@@ -687,12 +704,12 @@ Read the commit SHA of a remote tracking branch.
 
 * **Parameters:**
   * **repo_dir** (*Path*) – Path to the git repository.
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Remote name (e.g. `"origin"`).
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Branch name on the remote.
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Remote name (e.g. `"origin"`).
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Branch name on the remote.
 * **Returns:**
   Full SHA of the remote tracking branch.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.git_operations.SubprocessGitOperations.update_submodule_pointer"></a>
 
@@ -702,8 +719,8 @@ Update a submodule to point at a specific commit.
 
 * **Parameters:**
   * **superproject_dir** (*Path*) – Root directory of the superproject.
-  * **submodule_path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Relative path to the submodule.
-  * **commit** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Target commit SHA.
+  * **submodule_path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Relative path to the submodule.
+  * **commit** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Target commit SHA.
 
 <a id="stelion.workspace.infrastructure.git_operations.SubprocessGitOperations.commit_submodule_update"></a>
 
@@ -713,9 +730,9 @@ Stage and commit the submodule pointer change in the superproject.
 
 * **Parameters:**
   * **superproject_dir** (*Path*) – Root directory of the superproject.
-  * **submodule_path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Relative path to the submodule.
-  * **dependency** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name of the dependency project for the commit message.
-  * **commit_short** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Abbreviated commit SHA for the commit message.
+  * **submodule_path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Relative path to the submodule.
+  * **dependency** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name of the dependency project for the commit message.
+  * **commit_short** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Abbreviated commit SHA for the commit message.
 
 <a id="stelion.workspace.infrastructure.git_operations.SubprocessGitOperations.is_clean"></a>
 
@@ -728,7 +745,7 @@ Check whether the working tree has no uncommitted changes.
 * **Returns:**
   `True` if the working tree is clean.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="stelion.workspace.infrastructure.git_operations.SubprocessGitOperations.update_local_clone"></a>
 
@@ -738,11 +755,11 @@ Update local clone to the target commit via fast-forward merge.
 
 * **Parameters:**
   * **repo_dir** (*Path*) – Path to the local clone.
-  * **commit** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Target commit SHA to fast-forward to.
+  * **commit** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Target commit SHA to fast-forward to.
 * **Returns:**
   The previous HEAD commit SHA.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 * **Raises:**
   [**SyncError**](workspace-exceptions.md#stelion.workspace.exceptions.SyncError) – If the working tree is dirty or fast-forward merge fails.
 
@@ -754,8 +771,8 @@ Push the current HEAD to a remote branch.
 
 * **Parameters:**
   * **repo_dir** (*Path*) – Path to the git repository.
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Remote name (e.g. `"origin"`).
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Branch to push.
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Remote name (e.g. `"origin"`).
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Branch to push.
 
 <a id="module-stelion.workspace.infrastructure.bootstrap_git"></a>
 
@@ -774,7 +791,7 @@ Read author identity from git config when available.
 * **Returns:**
   A `(name, email)` pair, both empty if git config is unavailable.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 <a id="stelion.workspace.infrastructure.bootstrap_git.init_repository"></a>
 
@@ -797,71 +814,71 @@ Concrete bulk operation implementations.
 
 ### *class* stelion.workspace.infrastructure.bulk_operations.ShellOperation(command, runner)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Run an arbitrary shell command in each project directory.
 
 * **Parameters:**
-  * **command** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Shell command string to execute.
+  * **command** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Shell command string to execute.
   * **runner** ([*CommandRunner*](workspace-application.md#stelion.workspace.application.protocols.CommandRunner)) – Backend used to invoke shell processes.
 
 <a id="stelion.workspace.infrastructure.bulk_operations.ShellOperation.label"></a>
 
-#### *property* label *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### *property* label *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable label describing this operation.
 
 * **Returns:**
   Formatted label prefixed with `exec:`.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.bulk_operations.GitCommitOperation"></a>
 
 ### *class* stelion.workspace.infrastructure.bulk_operations.GitCommitOperation(message, runner)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Stage tracked changes and commit, skipping clean working trees.
 
 * **Parameters:**
-  * **message** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Commit message to use.
+  * **message** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Commit message to use.
   * **runner** ([*CommandRunner*](workspace-application.md#stelion.workspace.application.protocols.CommandRunner)) – Backend used to invoke git processes.
 
 <a id="stelion.workspace.infrastructure.bulk_operations.GitCommitOperation.label"></a>
 
-#### *property* label *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### *property* label *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable label describing this operation.
 
 * **Returns:**
   Formatted label prefixed with `commit:`.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.bulk_operations.GitPushOperation"></a>
 
 ### *class* stelion.workspace.infrastructure.bulk_operations.GitPushOperation(remote, branch, runner)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Push the current branch to a remote.
 
 * **Parameters:**
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Remote name (e.g. `"origin"`).
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Branch to push.
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Remote name (e.g. `"origin"`).
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Branch to push.
   * **runner** ([*CommandRunner*](workspace-application.md#stelion.workspace.application.protocols.CommandRunner)) – Backend used to invoke git processes.
 
 <a id="stelion.workspace.infrastructure.bulk_operations.GitPushOperation.label"></a>
 
-#### *property* label *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### *property* label *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable label describing this operation.
 
 * **Returns:**
   Formatted label prefixed with `push:`.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="module-stelion.workspace.infrastructure.dependency_scanners"></a>
 
@@ -875,7 +892,7 @@ Concrete dependency scanners used by the workspace graph builder.
 
 ### *class* stelion.workspace.infrastructure.dependency_scanners.EditablePipDependencyScanner(env_reader)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Detect editable pip dependencies from environment.yml files.
 
@@ -889,13 +906,13 @@ Detect editable pip dependencies from environment.yml files.
 Scan a project directory for editable pip dependency edges.
 
 * **Parameters:**
-  * **project_name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name of the project to scan.
+  * **project_name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name of the project to scan.
   * **project_dir** (*Path*) – Root directory of the project.
-  * **all_project_names** ([*set*](https://docs.python.org/3/library/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Known project names in the ecosystem.
+  * **all_project_names** ([*set*](https://docs.python.org/3/builtins/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Known project names in the ecosystem.
 * **Returns:**
   Detected editable pip dependency edges.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
 
 <a id="stelion.workspace.infrastructure.dependency_scanners.EditablePipDependencyScanner.scan_with_spec"></a>
 
@@ -904,19 +921,19 @@ Scan a project directory for editable pip dependency edges.
 Scan using a pre-read environment spec instead of reading from disk.
 
 * **Parameters:**
-  * **project_name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name of the project to scan.
+  * **project_name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name of the project to scan.
   * **env_spec** ([*EnvironmentSpec*](workspace-domain.md#stelion.workspace.domain.environment.EnvironmentSpec) *|* *None*) – Pre-read environment spec, or `None` to skip.
-  * **all_project_names** ([*set*](https://docs.python.org/3/library/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Known project names in the ecosystem.
+  * **all_project_names** ([*set*](https://docs.python.org/3/builtins/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Known project names in the ecosystem.
 * **Returns:**
   Detected editable pip dependency edges.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
 
 <a id="stelion.workspace.infrastructure.dependency_scanners.GitmodulesDependencyScanner"></a>
 
 ### *class* stelion.workspace.infrastructure.dependency_scanners.GitmodulesDependencyScanner
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Detect git submodule dependencies.
 
@@ -927,13 +944,13 @@ Detect git submodule dependencies.
 Scan a project for git submodule dependency edges.
 
 * **Parameters:**
-  * **project_name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name of the project to scan.
+  * **project_name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name of the project to scan.
   * **project_dir** (*Path*) – Root directory of the project.
-  * **all_project_names** ([*set*](https://docs.python.org/3/library/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Known project names in the ecosystem.
+  * **all_project_names** ([*set*](https://docs.python.org/3/builtins/stdtypes.html#set) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Known project names in the ecosystem.
 * **Returns:**
   Detected submodule dependency edges.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](workspace-domain.md#stelion.workspace.domain.dependency.DependencyEdge)]
 
 <a id="module-stelion.workspace.infrastructure.renderers.comparison"></a>
 
@@ -958,7 +975,7 @@ Serialize a `TreeReport` to YAML.
 * **Returns:**
   YAML text with a descriptive header comment.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.renderers.comparison.render_file_yaml"></a>
 
@@ -971,7 +988,7 @@ Serialize a `FileReport` to YAML.
 * **Returns:**
   YAML text with a descriptive header comment.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="module-stelion.workspace.infrastructure.renderers.vscode"></a>
 
@@ -985,7 +1002,7 @@ Render VS Code .code-workspace files (JSON with comments).
 
 ### *class* stelion.workspace.infrastructure.renderers.vscode.VSCodeWorkspaceFileRenderer(loader, reader=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Render a VS Code workspace file using injected package data loading.
 
@@ -1012,7 +1029,7 @@ Generate dependencies.yml as a structured YAML file.
 * **Returns:**
   YAML text with a descriptive header comment.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.renderers.yaml.render_projects_yaml"></a>
 
@@ -1026,7 +1043,7 @@ Generate projects.yml as a structured YAML registry.
 * **Returns:**
   YAML text with a descriptive header comment.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 <a id="stelion.workspace.infrastructure.renderers.yaml.render_environment"></a>
 
@@ -1039,4 +1056,4 @@ Generate a shared Conda environment.yml.
 * **Returns:**
   YAML text, prefixed with warning comments if issues were detected.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)

@@ -4,6 +4,8 @@ Guidelines for integrating packages across a multi-project ecosystem. Governs
 the choice of integration mechanism, version pinning strategy, optional
 dependency patterns, and integration module design.
 
+This guide selects an integration mechanism. The [dependency graph guide](dependency-graph.md) defines how each edge records its semantic kind and source.
+
 ## 1. Integration Mechanisms
 
 ### 1.1 Decision Matrix

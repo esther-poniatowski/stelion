@@ -1,5 +1,4 @@
-"""Manifest parsing, defaulting, and rendering infrastructure.
-"""
+"""Manifest parsing, defaulting, and rendering infrastructure."""
 
 from __future__ import annotations
 
@@ -8,6 +7,11 @@ from typing import Any, Mapping
 
 import yaml
 
+from ..domain.dependency import (
+    DependencyKind,
+    DependencyMechanism,
+    validate_kind_mechanism,
+)
 from ..domain.manifest import (
     CanonicalMechanism,
     DependenciesConfig,
@@ -29,7 +33,9 @@ from ..domain.manifest import (
 from ..exceptions import ManifestValidationError
 
 
-def default_workspace_manifest(manifest_dir: Path, github_user: str = "") -> WorkspaceManifest:
+def default_workspace_manifest(
+    manifest_dir: Path, github_user: str = ""
+) -> WorkspaceManifest:
     """Create the canonical default manifest model for a new workspace.
 
     Parameters
@@ -52,7 +58,7 @@ def default_workspace_manifest(manifest_dir: Path, github_user: str = "") -> Wor
             include_self=True,
             self_name=manifest_dir.name,
         ),
-        template=TemplateConfig(source="../keystone"),
+        template=TemplateConfig(source=""),
         defaults=EcosystemDefaults(github_user=github_user),
         vscode=VSCodeConfig(),
         generate=GenerateConfig(
@@ -66,7 +72,9 @@ def default_workspace_manifest(manifest_dir: Path, github_user: str = "") -> Wor
     )
 
 
-def parse_workspace_manifest(raw: Mapping[str, Any], manifest_dir: Path) -> WorkspaceManifest:
+def parse_workspace_manifest(
+    raw: Mapping[str, Any], manifest_dir: Path
+) -> WorkspaceManifest:
     """Parse a raw manifest mapping into a typed workspace manifest.
 
     Parameters
@@ -97,15 +105,43 @@ def parse_workspace_manifest(raw: Mapping[str, Any], manifest_dir: Path) -> Work
     try:
         return WorkspaceManifest(
             discovery=DiscoveryConfig(
-                scan_dirs=_coalesce_tuple(discovery_raw.get("scan_dirs"), defaults.discovery.scan_dirs, "discovery.scan_dirs"),
-                exclude=_coalesce_tuple(discovery_raw.get("exclude"), defaults.discovery.exclude, "discovery.exclude"),
-                markers=_coalesce_tuple(discovery_raw.get("markers"), defaults.discovery.markers, "discovery.markers"),
-                extra_paths=_coalesce_tuple(discovery_raw.get("extra_paths"), defaults.discovery.extra_paths, "discovery.extra_paths"),
-                include_self=_coalesce_bool(discovery_raw.get("include_self"), defaults.discovery.include_self, "discovery.include_self"),
-                self_name=_coalesce_str(discovery_raw.get("self_name"), defaults.discovery.self_name, "discovery.self_name"),
+                scan_dirs=_coalesce_tuple(
+                    discovery_raw.get("scan_dirs"),
+                    defaults.discovery.scan_dirs,
+                    "discovery.scan_dirs",
+                ),
+                exclude=_coalesce_tuple(
+                    discovery_raw.get("exclude"),
+                    defaults.discovery.exclude,
+                    "discovery.exclude",
+                ),
+                markers=_coalesce_tuple(
+                    discovery_raw.get("markers"),
+                    defaults.discovery.markers,
+                    "discovery.markers",
+                ),
+                extra_paths=_coalesce_tuple(
+                    discovery_raw.get("extra_paths"),
+                    defaults.discovery.extra_paths,
+                    "discovery.extra_paths",
+                ),
+                include_self=_coalesce_bool(
+                    discovery_raw.get("include_self"),
+                    defaults.discovery.include_self,
+                    "discovery.include_self",
+                ),
+                self_name=_coalesce_str(
+                    discovery_raw.get("self_name"),
+                    defaults.discovery.self_name,
+                    "discovery.self_name",
+                ),
             ),
             template=TemplateConfig(
-                source=_coalesce_str(template_raw.get("source"), defaults.template.source, "template.source"),
+                source=_coalesce_str(
+                    template_raw.get("source"),
+                    defaults.template.source,
+                    "template.source",
+                ),
                 delimiters=_coalesce_delimiters(
                     template_raw.get("delimiters"),
                     defaults.template.delimiters,
@@ -123,12 +159,26 @@ def parse_workspace_manifest(raw: Mapping[str, Any], manifest_dir: Path) -> Work
                 ),
             ),
             defaults=EcosystemDefaults(
-                github_user=_coalesce_str(defaults_raw.get("github_user"), defaults.defaults.github_user, "defaults.github_user"),
-                channel_name=_coalesce_str(defaults_raw.get("channel_name"), defaults.defaults.channel_name, "defaults.channel_name"),
-                license=_coalesce_str(defaults_raw.get("license"), defaults.defaults.license, "defaults.license"),
+                github_user=_coalesce_str(
+                    defaults_raw.get("github_user"),
+                    defaults.defaults.github_user,
+                    "defaults.github_user",
+                ),
+                channel_name=_coalesce_str(
+                    defaults_raw.get("channel_name"),
+                    defaults.defaults.channel_name,
+                    "defaults.channel_name",
+                ),
+                license=_coalesce_str(
+                    defaults_raw.get("license"),
+                    defaults.defaults.license,
+                    "defaults.license",
+                ),
             ),
             vscode=VSCodeConfig(
-                source=_coalesce_str(vscode_raw.get("source"), defaults.vscode.source, "vscode.source"),
+                source=_coalesce_str(
+                    vscode_raw.get("source"), defaults.vscode.source, "vscode.source"
+                ),
                 settings_overrides=_coalesce_mapping(
                     vscode_raw.get("settings_overrides"),
                     defaults.vscode.settings_overrides,
@@ -145,7 +195,9 @@ def parse_workspace_manifest(raw: Mapping[str, Any], manifest_dir: Path) -> Work
             names_in_use=_coalesce_str_map(raw.get("names_in_use"), {}, "names_in_use"),
             dependencies=_parse_dependencies_config(dependencies_raw),
             references=ReferencesConfig(
-                expected=_coalesce_tuple(references_raw.get("expected"), (), "references.expected"),
+                expected=_coalesce_tuple(
+                    references_raw.get("expected"), (), "references.expected"
+                ),
             ),
             manifest_dir=manifest_dir,
         )
@@ -203,7 +255,11 @@ def manifest_to_dict(manifest: WorkspaceManifest) -> dict[str, Any]:
         "names_in_use": dict(manifest.names_in_use),
         "integrations": {
             "canonical_mechanisms": {
-                name: {"type": value.type, "mechanism": value.mechanism}
+                name: {
+                    "type": value.type,
+                    "mechanism": value.mechanism,
+                    "edge_kind": value.edge_kind,
+                }
                 for name, value in manifest.integrations.canonical_mechanisms.items()
             },
             "reference_implementations": [
@@ -216,8 +272,12 @@ def manifest_to_dict(manifest: WorkspaceManifest) -> dict[str, Any]:
                 {
                     "dependent": edge.dependent,
                     "dependency": edge.dependency,
+                    "kind": edge.kind,
                     "mechanism": edge.mechanism,
-                    "detail": edge.detail,
+                    "source_declaration": edge.source_declaration,
+                    "version_policy": edge.version_policy,
+                    "optional": edge.optional,
+                    "integration_path": edge.integration_path,
                 }
                 for edge in manifest.dependencies.manual_edges
             ],
@@ -293,7 +353,12 @@ def _validate_manifest_mapping(raw: Mapping[str, Any]) -> None:
     )
     _ensure_known_keys(
         _get_section(raw, "generate", required=True),
-        {"workspace_file", "projects_registry", "dependency_graph", "shared_environment"},
+        {
+            "workspace_file",
+            "projects_registry",
+            "dependency_graph",
+            "shared_environment",
+        },
         "generate",
     )
     _ensure_known_keys(
@@ -313,24 +378,46 @@ def _validate_manifest_mapping(raw: Mapping[str, Any]) -> None:
     )
 
 
-def _parse_generate_config(raw: Mapping[str, Any], defaults: GenerateConfig) -> GenerateConfig:
+def _parse_generate_config(
+    raw: Mapping[str, Any], defaults: GenerateConfig
+) -> GenerateConfig:
     wf = _get_nested_section(raw, "workspace_file", "generate")
     pr = _get_nested_section(raw, "projects_registry", "generate")
     dg = _get_nested_section(raw, "dependency_graph", "generate")
     se = _get_nested_section(raw, "shared_environment", "generate")
     return GenerateConfig(
         workspace_file=WorkspaceFileConfig(
-            output=_coalesce_str(wf.get("output"), defaults.workspace_file.output, "generate.workspace_file.output")
+            output=_coalesce_str(
+                wf.get("output"),
+                defaults.workspace_file.output,
+                "generate.workspace_file.output",
+            )
         ),
         projects_registry=ProjectsRegistryConfig(
-            output=_coalesce_str(pr.get("output"), defaults.projects_registry.output, "generate.projects_registry.output")
+            output=_coalesce_str(
+                pr.get("output"),
+                defaults.projects_registry.output,
+                "generate.projects_registry.output",
+            )
         ),
         dependency_graph=DependencyGraphConfig(
-            output=_coalesce_str(dg.get("output"), defaults.dependency_graph.output, "generate.dependency_graph.output")
+            output=_coalesce_str(
+                dg.get("output"),
+                defaults.dependency_graph.output,
+                "generate.dependency_graph.output",
+            )
         ),
         shared_environment=SharedEnvironmentConfig(
-            output=_coalesce_str(se.get("output"), defaults.shared_environment.output, "generate.shared_environment.output"),
-            name=_coalesce_str(se.get("name"), defaults.shared_environment.name, "generate.shared_environment.name"),
+            output=_coalesce_str(
+                se.get("output"),
+                defaults.shared_environment.output,
+                "generate.shared_environment.output",
+            ),
+            name=_coalesce_str(
+                se.get("name"),
+                defaults.shared_environment.name,
+                "generate.shared_environment.name",
+            ),
         ),
     )
 
@@ -341,18 +428,58 @@ def _parse_integrations_config(raw: Mapping[str, Any]) -> IntegrationsConfig:
     if refs_raw is None:
         refs_raw = ()
     if not isinstance(refs_raw, (list, tuple)):
-        raise ManifestValidationError("Section 'integrations.reference_implementations' must be a sequence.")
+        raise ManifestValidationError(
+            "Section 'integrations.reference_implementations' must be a sequence."
+        )
     mechanisms: dict[str, CanonicalMechanism] = {}
     for name, value in mechanisms_raw.items():
         value_map = _to_mapping(value, f"integrations.canonical_mechanisms.{name}")
-        _ensure_known_keys(value_map, {"type", "mechanism"}, f"integrations.canonical_mechanisms.{name}")
+        _ensure_known_keys(
+            value_map,
+            {"type", "mechanism", "edge_kind"},
+            f"integrations.canonical_mechanisms.{name}",
+        )
+        edge_kind = _coalesce_str(
+            value_map.get("edge_kind"),
+            "",
+            f"integrations.canonical_mechanisms.{name}.edge_kind",
+        )
+        mechanism = _coalesce_str(
+            value_map.get("mechanism"),
+            "",
+            f"integrations.canonical_mechanisms.{name}.mechanism",
+        )
+        try:
+            parsed_mechanism = DependencyMechanism(mechanism)
+        except ValueError as exc:
+            known = ", ".join(mechanism.value for mechanism in DependencyMechanism)
+            raise ManifestValidationError(
+                f"Field 'integrations.canonical_mechanisms.{name}.mechanism' "
+                f"must be one of: {known}."
+            ) from exc
+        if edge_kind:
+            try:
+                parsed_kind = DependencyKind(edge_kind)
+            except ValueError as exc:
+                known = ", ".join(kind.value for kind in DependencyKind)
+                raise ManifestValidationError(
+                    f"Field 'integrations.canonical_mechanisms.{name}.edge_kind' "
+                    f"must be one of: {known}."
+                ) from exc
+            try:
+                validate_kind_mechanism(parsed_kind, parsed_mechanism)
+            except ValueError as exc:
+                raise ManifestValidationError(
+                    f"Integration '{name}' has an invalid edge_kind and mechanism: {exc}"
+                ) from exc
         mechanisms[name] = CanonicalMechanism(
-            type=_coalesce_str(value_map.get("type"), "", f"integrations.canonical_mechanisms.{name}.type"),
-            mechanism=_coalesce_str(
-                value_map.get("mechanism"),
+            type=_coalesce_str(
+                value_map.get("type"),
                 "",
-                f"integrations.canonical_mechanisms.{name}.mechanism",
+                f"integrations.canonical_mechanisms.{name}.type",
             ),
+            mechanism=mechanism,
+            edge_kind=edge_kind,
         )
     refs = []
     for index, item in enumerate(refs_raw):
@@ -364,7 +491,11 @@ def _parse_integrations_config(raw: Mapping[str, Any]) -> IntegrationsConfig:
         )
         refs.append(
             ReferenceImplementation(
-                module=_coalesce_str(item_map.get("module"), "", f"integrations.reference_implementations[{index}].module"),
+                module=_coalesce_str(
+                    item_map.get("module"),
+                    "",
+                    f"integrations.reference_implementations[{index}].module",
+                ),
                 description=_coalesce_str(
                     item_map.get("description"),
                     "",
@@ -383,28 +514,123 @@ def _parse_dependencies_config(raw: Mapping[str, Any]) -> DependenciesConfig:
     if edges_raw is None:
         edges_raw = ()
     if not isinstance(edges_raw, (list, tuple)):
-        raise ManifestValidationError("Section 'dependencies.manual_edges' must be a sequence.")
+        raise ManifestValidationError(
+            "Section 'dependencies.manual_edges' must be a sequence."
+        )
     edges = []
     for index, item in enumerate(edges_raw):
         item_map = _to_mapping(item, f"dependencies.manual_edges[{index}]")
         _ensure_known_keys(
             item_map,
-            {"dependent", "dependency", "mechanism", "detail"},
+            {
+                "dependent",
+                "dependency",
+                "kind",
+                "mechanism",
+                "source_declaration",
+                "version_policy",
+                "optional",
+                "integration_path",
+                "detail",
+            },
             f"dependencies.manual_edges[{index}]",
         )
+        mechanism = _coalesce_str(
+            item_map.get("mechanism"),
+            "",
+            f"dependencies.manual_edges[{index}].mechanism",
+        )
+        try:
+            DependencyMechanism(mechanism)
+        except ValueError as exc:
+            known = ", ".join(item.value for item in DependencyMechanism)
+            raise ManifestValidationError(
+                f"Field 'dependencies.manual_edges[{index}].mechanism' "
+                f"must be one of: {known}."
+            ) from exc
+        default_kind = {
+            "git_submodule": "content/submodule",
+            "workspace_discovery": "workspace/containment",
+            "workspace_manifest": "workspace/containment",
+        }.get(mechanism, "runtime/package")
+        default_version_policy = {
+            "git_submodule": "pinned_commit",
+            "editable_pip": "workspace_checkout",
+            "conda": "environment_specifier",
+            "workspace_discovery": "workspace_checkout",
+            "workspace_manifest": "workspace_checkout",
+        }.get(mechanism, "explicit_manifest_policy")
+        kind = _coalesce_str(
+            item_map.get("kind"),
+            default_kind,
+            f"dependencies.manual_edges[{index}].kind",
+        )
+        try:
+            parsed_kind = DependencyKind(kind)
+        except ValueError as exc:
+            known = ", ".join(item.value for item in DependencyKind)
+            raise ManifestValidationError(
+                f"Field 'dependencies.manual_edges[{index}].kind' "
+                f"must be one of: {known}."
+            ) from exc
+        try:
+            validate_kind_mechanism(parsed_kind, DependencyMechanism(mechanism))
+        except ValueError as exc:
+            raise ManifestValidationError(
+                f"Manual edge {index} has an incompatible kind and mechanism: {exc}"
+            ) from exc
+        source_declaration = _coalesce_str(
+            item_map.get("source_declaration"),
+            f"stelion.yml:dependencies.manual_edges[{index}]",
+            f"dependencies.manual_edges[{index}].source_declaration",
+        )
+        version_policy = _coalesce_str(
+            item_map.get("version_policy"),
+            default_version_policy,
+            f"dependencies.manual_edges[{index}].version_policy",
+        )
+        if not source_declaration or not version_policy:
+            raise ManifestValidationError(
+                f"Manual edge {index} requires non-empty source_declaration "
+                "and version_policy fields."
+            )
         edges.append(
             ManualEdge(
-                dependent=_coalesce_str(item_map.get("dependent"), "", f"dependencies.manual_edges[{index}].dependent"),
-                dependency=_coalesce_str(item_map.get("dependency"), "", f"dependencies.manual_edges[{index}].dependency"),
-                mechanism=_coalesce_str(item_map.get("mechanism"), "", f"dependencies.manual_edges[{index}].mechanism"),
-                detail=_coalesce_str(item_map.get("detail"), "", f"dependencies.manual_edges[{index}].detail"),
+                dependent=_coalesce_str(
+                    item_map.get("dependent"),
+                    "",
+                    f"dependencies.manual_edges[{index}].dependent",
+                ),
+                dependency=_coalesce_str(
+                    item_map.get("dependency"),
+                    "",
+                    f"dependencies.manual_edges[{index}].dependency",
+                ),
+                kind=kind,
+                mechanism=mechanism,
+                source_declaration=source_declaration,
+                version_policy=version_policy,
+                optional=_coalesce_bool(
+                    item_map.get("optional"),
+                    False,
+                    f"dependencies.manual_edges[{index}].optional",
+                ),
+                integration_path=_coalesce_str(
+                    item_map.get("integration_path", item_map.get("detail")),
+                    "",
+                    f"dependencies.manual_edges[{index}].integration_path",
+                ),
             )
         )
 
-    legacy_extra = _coalesce_tuple(raw.get("extra_scan_dirs"), (), "dependencies.extra_scan_dirs")
+    legacy_extra = _coalesce_tuple(
+        raw.get("extra_scan_dirs"), (), "dependencies.extra_scan_dirs"
+    )
     return DependenciesConfig(
         manual_edges=tuple(edges),
-        scan_paths=_coalesce_tuple(raw.get("scan_paths"), legacy_extra, "dependencies.scan_paths"),
+        scan_paths=_coalesce_tuple(
+            raw.get("scan_paths"), legacy_extra, "dependencies.scan_paths"
+        ),
         superproject_paths=_coalesce_tuple(
             raw.get("superproject_paths"),
             legacy_extra,
@@ -413,15 +639,21 @@ def _parse_dependencies_config(raw: Mapping[str, Any]) -> DependenciesConfig:
     )
 
 
-def _get_section(raw: Mapping[str, Any], name: str, required: bool = False) -> Mapping[str, Any]:
+def _get_section(
+    raw: Mapping[str, Any], name: str, required: bool = False
+) -> Mapping[str, Any]:
     if name not in raw:
         if required:
-            raise ManifestValidationError(f"Manifest is missing required section '{name}'.")
+            raise ManifestValidationError(
+                f"Manifest is missing required section '{name}'."
+            )
         return {}
     return _to_mapping(raw[name], name)
 
 
-def _get_nested_section(raw: Mapping[str, Any], key: str, section: str) -> Mapping[str, Any]:
+def _get_nested_section(
+    raw: Mapping[str, Any], key: str, section: str
+) -> Mapping[str, Any]:
     value = raw.get(key, {})
     return _to_mapping(value, f"{section}.{key}")
 
@@ -446,7 +678,9 @@ def _to_str_tuple(value: Any, label: str) -> tuple[str, ...]:
     if value is None:
         return ()
     if not isinstance(value, (list, tuple)):
-        raise ManifestValidationError(f"Section '{label}' must be a sequence of strings.")
+        raise ManifestValidationError(
+            f"Section '{label}' must be a sequence of strings."
+        )
     result = tuple(value)
     if not all(isinstance(item, str) for item in result):
         raise ManifestValidationError(f"Section '{label}' must contain only strings.")
@@ -458,12 +692,16 @@ def _to_str_map(value: Any, label: str) -> dict[str, str]:
     result: dict[str, str] = {}
     for key, item in mapping.items():
         if not isinstance(key, str) or not isinstance(item, str):
-            raise ManifestValidationError(f"Section '{label}' must map strings to strings.")
+            raise ManifestValidationError(
+                f"Section '{label}' must map strings to strings."
+            )
         result[key] = item
     return result
 
 
-def _coalesce_tuple(value: Any, default: tuple[str, ...], label: str) -> tuple[str, ...]:
+def _coalesce_tuple(
+    value: Any, default: tuple[str, ...], label: str
+) -> tuple[str, ...]:
     if value is None:
         return default
     return _to_str_tuple(value, label)
@@ -476,7 +714,9 @@ def _coalesce_delimiters(
 ) -> tuple[str, str]:
     delimiters = _coalesce_tuple(value, default, label)
     if len(delimiters) != 2:
-        raise ManifestValidationError(f"Section '{label}' must contain exactly two strings.")
+        raise ManifestValidationError(
+            f"Section '{label}' must contain exactly two strings."
+        )
     return delimiters[0], delimiters[1]
 
 
@@ -496,13 +736,17 @@ def _coalesce_str(value: Any, default: str, label: str) -> str:
     return value
 
 
-def _coalesce_mapping(value: Any, default: Mapping[str, Any], label: str) -> dict[str, Any]:
+def _coalesce_mapping(
+    value: Any, default: Mapping[str, Any], label: str
+) -> dict[str, Any]:
     if value is None:
         return dict(default)
     return dict(_to_mapping(value, label))
 
 
-def _coalesce_str_map(value: Any, default: Mapping[str, str], label: str) -> dict[str, str]:
+def _coalesce_str_map(
+    value: Any, default: Mapping[str, str], label: str
+) -> dict[str, str]:
     if value is None:
         return dict(default)
     return _to_str_map(value, label)

@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import os
+from dataclasses import replace
 from pathlib import Path
 
 from ..domain.dependency import (
     DependencyEdge,
     DependencyGraph,
+    DependencyKind,
     DependencyMechanism,
+    EdgeProvenance,
     manual_edge_to_dependency_edge,
 )
 from ..domain.manifest import WorkspaceManifest
@@ -52,11 +56,47 @@ def build_dependency_graph(
 
     for project_name, project_path in scan_dirs:
         for scanner in scanners:
-            detected.extend(scanner.scan(project_name, project_path, all_names))
+            for edge in scanner.scan(project_name, project_path, all_names):
+                policy = manifest.integrations.canonical_mechanisms.get(edge.dependency)
+                if policy is not None and policy.edge_kind:
+                    try:
+                        overridden_kind = DependencyKind(policy.edge_kind)
+                    except ValueError as exc:
+                        known = ", ".join(kind.value for kind in DependencyKind)
+                        raise ValueError(
+                            f"Unknown edge kind '{policy.edge_kind}' for integration "
+                            f"'{edge.dependency}'. Known kinds: {known}"
+                        ) from exc
+                    edge = replace(edge, kind=overridden_kind)
+                detected.append(edge)
+
+    workspace_name = manifest.discovery.self_name or manifest.manifest_dir.name
+    for project in inventory.projects:
+        if project.name == workspace_name:
+            continue
+        detected.append(
+            DependencyEdge(
+                dependent=workspace_name,
+                dependency=project.name,
+                kind=DependencyKind.WORKSPACE_CONTAINMENT,
+                mechanism=DependencyMechanism.WORKSPACE_DISCOVERY,
+                source_declaration="stelion.yml:discovery",
+                version_policy="workspace_checkout",
+                optional=False,
+                provenance=EdgeProvenance.AUTOMATIC,
+                integration_path=os.path.relpath(project.path, manifest.manifest_dir),
+            )
+        )
 
     manual = tuple(
         manual_edge_to_dependency_edge(e) for e in manifest.dependencies.manual_edges
     )
+    manually_asserted_pairs = {(edge.dependent, edge.dependency) for edge in manual}
+    detected = [
+        edge
+        for edge in detected
+        if (edge.dependent, edge.dependency) not in manually_asserted_pairs
+    ]
 
     return DependencyGraph(
         detected=tuple(detected),

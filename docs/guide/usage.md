@@ -14,8 +14,28 @@ Initialize a workspace by scanning a directory for sibling projects:
 stelion workspace init
 ```
 
-The first run auto-discovers projects and generates `stelion.yml` with sensible
-defaults. Subsequent runs regenerate all workspace artifacts from the manifest.
+The first run auto-discovers projects and generates `stelion.yml` with consumer-agnostic defaults. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
+
+### Consumer overlays
+
+A consumer overlay records only the values that differ from Stelion's canonical manifest. This boundary keeps output filenames, empty lists and objects, bundled editor settings and names derived from the workspace path under Stelion ownership.
+
+Stelion applies four merge rules:
+
+- an omitted field inherits its canonical value;
+- a nonempty YAML object merges recursively;
+- an empty YAML object clears the corresponding default object;
+- a scalar or sequence replaces the corresponding default.
+
+The YAML value `null` is invalid because an omitted field already inherits its default. Unknown fields and invalid values also fail before Stelion writes the complete manifest.
+
+Render and validate an overlay with the following command:
+
+```sh
+stelion workspace render-manifest workspace.overlay.yml --output stelion.yml
+```
+
+When the output is a staging file, the option `--manifest-dir` supplies the final workspace directory for destination-derived defaults. The resulting `stelion.yml` is an ordinary complete manifest accepted by every workspace command.
 
 Re-scan projects and update generated files:
 
@@ -23,7 +43,7 @@ Re-scan projects and update generated files:
 stelion workspace sync
 ```
 
-Bootstrap a new project from the template:
+Bootstrap a new project from the template selected by the manifest:
 
 ```sh
 stelion workspace new myproject "One-line description."

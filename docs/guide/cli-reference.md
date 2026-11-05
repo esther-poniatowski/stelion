@@ -13,11 +13,23 @@ stelion [OPTIONS] COMMAND [ARGS]
 
 ## Workspace Commands
 
+### `stelion workspace render-manifest`
+
+Compose canonical defaults with a consumer overlay, validate the complete manifest and write it to the selected output.
+
+```sh
+stelion workspace render-manifest OVERLAY [--output/-o PATH] [--manifest-dir PATH] [--dry-run]
+```
+
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `--output PATH` / `-o` | Complete manifest destination. | `stelion.yml` |
+| `--manifest-dir PATH` | Final workspace directory used for destination-derived defaults when the output is staged elsewhere. | Output directory |
+| `--dry-run` | Print the complete manifest without writing it. | Off |
+
 ### `stelion workspace init`
 
-Initialize or regenerate a workspace. Generates `stelion.yml` with auto-discovered
-projects when no manifest exists. With an existing manifest, generates all workspace
-artifacts.
+Initialize or regenerate a workspace. The command generates `stelion.yml` with auto-discovered projects and consumer-agnostic defaults when no manifest exists. With an existing manifest, the command generates all workspace artifacts.
 
 ```sh
 stelion workspace init [--manifest/-m PATH] [--dry-run]

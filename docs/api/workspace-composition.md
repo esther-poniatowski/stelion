@@ -10,7 +10,7 @@ Composition root: constructs infrastructure and wires use-cases.
 
 ### *class* stelion.workspace.composition.WorkspaceServices(extractor, env_reader, dependency_scanners, writer, reader, hasher, render_workspace_file, render_projects_yaml, render_dependency_yaml, render_environment)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Container holding all wired infrastructure implementations.
 
@@ -28,7 +28,7 @@ Reads Conda environment specs from project directories.
 
 <a id="stelion.workspace.composition.WorkspaceServices.dependency_scanners"></a>
 
-#### dependency_scanners *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[DependencyScanner](workspace-application.md#stelion.workspace.application.protocols.DependencyScanner), ...]*
+#### dependency_scanners *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[DependencyScanner](workspace-application.md#stelion.workspace.application.protocols.DependencyScanner), ...]*
 
 Scanners that detect inter-project dependency edges.
 
@@ -78,7 +78,7 @@ Renders the shared Conda environment YAML.
 
 ### *class* stelion.workspace.composition.WorkspaceContext(manifest, inventory, graph, environment)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Fully resolved workspace state: manifest + discovered data.
 
@@ -110,7 +110,7 @@ Merged shared environment specification.
 
 ### *class* stelion.workspace.composition.WorkspaceRegistrationResult(manifest, project, manifest_updated, generated)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Result of registering a project into the workspace and regenerating artifacts.
 
@@ -128,13 +128,13 @@ Metadata of the newly registered project.
 
 <a id="stelion.workspace.composition.WorkspaceRegistrationResult.manifest_updated"></a>
 
-#### manifest_updated *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### manifest_updated *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the manifest was modified during registration.
 
 <a id="stelion.workspace.composition.WorkspaceRegistrationResult.generated"></a>
 
-#### generated *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[GenerationResult](workspace-application.md#stelion.workspace.application.generation.GenerationResult), ...]*
+#### generated *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[GenerationResult](workspace-application.md#stelion.workspace.application.generation.GenerationResult), ...]*
 
 Artifacts regenerated after registration.
 
@@ -186,6 +186,37 @@ Load and return a validated workspace manifest.
 * **Return type:**
   [WorkspaceManifest](workspace-domain.md#stelion.workspace.domain.manifest.WorkspaceManifest)
 
+<a id="stelion.workspace.composition.compose_workspace_manifest"></a>
+
+### stelion.workspace.composition.compose_workspace_manifest(overlay_path, manifest_path)
+
+Compose and validate a consumer overlay against canonical defaults.
+
+The destination path determines path-sensitive defaults such as the workspace
+name. The overlay remains independent of Stelion’s complete manifest shape.
+
+* **Parameters:**
+  * **overlay_path** (*Path*) – YAML mapping containing consumer-specific manifest values.
+  * **manifest_path** (*Path*) – Destination of the complete rendered manifest.
+* **Returns:**
+  Complete typed manifest after default composition and validation.
+* **Return type:**
+  [WorkspaceManifest](workspace-domain.md#stelion.workspace.domain.manifest.WorkspaceManifest)
+
+<a id="stelion.workspace.composition.render_workspace_manifest"></a>
+
+### stelion.workspace.composition.render_workspace_manifest(overlay_path, manifest_path)
+
+Render a validated complete manifest from a consumer overlay.
+
+* **Parameters:**
+  * **overlay_path** (*Path*) – YAML mapping containing consumer-specific manifest values.
+  * **manifest_path** (*Path*) – Destination path used to resolve path-sensitive defaults.
+* **Returns:**
+  Complete canonical YAML manifest.
+* **Return type:**
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 <a id="stelion.workspace.composition.build_workspace_context"></a>
 
 ### stelion.workspace.composition.build_workspace_context(manifest, services)
@@ -212,7 +243,7 @@ Create and optionally write a default manifest for a new workspace.
 * **Parameters:**
   * **manifest_path** (*Path*) – Destination path for the new manifest file.
   * **services** ([*WorkspaceServices*](#stelion.workspace.composition.WorkspaceServices)) – Infrastructure services providing the file writer.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, build the manifest without writing to disk.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, build the manifest without writing to disk.
 * **Returns:**
   The generated manifest, discovered inventory, and write status.
 * **Return type:**
@@ -227,13 +258,13 @@ Generate all or a selected subset of workspace artifacts.
 * **Parameters:**
   * **ctx** ([*WorkspaceContext*](#stelion.workspace.composition.WorkspaceContext)) – Resolved workspace state.
   * **services** ([*WorkspaceServices*](#stelion.workspace.composition.WorkspaceServices)) – Infrastructure services for generation.
-  * **force** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, regenerate even when content is unchanged.
-  * **selected_targets** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to generate; empty means all.
+  * **force** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, regenerate even when content is unchanged.
+  * **selected_targets** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to generate; empty means all.
   * **generation_services** ([*GenerationServices*](workspace-application.md#stelion.workspace.application.protocols.GenerationServices) *|* *None*) – Pre-built generation services; built from *services* if None.
 * **Returns:**
   Results for each generated artifact.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[GenerationResult](workspace-application.md#stelion.workspace.application.generation.GenerationResult)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[GenerationResult](workspace-application.md#stelion.workspace.application.generation.GenerationResult)]
 
 <a id="stelion.workspace.composition.run_drift_check"></a>
 
@@ -244,7 +275,7 @@ Compute drift without writing any files.
 * **Parameters:**
   * **ctx** ([*WorkspaceContext*](#stelion.workspace.composition.WorkspaceContext)) – Resolved workspace state.
   * **services** ([*WorkspaceServices*](#stelion.workspace.composition.WorkspaceServices)) – Infrastructure services for generation.
-  * **selected_targets** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to check; empty means all.
+  * **selected_targets** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to check; empty means all.
   * **generation_services** ([*GenerationServices*](workspace-application.md#stelion.workspace.application.protocols.GenerationServices) *|* *None*) – Pre-built generation services; built from *services* if None.
 * **Returns:**
   Report describing which artifacts have drifted.
@@ -259,11 +290,11 @@ List generation target output paths using `compute_artifact_specs`.
 
 * **Parameters:**
   * **manifest** ([*WorkspaceManifest*](workspace-domain.md#stelion.workspace.domain.manifest.WorkspaceManifest)) – The workspace manifest defining artifact output locations.
-  * **selected_targets** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to include; empty means all.
+  * **selected_targets** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to include; empty means all.
 * **Returns:**
   Output paths for the selected (or all) generation targets.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[Path]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[Path]
 
 <a id="stelion.workspace.composition.target_paths"></a>
 
@@ -273,11 +304,11 @@ List generation target output paths (backward-compatible alias).
 
 * **Parameters:**
   * **manifest** ([*WorkspaceManifest*](workspace-domain.md#stelion.workspace.domain.manifest.WorkspaceManifest)) – The workspace manifest defining artifact output locations.
-  * **selected_targets** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to include; empty means all.
+  * **selected_targets** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*GenerationArtifact*](workspace-application.md#stelion.workspace.application.generation.GenerationArtifact) *,*  *...* *]*) – Subset of artifacts to include; empty means all.
 * **Returns:**
   Output paths for the selected (or all) generation targets.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[Path]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[Path]
 
 <a id="stelion.workspace.composition.register_workspace_project"></a>
 
@@ -318,13 +349,13 @@ Resolve, plan, and execute a submodule sync for a dependency.
 
 * **Parameters:**
   * **ctx** ([*WorkspaceContext*](#stelion.workspace.composition.WorkspaceContext)) – Resolved workspace state.
-  * **dependency** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name of the dependency project to sync.
+  * **dependency** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name of the dependency project to sync.
   * **origin** ([*SyncOrigin*](workspace-domain.md#stelion.workspace.domain.sync.SyncOrigin)) – Source of the target commit (local HEAD or remote).
-  * **source_superproject** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Name of the superproject supplying the source commit.
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Git remote name to fetch from.
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Git branch name to resolve the remote HEAD.
-  * **commit** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, commit submodule pointer updates.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, plan without executing filesystem changes.
+  * **source_superproject** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Name of the superproject supplying the source commit.
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Git remote name to fetch from.
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Git branch name to resolve the remote HEAD.
+  * **commit** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, commit submodule pointer updates.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, plan without executing filesystem changes.
 * **Returns:**
   Outcome of the sync operation.
 * **Return type:**
@@ -349,9 +380,9 @@ Select projects and run an arbitrary shell command on each.
 
 * **Parameters:**
   * **ctx** ([*WorkspaceContext*](#stelion.workspace.composition.WorkspaceContext)) – Resolved workspace state.
-  * **command** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Shell command to execute in each project directory.
+  * **command** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Shell command to execute in each project directory.
   * **filter** ([*ProjectFilter*](workspace-domain.md#stelion.workspace.domain.bulk.ProjectFilter) *|* *None*) – Optional filter to narrow the target project set.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, select projects without executing the command.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, select projects without executing the command.
 * **Returns:**
   Aggregated outcomes from all targeted projects.
 * **Return type:**
@@ -365,9 +396,9 @@ Select projects and commit tracked changes on each.
 
 * **Parameters:**
   * **ctx** ([*WorkspaceContext*](#stelion.workspace.composition.WorkspaceContext)) – Resolved workspace state.
-  * **message** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Commit message to use for each project.
+  * **message** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Commit message to use for each project.
   * **filter** ([*ProjectFilter*](workspace-domain.md#stelion.workspace.domain.bulk.ProjectFilter) *|* *None*) – Optional filter to narrow the target project set.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, select projects without committing.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, select projects without committing.
 * **Returns:**
   Aggregated outcomes from all targeted projects.
 * **Return type:**
@@ -381,10 +412,10 @@ Select projects and push to remote on each.
 
 * **Parameters:**
   * **ctx** ([*WorkspaceContext*](#stelion.workspace.composition.WorkspaceContext)) – Resolved workspace state.
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Git remote name to push to.
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Git branch name to push.
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Git remote name to push to.
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Git branch name to push.
   * **filter** ([*ProjectFilter*](workspace-domain.md#stelion.workspace.domain.bulk.ProjectFilter) *|* *None*) – Optional filter to narrow the target project set.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If True, select projects without pushing.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If True, select projects without pushing.
 * **Returns:**
   Aggregated outcomes from all targeted projects.
 * **Return type:**
@@ -394,7 +425,7 @@ Select projects and push to remote on each.
 
 ### *class* stelion.workspace.composition.ComparisonServices(scanner, parser, spec_loader, reader)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Container for cross-project comparison infrastructure.
 

@@ -112,7 +112,8 @@ output table highlights errors alongside successful updates.
 The command reads the dependency graph from stelion's workspace context. For a
 dependency to be syncable:
 
-- It must appear as a `git_submodule` edge in `dependencies.yml`.
+- A syncable dependency must appear in `dependencies.yml` with `mechanism: git_submodule` and a non-empty `integration_path`.
+- The semantic kind may be `build/tooling` or `content/submodule`.
 - Its superprojects must be listed in `dependencies.superproject_paths` in
   `stelion.yml`.
 - The local clone must be in the project inventory (discovered via

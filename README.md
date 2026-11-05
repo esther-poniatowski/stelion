@@ -79,13 +79,14 @@ a recurring challenge:
 - [X] Generate VS Code multi-root workspace files from discovered projects.
 - [X] Generate project registry (`projects.yml`) with description, status, and language
   detection.
-- [X] Generate structured dependency graph (`dependencies.yml`).
+- [X] Generate a typed dependency graph with self-contained edge records.
 - [X] Generate shared Conda environment from merged project environments.
-- [X] Bootstrap new projects from a keystone template with placeholder substitution.
+- [X] Bootstrap new projects from a configured template by replacing placeholders.
 - [X] Register existing projects into workspace artifacts and persist discovery config
   when needed.
 - [X] Detect drift between generated files and current project state.
-- [X] Auto-generate manifest with sensible defaults on first run.
+- [X] Auto-generate a consumer-agnostic manifest with destination-derived defaults.
+- [X] Compose consumer overlays with canonical defaults and validate the complete manifest.
 - [X] Ship VS Code workspace defaults as package data.
 
 ### Submodule Synchronization (implemented)
@@ -164,6 +165,7 @@ stelion workspace sync
 | [Usage](docs/guide/usage.md) | Workflows and command overview |
 | [CLI Reference](docs/guide/cli-reference.md) | Full command registry and options |
 | [Bulk Operations](docs/guide/bulk-operations.md) | exec, commit, push across projects |
+| [Dependency Graph](docs/guide/dependency-graph.md) | Edge kinds, sources, mechanisms and policy |
 | [Submodule Sync](docs/guide/submodule-sync.md) | Propagating commits across replicas |
 | [Comparison](docs/guide/comparison.md) | Tree and file comparison commands |
 | [Integration Policy](docs/guide/integration-policy.md) | Mechanisms, pinning, optional dependencies |

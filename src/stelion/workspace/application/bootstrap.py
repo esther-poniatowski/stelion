@@ -17,8 +17,7 @@ from ..exceptions import BootstrapError
 
 @dataclass(frozen=True)
 class BootstrapResult:
-    """Outcome of bootstrapping a new project.
-    """
+    """Outcome of bootstrapping a new project."""
 
     name: str
     """Project name."""
@@ -34,8 +33,7 @@ class BootstrapResult:
 
 @dataclass(frozen=True)
 class BootstrapRequest:
-    """Validated request for creating a project from a workspace template.
-    """
+    """Validated request for creating a project from a workspace template."""
 
     name: str
     """Project name."""
@@ -57,8 +55,7 @@ class BootstrapRequest:
 
 @dataclass(frozen=True)
 class WorkspaceBootstrapRequest:
-    """High-level request for bootstrapping a project within a workspace.
-    """
+    """High-level request for bootstrapping a project within a workspace."""
 
     manifest_dir: Path
     """Absolute path to the workspace manifest directory."""
@@ -82,8 +79,7 @@ class WorkspaceBootstrapRequest:
 
 @dataclass(frozen=True)
 class PlaceholderBindings:
-    """Resolved template placeholder bindings.
-    """
+    """Resolved template placeholder bindings."""
 
     mappings: dict[str, str]
     """Placeholder-to-value mapping."""
@@ -113,14 +109,15 @@ class PlaceholderBindings:
 
 @dataclass(frozen=True)
 class BootstrapServices:
-    """Injected infrastructure for the project bootstrap workflow.
-    """
+    """Injected infrastructure for the project bootstrap workflow."""
 
     read_git_identity: Callable[[], tuple[str, str]]
     """Read the git user name and email."""
     copy_template: Callable[[Path, Path], None]
     """Copy a template directory to a target directory."""
-    substitute_directory: Callable[[Path, dict[str, str], tuple[str, str], tuple[str, ...]], int]
+    substitute_directory: Callable[
+        [Path, dict[str, str], tuple[str, str], tuple[str, ...]], int
+    ]
     """Substitute placeholders in all files under a directory."""
     rename_paths: Callable[[Path, dict[str, str], dict[str, str], tuple[str, str]], int]
     """Rename files and directories using the bindings."""
@@ -142,7 +139,13 @@ def plan_bootstrap_request(request: WorkspaceBootstrapRequest) -> BootstrapReque
         Executable bootstrap request with resolved paths.
     """
     if not request.discovery_scan_dirs:
-        raise BootstrapError("Manifest discovery.scan_dirs must contain at least one scan directory.")
+        raise BootstrapError(
+            "Manifest discovery.scan_dirs must contain at least one scan directory."
+        )
+    if not request.template.source:
+        raise BootstrapError(
+            "Manifest template.source must name the project template directory."
+        )
     destination_root = request.destination_root or request.discovery_scan_dirs[0]
     if destination_root not in request.discovery_scan_dirs:
         raise BootstrapError(

@@ -29,6 +29,15 @@ Application use-cases coordinating domain models and infrastructure services.
    :show-inheritance:
 ```
 
+## Manifest overlays
+
+```{eval-rst}
+.. automodule:: stelion.workspace.application.manifest_overlay
+   :members:
+   :undoc-members:
+   :show-inheritance:
+```
+
 ## Discovery
 
 ```{eval-rst}

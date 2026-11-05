@@ -1,5 +1,4 @@
-"""Immutable domain models for workspace manifest configuration.
-"""
+"""Immutable domain models for workspace manifest configuration."""
 
 from __future__ import annotations
 
@@ -11,12 +10,11 @@ from typing import Any, Mapping
 
 @dataclass(frozen=True)
 class DiscoveryConfig:
-    """Rules for discovering projects on disk.
-    """
+    """Rules for discovering projects on disk."""
 
     scan_dirs: tuple[str, ...]
     """Directories to scan for projects."""
-    exclude: tuple[str, ...] = ("dev",)
+    exclude: tuple[str, ...] = ()
     """Directory names to skip during scanning."""
     markers: tuple[str, ...] = ("pyproject.toml",)
     """Filenames whose presence identifies a project root."""
@@ -24,14 +22,13 @@ class DiscoveryConfig:
     """Additional paths to include as projects unconditionally."""
     include_self: bool = True
     """Whether to include the workspace root as a project."""
-    self_name: str = "dev"
+    self_name: str = ""
     """Name assigned to the workspace root project."""
 
 
 @dataclass(frozen=True)
 class TemplateConfig:
-    """Template source and substitution rules for bootstrapping new projects.
-    """
+    """Template source and substitution rules for bootstrapping new projects."""
 
     source: str
     """Path or identifier of the template source."""
@@ -43,7 +40,9 @@ class TemplateConfig:
     """Filename substitution rules applied during bootstrapping."""
 
     def __post_init__(self) -> None:
-        if len(self.delimiters) != 2 or not all(isinstance(part, str) for part in self.delimiters):
+        if len(self.delimiters) != 2 or not all(
+            isinstance(part, str) for part in self.delimiters
+        ):
             raise ValueError("Template delimiters must contain exactly two strings.")
         object.__setattr__(self, "exclude_patterns", tuple(self.exclude_patterns))
         object.__setattr__(self, "renames", MappingProxyType(dict(self.renames)))
@@ -51,21 +50,19 @@ class TemplateConfig:
 
 @dataclass(frozen=True)
 class EcosystemDefaults:
-    """Default values for placeholder substitution and project metadata.
-    """
+    """Default values for placeholder substitution and project metadata."""
 
     github_user: str = ""
     """Default GitHub username for new projects."""
     channel_name: str = ""
     """Default Conda channel name."""
-    license: str = "GPL-3.0-or-later"
+    license: str = ""
     """Default SPDX license identifier."""
 
 
 @dataclass(frozen=True)
 class VSCodeConfig:
-    """VS Code workspace settings source and overrides.
-    """
+    """VS Code workspace settings source and overrides."""
 
     source: str = "defaults"
     """Settings source identifier (``"defaults"`` for bundled defaults)."""
@@ -80,7 +77,9 @@ class VSCodeConfig:
             "settings_overrides",
             MappingProxyType(dict(self.settings_overrides)),
         )
-        object.__setattr__(self, "extensions_overrides", tuple(self.extensions_overrides))
+        object.__setattr__(
+            self, "extensions_overrides", tuple(self.extensions_overrides)
+        )
 
     def uses_defaults(self) -> bool:
         """Whether VS Code assets should come from bundled defaults.
@@ -95,8 +94,7 @@ class VSCodeConfig:
 
 @dataclass(frozen=True)
 class WorkspaceFileConfig:
-    """Generation target for the VS Code .code-workspace file.
-    """
+    """Generation target for the VS Code .code-workspace file."""
 
     output: str = "dev-repos.code-workspace"
     """Filename for the generated .code-workspace file."""
@@ -104,8 +102,7 @@ class WorkspaceFileConfig:
 
 @dataclass(frozen=True)
 class ProjectsRegistryConfig:
-    """Generation target for the projects registry (YAML).
-    """
+    """Generation target for the projects registry (YAML)."""
 
     output: str = "projects.yml"
     """Filename for the generated projects registry."""
@@ -113,8 +110,7 @@ class ProjectsRegistryConfig:
 
 @dataclass(frozen=True)
 class DependencyGraphConfig:
-    """Generation target for the dependency graph (YAML).
-    """
+    """Generation target for the dependency graph (YAML)."""
 
     output: str = "dependencies.yml"
     """Filename for the generated dependency graph."""
@@ -122,45 +118,49 @@ class DependencyGraphConfig:
 
 @dataclass(frozen=True)
 class SharedEnvironmentConfig:
-    """Generation target for the shared Conda environment.
-    """
+    """Generation target for the shared Conda environment."""
 
     output: str = "environment.yml"
     """Filename for the generated environment file."""
-    name: str = "dev"
+    name: str = ""
     """Conda environment name."""
 
 
 @dataclass(frozen=True)
 class GenerateConfig:
-    """All generation targets.
-    """
+    """All generation targets."""
 
     workspace_file: WorkspaceFileConfig = field(default_factory=WorkspaceFileConfig)
     """Configuration for the VS Code .code-workspace file."""
-    projects_registry: ProjectsRegistryConfig = field(default_factory=ProjectsRegistryConfig)
+    projects_registry: ProjectsRegistryConfig = field(
+        default_factory=ProjectsRegistryConfig
+    )
     """Configuration for the projects registry."""
-    dependency_graph: DependencyGraphConfig = field(default_factory=DependencyGraphConfig)
+    dependency_graph: DependencyGraphConfig = field(
+        default_factory=DependencyGraphConfig
+    )
     """Configuration for the dependency graph."""
-    shared_environment: SharedEnvironmentConfig = field(default_factory=SharedEnvironmentConfig)
+    shared_environment: SharedEnvironmentConfig = field(
+        default_factory=SharedEnvironmentConfig
+    )
     """Configuration for the shared Conda environment."""
 
 
 @dataclass(frozen=True)
 class CanonicalMechanism:
-    """Integration mechanism assignment for a library.
-    """
+    """Integration mechanism assignment for a library."""
 
     type: str
     """Library type identifier."""
     mechanism: str
     """Integration mechanism name."""
+    edge_kind: str = ""
+    """Semantic dependency kind used to classify detected edges."""
 
 
 @dataclass(frozen=True)
 class ReferenceImplementation:
-    """A reference implementation of the integration module pattern.
-    """
+    """A reference implementation of the integration module pattern."""
 
     module: str
     """Fully qualified module path."""
@@ -170,8 +170,7 @@ class ReferenceImplementation:
 
 @dataclass(frozen=True)
 class IntegrationsConfig:
-    """Project-specific integration mechanism assignments and references.
-    """
+    """Project-specific integration mechanism assignments and references."""
 
     canonical_mechanisms: Mapping[str, CanonicalMechanism] = field(default_factory=dict)
     """Library-to-mechanism assignments keyed by library name."""
@@ -193,8 +192,7 @@ class IntegrationsConfig:
 
 @dataclass(frozen=True)
 class ManualEdge:
-    """A manually declared dependency edge.
-    """
+    """A manually declared dependency edge."""
 
     dependent: str
     """Name of the project that depends on another."""
@@ -202,14 +200,21 @@ class ManualEdge:
     """Name of the project being depended upon."""
     mechanism: str
     """How the dependency is consumed (e.g. submodule, editable install)."""
-    detail: str = ""
-    """Optional additional detail about the dependency."""
+    kind: str
+    """Semantic role of the dependency."""
+    source_declaration: str
+    """Configuration declaration that asserts the edge."""
+    version_policy: str
+    """Rule selecting the dependency version or commit."""
+    optional: bool = False
+    """Whether the dependent can operate without this relation."""
+    integration_path: str = ""
+    """Path or target used by the integration mechanism, when applicable."""
 
 
 @dataclass(frozen=True)
 class DependenciesConfig:
-    """Manual dependency declarations and supplemental repository paths.
-    """
+    """Manual dependency declarations and supplemental repository paths."""
 
     manual_edges: tuple[ManualEdge, ...] = ()
     """Explicitly declared dependency edges."""
@@ -226,8 +231,7 @@ class DependenciesConfig:
 
 @dataclass(frozen=True)
 class ReferencesConfig:
-    """Expected reference documents in the workspace.
-    """
+    """Expected reference documents in the workspace."""
 
     expected: tuple[str, ...] = ()
     """Filenames of reference documents that should be present."""
@@ -235,8 +239,7 @@ class ReferencesConfig:
 
 @dataclass(frozen=True)
 class WorkspaceManifest:
-    """Complete workspace manifest parsed from stelion.yml.
-    """
+    """Complete workspace manifest parsed from stelion.yml."""
 
     discovery: DiscoveryConfig
     """Project discovery rules."""
@@ -260,7 +263,9 @@ class WorkspaceManifest:
     """Directory containing the manifest file."""
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "names_in_use", MappingProxyType(dict(self.names_in_use)))
+        object.__setattr__(
+            self, "names_in_use", MappingProxyType(dict(self.names_in_use))
+        )
 
     def with_added_extra_path(self, extra_path: str) -> "WorkspaceManifest":
         """Return a manifest that explicitly discovers *extra_path*.

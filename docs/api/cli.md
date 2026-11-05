@@ -33,4 +33,4 @@ Display version and platform diagnostics.
 Root command for the package command-line interface.
 
 * **Parameters:**
-  **version** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – If `True`, print the package version and exit.
+  **version** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – If `True`, print the package version and exit.

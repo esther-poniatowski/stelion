@@ -36,19 +36,19 @@ Status of metadata extracted from a project directory.
 
 ### *class* stelion.workspace.domain.project.GithubSlug(owner, repo)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A validated GitHub owner/repo identifier.
 
 <a id="stelion.workspace.domain.project.GithubSlug.owner"></a>
 
-#### owner *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### owner *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 GitHub user or organisation name.
 
 <a id="stelion.workspace.domain.project.GithubSlug.repo"></a>
 
-#### repo *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### repo *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Repository name.
 
@@ -59,13 +59,13 @@ Repository name.
 Parse an `owner/repo` string.
 
 * **Parameters:**
-  **raw** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – String in `owner/repo` format.
+  **raw** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – String in `owner/repo` format.
 * **Returns:**
   Parsed slug with owner and repo populated.
 * **Return type:**
   [GithubSlug](#stelion.workspace.domain.project.GithubSlug)
 * **Raises:**
-  [**ValueError**](https://docs.python.org/3/library/exceptions.html#ValueError) – If the string is not exactly `owner/repo` with non-empty parts.
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If the string is not exactly `owner/repo` with non-empty parts.
 
 <a id="stelion.workspace.domain.project.GithubSlug.from_url"></a>
 
@@ -78,7 +78,7 @@ Accepts HTTPS (`https://github.com/owner/repo`) and SSH
 if the URL does not match a GitHub pattern.
 
 * **Parameters:**
-  **url** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – GitHub URL in HTTPS or SSH format.
+  **url** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – GitHub URL in HTTPS or SSH format.
 * **Returns:**
   Parsed slug, or `None` if the URL is not a GitHub URL.
 * **Return type:**
@@ -88,13 +88,13 @@ if the URL does not match a GitHub pattern.
 
 ### *class* stelion.workspace.domain.project.ProjectMetadata(name, path, description='', version='0.0.0', homepage=None, github=None, has_git=False, languages=(), status=MetadataStatus.CURRENT, issue='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Metadata extracted from a single project’s pyproject.toml and filesystem.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.name"></a>
 
-#### name *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Project name from pyproject.toml.
 
@@ -106,37 +106,37 @@ Filesystem path to the project root.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.description"></a>
 
-#### description *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### description *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Short project description.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.version"></a>
 
-#### version *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= '0.0.0'*
+#### version *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= '0.0.0'*
 
 Declared version string.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.homepage"></a>
 
-#### homepage *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### homepage *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Project homepage URL.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.github"></a>
 
-#### github *: [GithubSlug](#stelion.workspace.domain.project.GithubSlug) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### github *: [GithubSlug](#stelion.workspace.domain.project.GithubSlug) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Parsed GitHub owner/repo identifier.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.has_git"></a>
 
-#### has_git *: [bool](https://docs.python.org/3/library/functions.html#bool)* *= False*
+#### has_git *: [bool](https://docs.python.org/3/builtins/functions.html#bool)* *= False*
 
 Whether the project directory is a git repository.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.languages"></a>
 
-#### languages *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### languages *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Programming languages detected in the project.
 
@@ -148,7 +148,7 @@ Parsing status of the metadata extraction.
 
 <a id="stelion.workspace.domain.project.ProjectMetadata.issue"></a>
 
-#### issue *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### issue *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Error or warning message from metadata extraction.
 
@@ -156,13 +156,13 @@ Error or warning message from metadata extraction.
 
 ### *class* stelion.workspace.domain.project.ProjectInventory(projects=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Collection of discovered projects.
 
 <a id="stelion.workspace.domain.project.ProjectInventory.projects"></a>
 
-#### projects *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[ProjectMetadata](#stelion.workspace.domain.project.ProjectMetadata), ...]* *= ()*
+#### projects *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[ProjectMetadata](#stelion.workspace.domain.project.ProjectMetadata), ...]* *= ()*
 
 Discovered project metadata entries.
 
@@ -175,7 +175,7 @@ Index projects by name.
 * **Returns:**
   Mapping from project name to metadata.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)[[str](https://docs.python.org/3/library/stdtypes.html#str), [ProjectMetadata](#stelion.workspace.domain.project.ProjectMetadata)]
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [ProjectMetadata](#stelion.workspace.domain.project.ProjectMetadata)]
 
 <a id="stelion.workspace.domain.project.ProjectInventory.by_path"></a>
 
@@ -186,7 +186,7 @@ Index projects by their resolved filesystem path.
 * **Returns:**
   Mapping from resolved path to metadata.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)[Path, [ProjectMetadata](#stelion.workspace.domain.project.ProjectMetadata)]
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[Path, [ProjectMetadata](#stelion.workspace.domain.project.ProjectMetadata)]
 
 <a id="module-stelion.workspace.domain.manifest"></a>
 
@@ -198,45 +198,45 @@ Immutable domain models for workspace manifest configuration.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig"></a>
 
-### *class* stelion.workspace.domain.manifest.DiscoveryConfig(scan_dirs, exclude=('dev',), markers=('pyproject.toml',), extra_paths=(), include_self=True, self_name='dev')
+### *class* stelion.workspace.domain.manifest.DiscoveryConfig(scan_dirs, exclude=(), markers=('pyproject.toml',), extra_paths=(), include_self=True, self_name='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Rules for discovering projects on disk.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig.scan_dirs"></a>
 
-#### scan_dirs *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]*
+#### scan_dirs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
 
 Directories to scan for projects.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig.exclude"></a>
 
-#### exclude *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ('dev',)*
+#### exclude *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Directory names to skip during scanning.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig.markers"></a>
 
-#### markers *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ('pyproject.toml',)*
+#### markers *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ('pyproject.toml',)*
 
 Filenames whose presence identifies a project root.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig.extra_paths"></a>
 
-#### extra_paths *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### extra_paths *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Additional paths to include as projects unconditionally.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig.include_self"></a>
 
-#### include_self *: [bool](https://docs.python.org/3/library/functions.html#bool)* *= True*
+#### include_self *: [bool](https://docs.python.org/3/builtins/functions.html#bool)* *= True*
 
 Whether to include the workspace root as a project.
 
 <a id="stelion.workspace.domain.manifest.DiscoveryConfig.self_name"></a>
 
-#### self_name *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'dev'*
+#### self_name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Name assigned to the workspace root project.
 
@@ -244,57 +244,57 @@ Name assigned to the workspace root project.
 
 ### *class* stelion.workspace.domain.manifest.TemplateConfig(source, delimiters=('{{ ', ' }}'), exclude_patterns=(), renames=<factory>)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Template source and substitution rules for bootstrapping new projects.
 
 <a id="stelion.workspace.domain.manifest.TemplateConfig.source"></a>
 
-#### source *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### source *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Path or identifier of the template source.
 
 <a id="stelion.workspace.domain.manifest.TemplateConfig.delimiters"></a>
 
-#### delimiters *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]* *= ('{{ ', ' }}')*
+#### delimiters *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]* *= ('{{ ', ' }}')*
 
 Opening and closing delimiter pair for placeholders.
 
 <a id="stelion.workspace.domain.manifest.TemplateConfig.exclude_patterns"></a>
 
-#### exclude_patterns *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### exclude_patterns *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Glob patterns for files excluded from template processing.
 
 <a id="stelion.workspace.domain.manifest.TemplateConfig.renames"></a>
 
-#### renames *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### renames *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Filename substitution rules applied during bootstrapping.
 
 <a id="stelion.workspace.domain.manifest.EcosystemDefaults"></a>
 
-### *class* stelion.workspace.domain.manifest.EcosystemDefaults(github_user='', channel_name='', license='GPL-3.0-or-later')
+### *class* stelion.workspace.domain.manifest.EcosystemDefaults(github_user='', channel_name='', license='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Default values for placeholder substitution and project metadata.
 
 <a id="stelion.workspace.domain.manifest.EcosystemDefaults.github_user"></a>
 
-#### github_user *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### github_user *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Default GitHub username for new projects.
 
 <a id="stelion.workspace.domain.manifest.EcosystemDefaults.channel_name"></a>
 
-#### channel_name *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### channel_name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Default Conda channel name.
 
 <a id="stelion.workspace.domain.manifest.EcosystemDefaults.license"></a>
 
-#### license *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'GPL-3.0-or-later'*
+#### license *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Default SPDX license identifier.
 
@@ -302,25 +302,25 @@ Default SPDX license identifier.
 
 ### *class* stelion.workspace.domain.manifest.VSCodeConfig(source='defaults', settings_overrides=<factory>, extensions_overrides=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 VS Code workspace settings source and overrides.
 
 <a id="stelion.workspace.domain.manifest.VSCodeConfig.source"></a>
 
-#### source *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'defaults'*
+#### source *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= 'defaults'*
 
 Settings source identifier (`"defaults"` for bundled defaults).
 
 <a id="stelion.workspace.domain.manifest.VSCodeConfig.settings_overrides"></a>
 
-#### settings_overrides *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)]*
+#### settings_overrides *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)]*
 
 User overrides merged into VS Code settings.
 
 <a id="stelion.workspace.domain.manifest.VSCodeConfig.extensions_overrides"></a>
 
-#### extensions_overrides *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### extensions_overrides *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Additional VS Code extension identifiers to recommend.
 
@@ -333,19 +333,19 @@ Whether VS Code assets should come from bundled defaults.
 * **Returns:**
   True if source is `"defaults"`.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="stelion.workspace.domain.manifest.WorkspaceFileConfig"></a>
 
 ### *class* stelion.workspace.domain.manifest.WorkspaceFileConfig(output='dev-repos.code-workspace')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Generation target for the VS Code .code-workspace file.
 
 <a id="stelion.workspace.domain.manifest.WorkspaceFileConfig.output"></a>
 
-#### output *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'dev-repos.code-workspace'*
+#### output *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= 'dev-repos.code-workspace'*
 
 Filename for the generated .code-workspace file.
 
@@ -353,13 +353,13 @@ Filename for the generated .code-workspace file.
 
 ### *class* stelion.workspace.domain.manifest.ProjectsRegistryConfig(output='projects.yml')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Generation target for the projects registry (YAML).
 
 <a id="stelion.workspace.domain.manifest.ProjectsRegistryConfig.output"></a>
 
-#### output *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'projects.yml'*
+#### output *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= 'projects.yml'*
 
 Filename for the generated projects registry.
 
@@ -367,33 +367,33 @@ Filename for the generated projects registry.
 
 ### *class* stelion.workspace.domain.manifest.DependencyGraphConfig(output='dependencies.yml')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Generation target for the dependency graph (YAML).
 
 <a id="stelion.workspace.domain.manifest.DependencyGraphConfig.output"></a>
 
-#### output *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'dependencies.yml'*
+#### output *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= 'dependencies.yml'*
 
 Filename for the generated dependency graph.
 
 <a id="stelion.workspace.domain.manifest.SharedEnvironmentConfig"></a>
 
-### *class* stelion.workspace.domain.manifest.SharedEnvironmentConfig(output='environment.yml', name='dev')
+### *class* stelion.workspace.domain.manifest.SharedEnvironmentConfig(output='environment.yml', name='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Generation target for the shared Conda environment.
 
 <a id="stelion.workspace.domain.manifest.SharedEnvironmentConfig.output"></a>
 
-#### output *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'environment.yml'*
+#### output *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= 'environment.yml'*
 
 Filename for the generated environment file.
 
 <a id="stelion.workspace.domain.manifest.SharedEnvironmentConfig.name"></a>
 
-#### name *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= 'dev'*
+#### name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Conda environment name.
 
@@ -401,7 +401,7 @@ Conda environment name.
 
 ### *class* stelion.workspace.domain.manifest.GenerateConfig(workspace_file=<factory>, projects_registry=<factory>, dependency_graph=<factory>, shared_environment=<factory>)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 All generation targets.
 
@@ -431,41 +431,47 @@ Configuration for the shared Conda environment.
 
 <a id="stelion.workspace.domain.manifest.CanonicalMechanism"></a>
 
-### *class* stelion.workspace.domain.manifest.CanonicalMechanism(type, mechanism)
+### *class* stelion.workspace.domain.manifest.CanonicalMechanism(type, mechanism, edge_kind='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Integration mechanism assignment for a library.
 
 <a id="stelion.workspace.domain.manifest.CanonicalMechanism.type"></a>
 
-#### type *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### type *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Library type identifier.
 
 <a id="stelion.workspace.domain.manifest.CanonicalMechanism.mechanism"></a>
 
-#### mechanism *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### mechanism *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Integration mechanism name.
+
+<a id="stelion.workspace.domain.manifest.CanonicalMechanism.edge_kind"></a>
+
+#### edge_kind *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
+
+Semantic dependency kind used to classify detected edges.
 
 <a id="stelion.workspace.domain.manifest.ReferenceImplementation"></a>
 
 ### *class* stelion.workspace.domain.manifest.ReferenceImplementation(module, description)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A reference implementation of the integration module pattern.
 
 <a id="stelion.workspace.domain.manifest.ReferenceImplementation.module"></a>
 
-#### module *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### module *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Fully qualified module path.
 
 <a id="stelion.workspace.domain.manifest.ReferenceImplementation.description"></a>
 
-#### description *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### description *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable description of the reference implementation.
 
@@ -473,78 +479,102 @@ Human-readable description of the reference implementation.
 
 ### *class* stelion.workspace.domain.manifest.IntegrationsConfig(canonical_mechanisms=<factory>, reference_implementations=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Project-specific integration mechanism assignments and references.
 
 <a id="stelion.workspace.domain.manifest.IntegrationsConfig.canonical_mechanisms"></a>
 
-#### canonical_mechanisms *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [CanonicalMechanism](#stelion.workspace.domain.manifest.CanonicalMechanism)]*
+#### canonical_mechanisms *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [CanonicalMechanism](#stelion.workspace.domain.manifest.CanonicalMechanism)]*
 
 Library-to-mechanism assignments keyed by library name.
 
 <a id="stelion.workspace.domain.manifest.IntegrationsConfig.reference_implementations"></a>
 
-#### reference_implementations *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[ReferenceImplementation](#stelion.workspace.domain.manifest.ReferenceImplementation), ...]* *= ()*
+#### reference_implementations *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[ReferenceImplementation](#stelion.workspace.domain.manifest.ReferenceImplementation), ...]* *= ()*
 
 Known reference implementations of the integration pattern.
 
 <a id="stelion.workspace.domain.manifest.ManualEdge"></a>
 
-### *class* stelion.workspace.domain.manifest.ManualEdge(dependent, dependency, mechanism, detail='')
+### *class* stelion.workspace.domain.manifest.ManualEdge(dependent, dependency, mechanism, kind, source_declaration, version_policy, optional=False, integration_path='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A manually declared dependency edge.
 
 <a id="stelion.workspace.domain.manifest.ManualEdge.dependent"></a>
 
-#### dependent *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### dependent *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the project that depends on another.
 
 <a id="stelion.workspace.domain.manifest.ManualEdge.dependency"></a>
 
-#### dependency *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### dependency *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the project being depended upon.
 
 <a id="stelion.workspace.domain.manifest.ManualEdge.mechanism"></a>
 
-#### mechanism *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### mechanism *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 How the dependency is consumed (e.g. submodule, editable install).
 
-<a id="stelion.workspace.domain.manifest.ManualEdge.detail"></a>
+<a id="stelion.workspace.domain.manifest.ManualEdge.kind"></a>
 
-#### detail *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### kind *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
-Optional additional detail about the dependency.
+Semantic role of the dependency.
+
+<a id="stelion.workspace.domain.manifest.ManualEdge.source_declaration"></a>
+
+#### source_declaration *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
+
+Configuration declaration that asserts the edge.
+
+<a id="stelion.workspace.domain.manifest.ManualEdge.version_policy"></a>
+
+#### version_policy *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
+
+Rule selecting the dependency version or commit.
+
+<a id="stelion.workspace.domain.manifest.ManualEdge.optional"></a>
+
+#### optional *: [bool](https://docs.python.org/3/builtins/functions.html#bool)* *= False*
+
+Whether the dependent can operate without this relation.
+
+<a id="stelion.workspace.domain.manifest.ManualEdge.integration_path"></a>
+
+#### integration_path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
+
+Path or target used by the integration mechanism, when applicable.
 
 <a id="stelion.workspace.domain.manifest.DependenciesConfig"></a>
 
 ### *class* stelion.workspace.domain.manifest.DependenciesConfig(manual_edges=(), scan_paths=(), superproject_paths=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Manual dependency declarations and supplemental repository paths.
 
 <a id="stelion.workspace.domain.manifest.DependenciesConfig.manual_edges"></a>
 
-#### manual_edges *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[ManualEdge](#stelion.workspace.domain.manifest.ManualEdge), ...]* *= ()*
+#### manual_edges *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[ManualEdge](#stelion.workspace.domain.manifest.ManualEdge), ...]* *= ()*
 
 Explicitly declared dependency edges.
 
 <a id="stelion.workspace.domain.manifest.DependenciesConfig.scan_paths"></a>
 
-#### scan_paths *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### scan_paths *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Directories scanned for dependency *edges* (editable pip installs,
 gitmodules). Used by `build_dependency_graph`.
 
 <a id="stelion.workspace.domain.manifest.DependenciesConfig.superproject_paths"></a>
 
-#### superproject_paths *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### superproject_paths *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Directories resolved as superproject *locations* for submodule sync.
 Used by `resolve_submodule_targets` to find superproject directories
@@ -554,13 +584,13 @@ by name.
 
 ### *class* stelion.workspace.domain.manifest.ReferencesConfig(expected=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Expected reference documents in the workspace.
 
 <a id="stelion.workspace.domain.manifest.ReferencesConfig.expected"></a>
 
-#### expected *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### expected *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Filenames of reference documents that should be present.
 
@@ -568,7 +598,7 @@ Filenames of reference documents that should be present.
 
 ### *class* stelion.workspace.domain.manifest.WorkspaceManifest(discovery, template, defaults, vscode, generate, integrations, names_in_use, dependencies, references, manifest_dir)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Complete workspace manifest parsed from stelion.yml.
 
@@ -610,7 +640,7 @@ Integration mechanism assignments and references.
 
 <a id="stelion.workspace.domain.manifest.WorkspaceManifest.names_in_use"></a>
 
-#### names_in_use *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### names_in_use *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Reserved project names mapped to their descriptions.
 
@@ -639,7 +669,7 @@ Directory containing the manifest file.
 Return a manifest that explicitly discovers *extra_path*.
 
 * **Parameters:**
-  **extra_path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Additional path to include in project discovery.
+  **extra_path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Additional path to include in project discovery.
 * **Returns:**
   Updated manifest (or self if the path is already present).
 * **Return type:**
@@ -657,37 +687,37 @@ Domain models and logic for Conda environment specifications.
 
 ### *class* stelion.workspace.domain.environment.EnvironmentSpec(name='', channels=(), dependencies=(), pip_dependencies=(), issues=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Parsed content of a Conda environment.yml file.
 
 <a id="stelion.workspace.domain.environment.EnvironmentSpec.name"></a>
 
-#### name *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Environment name.
 
 <a id="stelion.workspace.domain.environment.EnvironmentSpec.channels"></a>
 
-#### channels *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### channels *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Conda channels in priority order.
 
 <a id="stelion.workspace.domain.environment.EnvironmentSpec.dependencies"></a>
 
-#### dependencies *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### dependencies *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Conda package specifications.
 
 <a id="stelion.workspace.domain.environment.EnvironmentSpec.pip_dependencies"></a>
 
-#### pip_dependencies *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### pip_dependencies *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Pip package specifications.
 
 <a id="stelion.workspace.domain.environment.EnvironmentSpec.issues"></a>
 
-#### issues *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### issues *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Parsing warnings or errors encountered during extraction.
 
@@ -702,8 +732,8 @@ installs (lines starting with `-e`) are excluded from the shared
 environment since they contain machine-specific paths.
 
 * **Parameters:**
-  * **specs** ([*list*](https://docs.python.org/3/library/stdtypes.html#list) *[*[*EnvironmentSpec*](#stelion.workspace.domain.environment.EnvironmentSpec) *]*) – Individual environment specifications to merge.
-  * **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name for the merged environment.
+  * **specs** ([*list*](https://docs.python.org/3/builtins/stdtypes.html#list) *[*[*EnvironmentSpec*](#stelion.workspace.domain.environment.EnvironmentSpec) *]*) – Individual environment specifications to merge.
+  * **name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name for the merged environment.
 * **Returns:**
   Combined specification with de-duplicated channels and dependencies.
 * **Return type:**
@@ -717,17 +747,41 @@ environment since they contain machine-specific paths.
 
 Domain models for inter-project dependency tracking.
 
+<a id="stelion.workspace.domain.dependency.DependencyKind"></a>
+
+### *class* stelion.workspace.domain.dependency.DependencyKind(\*values)
+
+Bases: [`StrEnum`](https://docs.python.org/3/library/enum.html#enum.StrEnum)
+
+Semantic role that one project has for another.
+
+<a id="stelion.workspace.domain.dependency.DependencyKind.RUNTIME_PACKAGE"></a>
+
+#### RUNTIME_PACKAGE *= 'runtime/package'*
+
+<a id="stelion.workspace.domain.dependency.DependencyKind.BUILD_TOOLING"></a>
+
+#### BUILD_TOOLING *= 'build/tooling'*
+
+<a id="stelion.workspace.domain.dependency.DependencyKind.CONTENT_SUBMODULE"></a>
+
+#### CONTENT_SUBMODULE *= 'content/submodule'*
+
+<a id="stelion.workspace.domain.dependency.DependencyKind.WORKSPACE_CONTAINMENT"></a>
+
+#### WORKSPACE_CONTAINMENT *= 'workspace/containment'*
+
 <a id="stelion.workspace.domain.dependency.DependencyMechanism"></a>
 
 ### *class* stelion.workspace.domain.dependency.DependencyMechanism(\*values)
 
-Bases: [`Enum`](https://docs.python.org/3/library/enum.html#enum.Enum)
+Bases: [`StrEnum`](https://docs.python.org/3/library/enum.html#enum.StrEnum)
 
-How one project depends on another.
+Mechanism that realizes a dependency edge.
 
 <a id="stelion.workspace.domain.dependency.DependencyMechanism.EDITABLE_PIP"></a>
 
-#### EDITABLE_PIP *= 'editable pip install'*
+#### EDITABLE_PIP *= 'editable_pip'*
 
 <a id="stelion.workspace.domain.dependency.DependencyMechanism.CONDA"></a>
 
@@ -735,70 +789,136 @@ How one project depends on another.
 
 <a id="stelion.workspace.domain.dependency.DependencyMechanism.GIT_SUBMODULE"></a>
 
-#### GIT_SUBMODULE *= 'git submodule'*
+#### GIT_SUBMODULE *= 'git_submodule'*
+
+<a id="stelion.workspace.domain.dependency.DependencyMechanism.WORKSPACE_DISCOVERY"></a>
+
+#### WORKSPACE_DISCOVERY *= 'workspace_discovery'*
+
+<a id="stelion.workspace.domain.dependency.DependencyMechanism.WORKSPACE_MANIFEST"></a>
+
+#### WORKSPACE_MANIFEST *= 'workspace_manifest'*
+
+<a id="stelion.workspace.domain.dependency.EdgeProvenance"></a>
+
+### *class* stelion.workspace.domain.dependency.EdgeProvenance(\*values)
+
+Bases: [`StrEnum`](https://docs.python.org/3/library/enum.html#enum.StrEnum)
+
+Origin of the assertion represented by an edge.
+
+<a id="stelion.workspace.domain.dependency.EdgeProvenance.AUTOMATIC"></a>
+
+#### AUTOMATIC *= 'automatic'*
+
+<a id="stelion.workspace.domain.dependency.EdgeProvenance.MANUAL"></a>
+
+#### MANUAL *= 'manual'*
 
 <a id="stelion.workspace.domain.dependency.DependencyEdge"></a>
 
-### *class* stelion.workspace.domain.dependency.DependencyEdge(dependent, dependency, mechanism, detail='')
+### *class* stelion.workspace.domain.dependency.DependencyEdge(dependent, dependency, kind, mechanism, source_declaration, version_policy, optional, provenance, integration_path='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
-A resolved dependency between two projects.
+A resolved and evidenced relation between two projects.
 
 <a id="stelion.workspace.domain.dependency.DependencyEdge.dependent"></a>
 
-#### dependent *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### dependent *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the downstream project.
 
 <a id="stelion.workspace.domain.dependency.DependencyEdge.dependency"></a>
 
-#### dependency *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### dependency *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the upstream project.
+
+<a id="stelion.workspace.domain.dependency.DependencyEdge.kind"></a>
+
+#### kind *: [DependencyKind](#stelion.workspace.domain.dependency.DependencyKind)*
+
+Semantic role of the dependency.
 
 <a id="stelion.workspace.domain.dependency.DependencyEdge.mechanism"></a>
 
 #### mechanism *: [DependencyMechanism](#stelion.workspace.domain.dependency.DependencyMechanism)*
 
-How the dependency is realized.
+Mechanism that realizes the relation.
 
-<a id="stelion.workspace.domain.dependency.DependencyEdge.detail"></a>
+<a id="stelion.workspace.domain.dependency.DependencyEdge.source_declaration"></a>
 
-#### detail *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### source_declaration *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
-Additional context about the edge.
+Configuration declaration from which the edge was derived.
+
+<a id="stelion.workspace.domain.dependency.DependencyEdge.version_policy"></a>
+
+#### version_policy *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
+
+Rule selecting the dependency version or commit.
+
+<a id="stelion.workspace.domain.dependency.DependencyEdge.optional"></a>
+
+#### optional *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether the dependent can operate without this relation.
+
+<a id="stelion.workspace.domain.dependency.DependencyEdge.provenance"></a>
+
+#### provenance *: [EdgeProvenance](#stelion.workspace.domain.dependency.EdgeProvenance)*
+
+Whether a scanner found the edge or the manifest asserted it.
+
+<a id="stelion.workspace.domain.dependency.DependencyEdge.integration_path"></a>
+
+#### integration_path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
+
+Path or target used by the integration mechanism, when applicable.
+
+<a id="stelion.workspace.domain.dependency.validate_kind_mechanism"></a>
+
+### stelion.workspace.domain.dependency.validate_kind_mechanism(kind, mechanism)
+
+Validate the boundary between workspace membership and consumption edges.
+
+* **Parameters:**
+  * **kind** ([*DependencyKind*](#stelion.workspace.domain.dependency.DependencyKind)) – Semantic role of the edge.
+  * **mechanism** ([*DependencyMechanism*](#stelion.workspace.domain.dependency.DependencyMechanism)) – Integration mechanism that realizes the edge.
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If a workspace mechanism and workspace-containment kind do not coincide.
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph"></a>
 
 ### *class* stelion.workspace.domain.dependency.DependencyGraph(detected=(), manual=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Complete dependency graph: auto-detected and manual edges.
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.detected"></a>
 
-#### detected *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), ...]* *= ()*
+#### detected *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), ...]* *= ()*
 
 Edges discovered automatically from project configuration files.
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.manual"></a>
 
-#### manual *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), ...]* *= ()*
+#### manual *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), ...]* *= ()*
 
 Edges declared explicitly in the workspace manifest.
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.all_edges"></a>
 
-#### *property* all_edges *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), ...]*
+#### *property* all_edges *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), ...]*
 
 All resolved edges (detected + manual).
 
 * **Returns:**
   Concatenation of detected and manual edges.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), …]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge), …]
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.by_dependent"></a>
 
@@ -809,7 +929,7 @@ Group edges by their dependent project.
 * **Returns:**
   Mapping from dependent project name to its edges.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)[[str](https://docs.python.org/3/library/stdtypes.html#str), [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)]]
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)]]
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.by_dependency"></a>
 
@@ -820,7 +940,7 @@ Group edges by their dependency (upstream) project.
 * **Returns:**
   Mapping from dependency project name to its edges.
 * **Return type:**
-  [dict](https://docs.python.org/3/library/stdtypes.html#dict)[[str](https://docs.python.org/3/library/stdtypes.html#str), [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)]]
+  [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)]]
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.dependents_of"></a>
 
@@ -829,11 +949,11 @@ Group edges by their dependency (upstream) project.
 Project names that directly depend on the given project.
 
 * **Parameters:**
-  **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Upstream project name.
+  **name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Upstream project name.
 * **Returns:**
   Names of projects that depend on *name*.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[str](https://docs.python.org/3/library/stdtypes.html#str)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.dependencies_of"></a>
 
@@ -842,11 +962,11 @@ Project names that directly depend on the given project.
 Project names that the given project directly depends on.
 
 * **Parameters:**
-  **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Downstream project name.
+  **name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Downstream project name.
 * **Returns:**
   Names of upstream projects that *name* depends on.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[str](https://docs.python.org/3/library/stdtypes.html#str)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.affected_projects"></a>
 
@@ -855,11 +975,11 @@ Project names that the given project directly depends on.
 All project names connected to the given project by any edge.
 
 * **Parameters:**
-  **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Project name to look up.
+  **name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Project name to look up.
 * **Returns:**
   Union of dependents and dependencies of *name*.
 * **Return type:**
-  [set](https://docs.python.org/3/library/stdtypes.html#set)[[str](https://docs.python.org/3/library/stdtypes.html#str)]
+  [set](https://docs.python.org/3/builtins/stdtypes.html#set)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 <a id="stelion.workspace.domain.dependency.DependencyGraph.edges_involving"></a>
 
@@ -868,11 +988,11 @@ All project names connected to the given project by any edge.
 All dependency edges that reference the given project.
 
 * **Parameters:**
-  **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Project name to look up.
+  **name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Project name to look up.
 * **Returns:**
   Edges where *name* appears as dependent or dependency.
 * **Return type:**
-  [list](https://docs.python.org/3/library/stdtypes.html#list)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)]
+  [list](https://docs.python.org/3/builtins/stdtypes.html#list)[[DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)]
 
 <a id="stelion.workspace.domain.dependency.manual_edge_to_dependency_edge"></a>
 
@@ -887,7 +1007,7 @@ Convert a manifest ManualEdge to a resolved DependencyEdge.
 * **Return type:**
   [DependencyEdge](#stelion.workspace.domain.dependency.DependencyEdge)
 * **Raises:**
-  [**ValueError**](https://docs.python.org/3/library/exceptions.html#ValueError) – If the mechanism string does not match a known `DependencyMechanism`.
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If the mechanism string does not match a known `DependencyMechanism`.
 
 <a id="module-stelion.workspace.domain.bulk"></a>
 
@@ -901,31 +1021,31 @@ Domain models for bulk operations across projects.
 
 ### *class* stelion.workspace.domain.bulk.ProjectFilter(names=(), pattern=None, git_only=False, exclude=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Criteria for selecting a subset of projects.
 
 <a id="stelion.workspace.domain.bulk.ProjectFilter.names"></a>
 
-#### names *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### names *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Explicit project names to include.
 
 <a id="stelion.workspace.domain.bulk.ProjectFilter.pattern"></a>
 
-#### pattern *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### pattern *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Glob pattern for matching project names.
 
 <a id="stelion.workspace.domain.bulk.ProjectFilter.git_only"></a>
 
-#### git_only *: [bool](https://docs.python.org/3/library/functions.html#bool)* *= False*
+#### git_only *: [bool](https://docs.python.org/3/builtins/functions.html#bool)* *= False*
 
 If true, restrict to projects with a git repository.
 
 <a id="stelion.workspace.domain.bulk.ProjectFilter.exclude"></a>
 
-#### exclude *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### exclude *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Project names to exclude from selection.
 
@@ -953,13 +1073,13 @@ Result status for a single project within a bulk operation.
 
 ### *class* stelion.workspace.domain.bulk.ProjectOutcome(project, path, status, detail, error='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Outcome of executing a bulk operation on a single project.
 
 <a id="stelion.workspace.domain.bulk.ProjectOutcome.project"></a>
 
-#### project *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### project *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the project.
 
@@ -977,13 +1097,13 @@ Result status of the operation.
 
 <a id="stelion.workspace.domain.bulk.ProjectOutcome.detail"></a>
 
-#### detail *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### detail *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable description of the outcome.
 
 <a id="stelion.workspace.domain.bulk.ProjectOutcome.error"></a>
 
-#### error *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### error *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Error message, empty if the operation succeeded.
 
@@ -991,43 +1111,43 @@ Error message, empty if the operation succeeded.
 
 ### *class* stelion.workspace.domain.bulk.BulkResult(label, outcomes=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Aggregated outcomes from a bulk operation across projects.
 
 <a id="stelion.workspace.domain.bulk.BulkResult.label"></a>
 
-#### label *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### label *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable label describing the bulk operation.
 
 <a id="stelion.workspace.domain.bulk.BulkResult.outcomes"></a>
 
-#### outcomes *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[ProjectOutcome](#stelion.workspace.domain.bulk.ProjectOutcome), ...]* *= ()*
+#### outcomes *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[ProjectOutcome](#stelion.workspace.domain.bulk.ProjectOutcome), ...]* *= ()*
 
 Per-project outcomes in execution order.
 
 <a id="stelion.workspace.domain.bulk.BulkResult.success_count"></a>
 
-#### *property* success_count *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### *property* success_count *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Number of projects where the operation succeeded.
 
 * **Returns:**
   Count of outcomes with `SUCCESS` status.
 * **Return type:**
-  [int](https://docs.python.org/3/library/functions.html#int)
+  [int](https://docs.python.org/3/builtins/functions.html#int)
 
 <a id="stelion.workspace.domain.bulk.BulkResult.has_errors"></a>
 
-#### *property* has_errors *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### *property* has_errors *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any project operation failed.
 
 * **Returns:**
   Whether at least one outcome has `FAILED` status.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="module-stelion.workspace.domain.comparison"></a>
 
@@ -1093,25 +1213,25 @@ Level of detail for file content comparison.
 
 ### *class* stelion.workspace.domain.comparison.TreeTarget(subtree=None, include_patterns=(), exclude_patterns=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Target specification for architecture (tree) comparison.
 
 <a id="stelion.workspace.domain.comparison.TreeTarget.subtree"></a>
 
-#### subtree *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### subtree *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Relative path prefix to restrict the comparison scope.
 
 <a id="stelion.workspace.domain.comparison.TreeTarget.include_patterns"></a>
 
-#### include_patterns *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### include_patterns *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Glob patterns for paths to include.
 
 <a id="stelion.workspace.domain.comparison.TreeTarget.exclude_patterns"></a>
 
-#### exclude_patterns *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### exclude_patterns *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Glob patterns for paths to exclude.
 
@@ -1119,31 +1239,31 @@ Glob patterns for paths to exclude.
 
 ### *class* stelion.workspace.domain.comparison.FileTargetEntry(canonical, overrides=<factory>, selectors=(), parser_hint=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One logical file to compare across projects.
 
 <a id="stelion.workspace.domain.comparison.FileTargetEntry.canonical"></a>
 
-#### canonical *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### canonical *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 The standard relative path (e.g. `pyproject.toml`).
 
 <a id="stelion.workspace.domain.comparison.FileTargetEntry.overrides"></a>
 
-#### overrides *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### overrides *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Project-specific path remappings as `{project_name: actual_path}`.
 
 <a id="stelion.workspace.domain.comparison.FileTargetEntry.selectors"></a>
 
-#### selectors *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]* *= ()*
+#### selectors *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ()*
 
 Dotted field paths to compare for structured files (empty = all).
 
 <a id="stelion.workspace.domain.comparison.FileTargetEntry.parser_hint"></a>
 
-#### parser_hint *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### parser_hint *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Force a parser regardless of extension (e.g. `"toml"`).
 
@@ -1151,13 +1271,13 @@ Force a parser regardless of extension (e.g. `"toml"`).
 
 ### *class* stelion.workspace.domain.comparison.FileTarget(entries, granularity=FileGranularity.SURVEY, reference_project=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Target specification for file content comparison.
 
 <a id="stelion.workspace.domain.comparison.FileTarget.entries"></a>
 
-#### entries *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[FileTargetEntry](#stelion.workspace.domain.comparison.FileTargetEntry), ...]*
+#### entries *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[FileTargetEntry](#stelion.workspace.domain.comparison.FileTargetEntry), ...]*
 
 Logical files to compare.
 
@@ -1169,7 +1289,7 @@ Level of detail for the comparison.
 
 <a id="stelion.workspace.domain.comparison.FileTarget.reference_project"></a>
 
-#### reference_project *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### reference_project *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Project used as the baseline for detail-level diffs.
 
@@ -1177,7 +1297,7 @@ Project used as the baseline for detail-level diffs.
 
 ### *class* stelion.workspace.domain.comparison.ComparisonSpec(project_names, target)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Full declarative specification for a comparison operation.
 
@@ -1187,7 +1307,7 @@ Constructed from an instruction file or from CLI arguments.
 
 <a id="stelion.workspace.domain.comparison.ComparisonSpec.project_names"></a>
 
-#### project_names *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]*
+#### project_names *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
 
 Names of projects to compare.
 
@@ -1201,25 +1321,25 @@ What to compare (architecture tree or file contents).
 
 ### *class* stelion.workspace.domain.comparison.TreeEntry(relative_path, project, is_directory)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A single node within a project’s file tree.
 
 <a id="stelion.workspace.domain.comparison.TreeEntry.relative_path"></a>
 
-#### relative_path *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### relative_path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Forward-slash path relative to the project root.
 
 <a id="stelion.workspace.domain.comparison.TreeEntry.project"></a>
 
-#### project *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### project *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the project this entry belongs to.
 
 <a id="stelion.workspace.domain.comparison.TreeEntry.is_directory"></a>
 
-#### is_directory *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### is_directory *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the node is a directory.
 
@@ -1227,25 +1347,25 @@ Whether the node is a directory.
 
 ### *class* stelion.workspace.domain.comparison.TreeSnapshot(project, root, entries)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Complete file-tree scan for one project.
 
 <a id="stelion.workspace.domain.comparison.TreeSnapshot.project"></a>
 
-#### project *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### project *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Project name.
 
 <a id="stelion.workspace.domain.comparison.TreeSnapshot.root"></a>
 
-#### root *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### root *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Filesystem root used for the scan.
 
 <a id="stelion.workspace.domain.comparison.TreeSnapshot.entries"></a>
 
-#### entries *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[TreeEntry](#stelion.workspace.domain.comparison.TreeEntry), ...]*
+#### entries *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[TreeEntry](#stelion.workspace.domain.comparison.TreeEntry), ...]*
 
 All nodes discovered in the tree.
 
@@ -1253,7 +1373,7 @@ All nodes discovered in the tree.
 
 ### *class* stelion.workspace.domain.comparison.NodeMatch(canonical_path, resolved, present_in, absent_from, method, similarity, is_directory, children=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 An N-way mapping of one logical node across projects.
 
@@ -1262,25 +1382,25 @@ node, `absent_from` lists selected projects that do not.
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.canonical_path"></a>
 
-#### canonical_path *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### canonical_path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Normalized path used as the canonical key.
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.resolved"></a>
 
-#### resolved *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### resolved *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Mapping from project name to actual relative path.
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.present_in"></a>
 
-#### present_in *: [frozenset](https://docs.python.org/3/library/stdtypes.html#frozenset)[[str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### present_in *: [frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Projects that contain this node.
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.absent_from"></a>
 
-#### absent_from *: [frozenset](https://docs.python.org/3/library/stdtypes.html#frozenset)[[str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### absent_from *: [frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Selected projects that lack this node.
 
@@ -1292,19 +1412,19 @@ How correspondence was established.
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.similarity"></a>
 
-#### similarity *: [float](https://docs.python.org/3/library/functions.html#float)*
+#### similarity *: [float](https://docs.python.org/3/builtins/functions.html#float)*
 
 Match confidence score (1.0 for exact).
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.is_directory"></a>
 
-#### is_directory *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### is_directory *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the node is a directory.
 
 <a id="stelion.workspace.domain.comparison.NodeMatch.children"></a>
 
-#### children *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[NodeMatch](#stelion.workspace.domain.comparison.NodeMatch), ...]* *= ()*
+#### children *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[NodeMatch](#stelion.workspace.domain.comparison.NodeMatch), ...]* *= ()*
 
 Recursively matched child nodes (directories only).
 
@@ -1312,43 +1432,43 @@ Recursively matched child nodes (directories only).
 
 ### *class* stelion.workspace.domain.comparison.TreeSummary(total_nodes, in_all, in_some, in_one, directories_matched, files_matched)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Aggregate counts for a tree comparison.
 
 <a id="stelion.workspace.domain.comparison.TreeSummary.total_nodes"></a>
 
-#### total_nodes *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### total_nodes *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Total number of matched logical nodes.
 
 <a id="stelion.workspace.domain.comparison.TreeSummary.in_all"></a>
 
-#### in_all *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### in_all *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Nodes present in every compared project.
 
 <a id="stelion.workspace.domain.comparison.TreeSummary.in_some"></a>
 
-#### in_some *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### in_some *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Nodes present in more than one but not all projects.
 
 <a id="stelion.workspace.domain.comparison.TreeSummary.in_one"></a>
 
-#### in_one *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### in_one *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Nodes unique to a single project.
 
 <a id="stelion.workspace.domain.comparison.TreeSummary.directories_matched"></a>
 
-#### directories_matched *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### directories_matched *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Number of directory nodes.
 
 <a id="stelion.workspace.domain.comparison.TreeSummary.files_matched"></a>
 
-#### files_matched *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### files_matched *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Number of file nodes.
 
@@ -1356,25 +1476,25 @@ Number of file nodes.
 
 ### *class* stelion.workspace.domain.comparison.TreeReport(projects, subtree, matches, summary)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Full architecture comparison result.
 
 <a id="stelion.workspace.domain.comparison.TreeReport.projects"></a>
 
-#### projects *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]*
+#### projects *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
 
 Names of the compared projects.
 
 <a id="stelion.workspace.domain.comparison.TreeReport.subtree"></a>
 
-#### subtree *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)*
+#### subtree *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)*
 
 Subtree prefix that was compared, or `None` for the full tree.
 
 <a id="stelion.workspace.domain.comparison.TreeReport.matches"></a>
 
-#### matches *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[NodeMatch](#stelion.workspace.domain.comparison.NodeMatch), ...]*
+#### matches *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[NodeMatch](#stelion.workspace.domain.comparison.NodeMatch), ...]*
 
 Top-level matched nodes.
 
@@ -1388,7 +1508,7 @@ Aggregate counts.
 
 ### *class* stelion.workspace.domain.comparison.FieldDiff(path, values)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One structured field compared across N projects.
 
@@ -1397,61 +1517,61 @@ Status is derived from the values: all equal means identical, some
 
 <a id="stelion.workspace.domain.comparison.FieldDiff.path"></a>
 
-#### path *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Dotted field path within the structured document.
 
 <a id="stelion.workspace.domain.comparison.FieldDiff.values"></a>
 
-#### values *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)]*
+#### values *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)]*
 
 Per-project stringified values (`None` if absent).
 
 <a id="stelion.workspace.domain.comparison.FieldDiff.is_identical"></a>
 
-#### *property* is_identical *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### *property* is_identical *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 All projects have the same non-None value.
 
 * **Returns:**
   True when every project has the field and all values are equal.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="stelion.workspace.domain.comparison.FieldDiff.is_partial"></a>
 
-#### *property* is_partial *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### *property* is_partial *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 The field is absent in at least one project.
 
 * **Returns:**
   True when at least one project lacks this field.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="stelion.workspace.domain.comparison.VariantGroup"></a>
 
 ### *class* stelion.workspace.domain.comparison.VariantGroup(projects, digest, line_count)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Projects with identical content for an unstructured file.
 
 <a id="stelion.workspace.domain.comparison.VariantGroup.projects"></a>
 
-#### projects *: [frozenset](https://docs.python.org/3/library/stdtypes.html#frozenset)[[str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### projects *: [frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Project names sharing the same content.
 
 <a id="stelion.workspace.domain.comparison.VariantGroup.digest"></a>
 
-#### digest *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### digest *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Truncated SHA-256 hex digest of the content.
 
 <a id="stelion.workspace.domain.comparison.VariantGroup.line_count"></a>
 
-#### line_count *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### line_count *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Number of lines in the content.
 
@@ -1459,25 +1579,25 @@ Number of lines in the content.
 
 ### *class* stelion.workspace.domain.comparison.PairwiseSimilarity(project_a, project_b, score)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Similarity score between two projects for an unstructured file.
 
 <a id="stelion.workspace.domain.comparison.PairwiseSimilarity.project_a"></a>
 
-#### project_a *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### project_a *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 First project name.
 
 <a id="stelion.workspace.domain.comparison.PairwiseSimilarity.project_b"></a>
 
-#### project_b *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### project_b *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Second project name.
 
 <a id="stelion.workspace.domain.comparison.PairwiseSimilarity.score"></a>
 
-#### score *: [float](https://docs.python.org/3/library/functions.html#float)*
+#### score *: [float](https://docs.python.org/3/builtins/functions.html#float)*
 
 SequenceMatcher ratio between the two files.
 
@@ -1485,19 +1605,19 @@ SequenceMatcher ratio between the two files.
 
 ### *class* stelion.workspace.domain.comparison.ReferenceDiff(project, diff_lines)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Unified diff against the reference project for one compared file.
 
 <a id="stelion.workspace.domain.comparison.ReferenceDiff.project"></a>
 
-#### project *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### project *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the project being compared to the reference.
 
 <a id="stelion.workspace.domain.comparison.ReferenceDiff.diff_lines"></a>
 
-#### diff_lines *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]*
+#### diff_lines *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
 
 Lines of the unified diff output.
 
@@ -1505,31 +1625,31 @@ Lines of the unified diff output.
 
 ### *class* stelion.workspace.domain.comparison.FileDiffResult(canonical_path, actual_paths, present_in, absent_from, content_kind, field_diffs=(), variants=(), similarities=(), reference_project=None, reference_diffs=(), issue='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Comparison result for one logical file across projects.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.canonical_path"></a>
 
-#### canonical_path *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### canonical_path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Normalized file path used as the comparison key.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.actual_paths"></a>
 
-#### actual_paths *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/library/stdtypes.html#str), [str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### actual_paths *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Per-project resolved file paths.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.present_in"></a>
 
-#### present_in *: [frozenset](https://docs.python.org/3/library/stdtypes.html#frozenset)[[str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### present_in *: [frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Projects where the file exists.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.absent_from"></a>
 
-#### absent_from *: [frozenset](https://docs.python.org/3/library/stdtypes.html#frozenset)[[str](https://docs.python.org/3/library/stdtypes.html#str)]*
+#### absent_from *: [frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]*
 
 Projects where the file is missing.
 
@@ -1541,80 +1661,80 @@ Whether the file was compared as structured or unstructured.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.field_diffs"></a>
 
-#### field_diffs *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[FieldDiff](#stelion.workspace.domain.comparison.FieldDiff), ...]* *= ()*
+#### field_diffs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[FieldDiff](#stelion.workspace.domain.comparison.FieldDiff), ...]* *= ()*
 
 Per-field diffs (structured files only).
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.variants"></a>
 
-#### variants *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[VariantGroup](#stelion.workspace.domain.comparison.VariantGroup), ...]* *= ()*
+#### variants *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[VariantGroup](#stelion.workspace.domain.comparison.VariantGroup), ...]* *= ()*
 
 Content groups (unstructured files only).
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.similarities"></a>
 
-#### similarities *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[PairwiseSimilarity](#stelion.workspace.domain.comparison.PairwiseSimilarity), ...]* *= ()*
+#### similarities *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[PairwiseSimilarity](#stelion.workspace.domain.comparison.PairwiseSimilarity), ...]* *= ()*
 
 Pairwise similarity scores (unstructured files only).
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.reference_project"></a>
 
-#### reference_project *: [str](https://docs.python.org/3/library/stdtypes.html#str) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### reference_project *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Baseline project for detail-level diffs.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.reference_diffs"></a>
 
-#### reference_diffs *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[ReferenceDiff](#stelion.workspace.domain.comparison.ReferenceDiff), ...]* *= ()*
+#### reference_diffs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[ReferenceDiff](#stelion.workspace.domain.comparison.ReferenceDiff), ...]* *= ()*
 
 Unified diffs against the reference project.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.issue"></a>
 
-#### issue *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### issue *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Error message if comparison failed for this file.
 
 <a id="stelion.workspace.domain.comparison.FileDiffResult.is_identical"></a>
 
-#### *property* is_identical *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### *property* is_identical *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 All projects have identical content (no absent, no differences).
 
 * **Returns:**
   True when no project is missing the file and all content matches.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="stelion.workspace.domain.comparison.FileSummary"></a>
 
 ### *class* stelion.workspace.domain.comparison.FileSummary(files_compared, fully_identical, with_differences, with_errors)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Aggregate counts for a file comparison.
 
 <a id="stelion.workspace.domain.comparison.FileSummary.files_compared"></a>
 
-#### files_compared *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### files_compared *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Total number of logical files compared.
 
 <a id="stelion.workspace.domain.comparison.FileSummary.fully_identical"></a>
 
-#### fully_identical *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### fully_identical *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Files identical across all projects.
 
 <a id="stelion.workspace.domain.comparison.FileSummary.with_differences"></a>
 
-#### with_differences *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### with_differences *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Files with at least one difference.
 
 <a id="stelion.workspace.domain.comparison.FileSummary.with_errors"></a>
 
-#### with_errors *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### with_errors *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Files that could not be compared due to errors.
 
@@ -1622,19 +1742,19 @@ Files that could not be compared due to errors.
 
 ### *class* stelion.workspace.domain.comparison.FileReport(projects, results, summary)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Full file comparison result.
 
 <a id="stelion.workspace.domain.comparison.FileReport.projects"></a>
 
-#### projects *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[str](https://docs.python.org/3/library/stdtypes.html#str), ...]*
+#### projects *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
 
 Names of the compared projects.
 
 <a id="stelion.workspace.domain.comparison.FileReport.results"></a>
 
-#### results *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[FileDiffResult](#stelion.workspace.domain.comparison.FileDiffResult), ...]*
+#### results *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[FileDiffResult](#stelion.workspace.domain.comparison.FileDiffResult), ...]*
 
 Per-file comparison results.
 
@@ -1655,12 +1775,12 @@ matched directories.  Each level uses a three-pass strategy: exact
 name, case-insensitive, then fuzzy (above `_FUZZY_THRESHOLD`).
 
 * **Parameters:**
-  * **snapshots** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*TreeSnapshot*](#stelion.workspace.domain.comparison.TreeSnapshot) *,*  *...* *]*) – Per-project file-tree scans.
-  * **all_projects** ([*frozenset*](https://docs.python.org/3/library/stdtypes.html#frozenset) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Complete set of project names being compared.
+  * **snapshots** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*TreeSnapshot*](#stelion.workspace.domain.comparison.TreeSnapshot) *,*  *...* *]*) – Per-project file-tree scans.
+  * **all_projects** ([*frozenset*](https://docs.python.org/3/builtins/stdtypes.html#frozenset) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Complete set of project names being compared.
 * **Returns:**
   Hierarchically matched nodes sorted by canonical path.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[NodeMatch](#stelion.workspace.domain.comparison.NodeMatch), …]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[NodeMatch](#stelion.workspace.domain.comparison.NodeMatch), …]
 
 <a id="stelion.workspace.domain.comparison.diff_structured"></a>
 
@@ -1669,12 +1789,12 @@ name, case-insensitive, then fuzzy (above `_FUZZY_THRESHOLD`).
 Compare parsed structured data field by field across projects.
 
 * **Parameters:**
-  * **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*dict*](https://docs.python.org/3/library/stdtypes.html#dict) *]*) – `{project_name: parsed_dict}` for each project that has this file.
-  * **selectors** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,*  *...* *]*) – Dotted field paths to limit the comparison. Empty means compare all.
+  * **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*dict*](https://docs.python.org/3/builtins/stdtypes.html#dict) *]*) – `{project_name: parsed_dict}` for each project that has this file.
+  * **selectors** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,*  *...* *]*) – Dotted field paths to limit the comparison. Empty means compare all.
 * **Returns:**
   Per-field comparison results.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[FieldDiff](#stelion.workspace.domain.comparison.FieldDiff), …]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[FieldDiff](#stelion.workspace.domain.comparison.FieldDiff), …]
 
 <a id="stelion.workspace.domain.comparison.group_variants"></a>
 
@@ -1685,11 +1805,11 @@ Group projects by identical content.
 Returns groups sorted by descending size (largest group first).
 
 * **Parameters:**
-  **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Per-project raw file content.
+  **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Per-project raw file content.
 * **Returns:**
   Groups sorted by descending member count.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[VariantGroup](#stelion.workspace.domain.comparison.VariantGroup), …]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[VariantGroup](#stelion.workspace.domain.comparison.VariantGroup), …]
 
 <a id="stelion.workspace.domain.comparison.compute_pairwise_similarity"></a>
 
@@ -1698,11 +1818,11 @@ Returns groups sorted by descending size (largest group first).
 Compute SequenceMatcher ratio for every pair of projects.
 
 * **Parameters:**
-  **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Per-project raw file content.
+  **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Per-project raw file content.
 * **Returns:**
   Similarity scores for all unique project pairs.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[PairwiseSimilarity](#stelion.workspace.domain.comparison.PairwiseSimilarity), …]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[PairwiseSimilarity](#stelion.workspace.domain.comparison.PairwiseSimilarity), …]
 
 <a id="stelion.workspace.domain.comparison.compute_reference_diffs"></a>
 
@@ -1711,12 +1831,12 @@ Compute SequenceMatcher ratio for every pair of projects.
 Compute unified diffs from the reference project to every other project.
 
 * **Parameters:**
-  * **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Per-project raw file content.
-  * **reference_project** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Project name used as the diff baseline.
+  * **contents** (*Mapping* *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *,* [*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Per-project raw file content.
+  * **reference_project** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Project name used as the diff baseline.
 * **Returns:**
   Unified diffs for each non-reference project.
 * **Return type:**
-  [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[ReferenceDiff](#stelion.workspace.domain.comparison.ReferenceDiff), …]
+  [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[ReferenceDiff](#stelion.workspace.domain.comparison.ReferenceDiff), …]
 
 <a id="stelion.workspace.domain.comparison.compute_tree_summary"></a>
 
@@ -1725,8 +1845,8 @@ Compute unified diffs from the reference project to every other project.
 Derive aggregate counts from matched nodes.
 
 * **Parameters:**
-  * **matches** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*NodeMatch*](#stelion.workspace.domain.comparison.NodeMatch) *,*  *...* *]*) – Top-level matched nodes (children are counted recursively).
-  * **all_projects** ([*frozenset*](https://docs.python.org/3/library/stdtypes.html#frozenset) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Complete set of project names being compared.
+  * **matches** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*NodeMatch*](#stelion.workspace.domain.comparison.NodeMatch) *,*  *...* *]*) – Top-level matched nodes (children are counted recursively).
+  * **all_projects** ([*frozenset*](https://docs.python.org/3/builtins/stdtypes.html#frozenset) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Complete set of project names being compared.
 * **Returns:**
   Aggregate presence and type counts.
 * **Return type:**
@@ -1739,7 +1859,7 @@ Derive aggregate counts from matched nodes.
 Derive aggregate counts from file comparison results.
 
 * **Parameters:**
-  **results** ([*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *[*[*FileDiffResult*](#stelion.workspace.domain.comparison.FileDiffResult) *,*  *...* *]*) – Per-file comparison results.
+  **results** ([*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple) *[*[*FileDiffResult*](#stelion.workspace.domain.comparison.FileDiffResult) *,*  *...* *]*) – Per-file comparison results.
 * **Returns:**
   Counts of identical, different, and errored files.
 * **Return type:**
@@ -1777,7 +1897,7 @@ Status of a generated file relative to its expected content.
 
 ### *class* stelion.workspace.domain.status.DriftEntry(path, status, detail='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Drift status for a single generated file.
 
@@ -1795,7 +1915,7 @@ Whether the file is current, stale, or missing.
 
 <a id="stelion.workspace.domain.status.DriftEntry.detail"></a>
 
-#### detail *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### detail *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Human-readable explanation of the drift.
 
@@ -1803,26 +1923,26 @@ Human-readable explanation of the drift.
 
 ### *class* stelion.workspace.domain.status.DriftReport(entries=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Aggregated drift report for all generated workspace files.
 
 <a id="stelion.workspace.domain.status.DriftReport.entries"></a>
 
-#### entries *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[DriftEntry](#stelion.workspace.domain.status.DriftEntry), ...]* *= ()*
+#### entries *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[DriftEntry](#stelion.workspace.domain.status.DriftEntry), ...]* *= ()*
 
 Individual drift entries for each generated file.
 
 <a id="stelion.workspace.domain.status.DriftReport.has_drift"></a>
 
-#### *property* has_drift *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### *property* has_drift *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any file is stale or missing.
 
 * **Returns:**
   Whether any entry has a non-current status.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
 <a id="module-stelion.workspace.domain.sync"></a>
 
@@ -1856,13 +1976,13 @@ How the source commit for synchronization is determined.
 
 ### *class* stelion.workspace.domain.sync.Superproject(name, path)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A project that consumes dependencies as git submodules.
 
 <a id="stelion.workspace.domain.sync.Superproject.name"></a>
 
-#### name *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Project name.
 
@@ -1876,13 +1996,13 @@ Filesystem path to the superproject root.
 
 ### *class* stelion.workspace.domain.sync.SubmoduleTarget(superproject_name, superproject_dir, submodule_path)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A superproject containing a submodule that should be updated.
 
 <a id="stelion.workspace.domain.sync.SubmoduleTarget.superproject_name"></a>
 
-#### superproject_name *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### superproject_name *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the superproject.
 
@@ -1894,7 +2014,7 @@ Filesystem path to the superproject root.
 
 <a id="stelion.workspace.domain.sync.SubmoduleTarget.submodule_path"></a>
 
-#### submodule_path *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### submodule_path *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Relative path of the submodule within the superproject.
 
@@ -1902,7 +2022,7 @@ Relative path of the submodule within the superproject.
 
 ### *class* stelion.workspace.domain.sync.PushSpec(repo_dir, remote, branch)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Remote push parameters.
 
@@ -1914,13 +2034,13 @@ Filesystem path to the repository.
 
 <a id="stelion.workspace.domain.sync.PushSpec.remote"></a>
 
-#### remote *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### remote *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the git remote.
 
 <a id="stelion.workspace.domain.sync.PushSpec.branch"></a>
 
-#### branch *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### branch *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Branch to push.
 
@@ -1928,13 +2048,13 @@ Branch to push.
 
 ### *class* stelion.workspace.domain.sync.SyncPlan(dependency, origin, source_label, target_commit, submodule_targets, local_dir=None, push_spec=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Resolved plan for propagating a commit across all replicas of a dependency.
 
 <a id="stelion.workspace.domain.sync.SyncPlan.dependency"></a>
 
-#### dependency *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### dependency *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the dependency being synchronized.
 
@@ -1946,31 +2066,31 @@ How the source commit was determined.
 
 <a id="stelion.workspace.domain.sync.SyncPlan.source_label"></a>
 
-#### source_label *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### source_label *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable description of the commit source.
 
 <a id="stelion.workspace.domain.sync.SyncPlan.target_commit"></a>
 
-#### target_commit *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### target_commit *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Git commit hash to propagate.
 
 <a id="stelion.workspace.domain.sync.SyncPlan.submodule_targets"></a>
 
-#### submodule_targets *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[SubmoduleTarget](#stelion.workspace.domain.sync.SubmoduleTarget), ...]*
+#### submodule_targets *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[SubmoduleTarget](#stelion.workspace.domain.sync.SubmoduleTarget), ...]*
 
 Superprojects whose submodule pointers should be updated.
 
 <a id="stelion.workspace.domain.sync.SyncPlan.local_dir"></a>
 
-#### local_dir *: [Path](https://docs.python.org/3/library/pathlib.html#pathlib.Path) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### local_dir *: [Path](https://docs.python.org/3/library/pathlib.html#pathlib.Path) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Local clone directory, if the dependency has one.
 
 <a id="stelion.workspace.domain.sync.SyncPlan.push_spec"></a>
 
-#### push_spec *: [PushSpec](#stelion.workspace.domain.sync.PushSpec) | [None](https://docs.python.org/3/library/constants.html#None)* *= None*
+#### push_spec *: [PushSpec](#stelion.workspace.domain.sync.PushSpec) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
 
 Remote push parameters, if a push is planned.
 
@@ -1998,7 +2118,7 @@ Which replica kind a sync outcome refers to.
 
 ### *class* stelion.workspace.domain.sync.SyncOutcome(kind, label, old_ref, new_ref, applied, error='')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Result of a single synchronization action.
 
@@ -2010,31 +2130,31 @@ Which replica kind was targeted.
 
 <a id="stelion.workspace.domain.sync.SyncOutcome.label"></a>
 
-#### label *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### label *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Human-readable identifier for the target.
 
 <a id="stelion.workspace.domain.sync.SyncOutcome.old_ref"></a>
 
-#### old_ref *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### old_ref *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Git ref before the sync action.
 
 <a id="stelion.workspace.domain.sync.SyncOutcome.new_ref"></a>
 
-#### new_ref *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### new_ref *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Git ref after the sync action.
 
 <a id="stelion.workspace.domain.sync.SyncOutcome.applied"></a>
 
-#### applied *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### applied *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the action actually changed the replica.
 
 <a id="stelion.workspace.domain.sync.SyncOutcome.error"></a>
 
-#### error *: [str](https://docs.python.org/3/library/stdtypes.html#str)* *= ''*
+#### error *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= ''*
 
 Error message, empty on success.
 
@@ -2042,46 +2162,46 @@ Error message, empty on success.
 
 ### *class* stelion.workspace.domain.sync.SyncResult(dependency, target_commit, outcomes=())
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Aggregated outcomes from executing a sync plan.
 
 <a id="stelion.workspace.domain.sync.SyncResult.dependency"></a>
 
-#### dependency *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### dependency *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Name of the dependency that was synchronized.
 
 <a id="stelion.workspace.domain.sync.SyncResult.target_commit"></a>
 
-#### target_commit *: [str](https://docs.python.org/3/library/stdtypes.html#str)*
+#### target_commit *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 Git commit hash that was propagated.
 
 <a id="stelion.workspace.domain.sync.SyncResult.outcomes"></a>
 
-#### outcomes *: [tuple](https://docs.python.org/3/library/stdtypes.html#tuple)[[SyncOutcome](#stelion.workspace.domain.sync.SyncOutcome), ...]* *= ()*
+#### outcomes *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[SyncOutcome](#stelion.workspace.domain.sync.SyncOutcome), ...]* *= ()*
 
 Per-replica outcomes in execution order.
 
 <a id="stelion.workspace.domain.sync.SyncResult.applied_count"></a>
 
-#### *property* applied_count *: [int](https://docs.python.org/3/library/functions.html#int)*
+#### *property* applied_count *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Number of replicas that were actually changed.
 
 * **Returns:**
   Count of outcomes where `applied` is true.
 * **Return type:**
-  [int](https://docs.python.org/3/library/functions.html#int)
+  [int](https://docs.python.org/3/builtins/functions.html#int)
 
 <a id="stelion.workspace.domain.sync.SyncResult.has_errors"></a>
 
-#### *property* has_errors *: [bool](https://docs.python.org/3/library/functions.html#bool)*
+#### *property* has_errors *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any action failed.
 
 * **Returns:**
   Whether any outcome has a non-empty error message.
 * **Return type:**
-  [bool](https://docs.python.org/3/library/functions.html#bool)
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)

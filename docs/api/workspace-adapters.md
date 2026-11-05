@@ -12,6 +12,18 @@ CLI adapters exposing workspace use-cases as Typer commands.
 
 Typer command group for workspace management.
 
+<a id="stelion.workspace.adapters.commands.workspace_render_manifest"></a>
+
+### stelion.workspace.adapters.commands.workspace_render_manifest(overlay=<typer.models.ArgumentInfo object>, output=<typer.models.OptionInfo object>, manifest_dir=<typer.models.OptionInfo object>, dry_run=<typer.models.OptionInfo object>)
+
+Compose canonical defaults with a consumer overlay.
+
+* **Parameters:**
+  * **overlay** (*Path*) – YAML mapping containing consumer-specific values.
+  * **output** (*Path*) – Destination for the complete validated manifest.
+  * **manifest_dir** (*Path* *|* *None*) – Final workspace directory when *output* is a staging path.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Print the result without writing *output*.
+
 <a id="stelion.workspace.adapters.commands.workspace_init"></a>
 
 ### stelion.workspace.adapters.commands.workspace_init(manifest=<typer.models.OptionInfo object>, dry_run=<typer.models.OptionInfo object>)
@@ -20,7 +32,7 @@ Initialize or regenerate a workspace from its manifest.
 
 * **Parameters:**
   * **manifest** (*Path*) – Path to the workspace manifest file.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview actions without writing.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview actions without writing.
 
 <a id="stelion.workspace.adapters.commands.workspace_sync"></a>
 
@@ -30,9 +42,9 @@ Re-scan projects and update generated workspace files.
 
 * **Parameters:**
   * **manifest** (*Path*) – Path to the workspace manifest file.
-  * **target** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Single generation target to sync.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview without writing.
-  * **force** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Overwrite even if current.
+  * **target** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Single generation target to sync.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview without writing.
+  * **force** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Overwrite even if current.
 
 <a id="stelion.workspace.adapters.commands.workspace_register"></a>
 
@@ -41,7 +53,7 @@ Re-scan projects and update generated workspace files.
 Register an existing project into workspace artifacts.
 
 * **Parameters:**
-  * **path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Path to the project directory.
+  * **path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Path to the project directory.
   * **manifest** (*Path*) – Path to the workspace manifest file.
 
 <a id="stelion.workspace.adapters.commands.workspace_new"></a>
@@ -51,12 +63,12 @@ Register an existing project into workspace artifacts.
 Bootstrap a new project from the template.
 
 * **Parameters:**
-  * **name** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Project name (lowercase, underscores).
-  * **description** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – One-line project description.
+  * **name** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Project name (lowercase, underscores).
+  * **description** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – One-line project description.
   * **manifest** (*Path*) – Path to the workspace manifest file.
-  * **destination** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Target discovery root relative to the manifest.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview without writing.
-  * **no_git** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Skip git init.
+  * **destination** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Target discovery root relative to the manifest.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview without writing.
+  * **no_git** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Skip git init.
 
 <a id="stelion.workspace.adapters.commands.workspace_status"></a>
 
@@ -82,12 +94,12 @@ Typer commands for bulk operations across workspace projects.
 Run an arbitrary shell command in each project directory.
 
 * **Parameters:**
-  * **command** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Shell command to run in each project.
-  * **names** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
-  * **pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
-  * **git_only** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Only include projects with a git repository.
-  * **exclude** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview without executing.
+  * **command** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Shell command to run in each project.
+  * **names** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
+  * **pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
+  * **git_only** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Only include projects with a git repository.
+  * **exclude** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview without executing.
   * **manifest** (*Path*) – Path to the workspace manifest.
 
 <a id="stelion.workspace.adapters.bulk_commands.workspace_commit"></a>
@@ -97,12 +109,12 @@ Run an arbitrary shell command in each project directory.
 Stage tracked changes and commit across projects.
 
 * **Parameters:**
-  * **message** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Commit message to use.
-  * **names** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
-  * **pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
-  * **git_only** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Only include projects with a git repository.
-  * **exclude** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview without executing.
+  * **message** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Commit message to use.
+  * **names** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
+  * **pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
+  * **git_only** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Only include projects with a git repository.
+  * **exclude** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview without executing.
   * **manifest** (*Path*) – Path to the workspace manifest.
 
 <a id="stelion.workspace.adapters.bulk_commands.workspace_push"></a>
@@ -112,13 +124,13 @@ Stage tracked changes and commit across projects.
 Push the current branch to a remote across projects.
 
 * **Parameters:**
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Remote name to push to.
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Branch to push.
-  * **names** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
-  * **pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
-  * **git_only** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Only include projects with a git repository.
-  * **exclude** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview without executing.
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Remote name to push to.
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Branch to push.
+  * **names** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
+  * **pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
+  * **git_only** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Only include projects with a git repository.
+  * **exclude** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview without executing.
   * **manifest** (*Path*) – Path to the workspace manifest.
 
 <a id="module-stelion.workspace.adapters.comparison_commands"></a>
@@ -136,16 +148,16 @@ Typer commands for cross-project comparison.
 Compare directory structures across projects.
 
 * **Parameters:**
-  * **subtree** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Limit scan to a subdirectory.
-  * **include** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated include glob patterns.
-  * **exclude_pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated exclude glob patterns.
-  * **names** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
-  * **pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
-  * **git_only** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Only include projects with a git repository.
-  * **exclude** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
-  * **instruction** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Path to instruction YAML file.
-  * **fmt** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Output format (`"table"` or `"yaml"`).
-  * **output** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Save report to a file instead of printing.
+  * **subtree** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Limit scan to a subdirectory.
+  * **include** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated include glob patterns.
+  * **exclude_pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated exclude glob patterns.
+  * **names** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
+  * **pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
+  * **git_only** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Only include projects with a git repository.
+  * **exclude** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
+  * **instruction** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Path to instruction YAML file.
+  * **fmt** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Output format (`"table"` or `"yaml"`).
+  * **output** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Save report to a file instead of printing.
   * **manifest** (*Path*) – Path to the workspace manifest.
 
 <a id="stelion.workspace.adapters.comparison_commands.compare_files_cmd"></a>
@@ -155,16 +167,16 @@ Compare directory structures across projects.
 Compare specific files across projects.
 
 * **Parameters:**
-  * **paths** ([*list*](https://docs.python.org/3/library/stdtypes.html#list) *[*[*str*](https://docs.python.org/3/library/stdtypes.html#str) *]*) – Relative file paths to compare across projects.
-  * **granularity** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Comparison granularity (`"survey"` or `"detail"`).
-  * **reference** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Reference project for detail-mode diffs.
-  * **names** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
-  * **pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
-  * **git_only** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Only include projects with a git repository.
-  * **exclude** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
-  * **instruction** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Path to instruction YAML file.
-  * **fmt** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Output format (`"table"` or `"yaml"`).
-  * **output** ([*str*](https://docs.python.org/3/library/stdtypes.html#str) *|* *None*) – Save report to a file instead of printing.
+  * **paths** ([*list*](https://docs.python.org/3/builtins/stdtypes.html#list) *[*[*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *]*) – Relative file paths to compare across projects.
+  * **granularity** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Comparison granularity (`"survey"` or `"detail"`).
+  * **reference** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Reference project for detail-mode diffs.
+  * **names** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to include.
+  * **pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Regex pattern to match project names.
+  * **git_only** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Only include projects with a git repository.
+  * **exclude** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Comma-separated project names to exclude.
+  * **instruction** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Path to instruction YAML file.
+  * **fmt** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Output format (`"table"` or `"yaml"`).
+  * **output** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str) *|* *None*) – Save report to a file instead of printing.
   * **manifest** (*Path*) – Path to the workspace manifest.
 
 <a id="module-stelion.workspace.adapters.submodule_commands"></a>
@@ -182,10 +194,10 @@ Typer command group for submodule operations.
 Propagate a commit across all replicas of a submodule dependency.
 
 * **Parameters:**
-  * **dependency** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Name of the dependency to synchronize.
-  * **from_source** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Sync source: `"local"`, `"remote"`, or a superproject name.
-  * **no_commit** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Update submodule pointers without committing.
-  * **dry_run** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – Preview updates without applying.
+  * **dependency** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Name of the dependency to synchronize.
+  * **from_source** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Sync source: `"local"`, `"remote"`, or a superproject name.
+  * **no_commit** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Update submodule pointers without committing.
+  * **dry_run** ([*bool*](https://docs.python.org/3/builtins/functions.html#bool)) – Preview updates without applying.
   * **manifest** (*Path*) – Path to the workspace manifest.
-  * **remote** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Remote name (for remote origin).
-  * **branch** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – Branch name (for remote origin).
+  * **remote** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Remote name (for remote origin).
+  * **branch** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – Branch name (for remote origin).

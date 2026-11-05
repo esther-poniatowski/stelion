@@ -1,5 +1,4 @@
-"""Composition root: constructs infrastructure and wires use-cases.
-"""
+"""Composition root: constructs infrastructure and wires use-cases."""
 
 from __future__ import annotations
 
@@ -24,6 +23,7 @@ from .application.manifest_init import (
     ManifestInitServices,
     initialize_default_manifest,
 )
+from .application.manifest_overlay import merge_manifest_mappings
 from .application.protocols import (
     BulkOperation,
     DependencyScanner,
@@ -53,7 +53,11 @@ from .domain.status import DriftReport
 from .domain.sync import SyncOrigin, SyncResult
 from .exceptions import WorkspaceError
 from .infrastructure.bootstrap_git import init_repository, read_git_identity
-from .infrastructure.bulk_operations import GitCommitOperation, GitPushOperation, ShellOperation
+from .infrastructure.bulk_operations import (
+    GitCommitOperation,
+    GitPushOperation,
+    ShellOperation,
+)
 from .infrastructure.command_runner import SubprocessCommandRunner
 from .infrastructure.data_loader import StelionDataLoader
 from .infrastructure.dependency_scanners import (
@@ -63,8 +67,13 @@ from .infrastructure.dependency_scanners import (
 from .infrastructure.environment_parser import CondaEnvironmentReader
 from .infrastructure.file_ops import LocalFileReader, LocalFileWriter, SHA256Hasher
 from .infrastructure.git_operations import SubprocessGitOperations
-from .infrastructure.manifest_codec import default_workspace_manifest, render_manifest
-from .infrastructure.manifest_loader import load_manifest
+from .infrastructure.manifest_codec import (
+    default_workspace_manifest,
+    manifest_to_dict,
+    parse_workspace_manifest,
+    render_manifest,
+)
+from .infrastructure.manifest_loader import load_manifest, load_manifest_mapping
 from .infrastructure.pyproject_parser import PyprojectExtractor
 from .infrastructure.renderers.vscode import VSCodeWorkspaceFileRenderer
 from .infrastructure.renderers.yaml import (
@@ -90,8 +99,7 @@ from .infrastructure.tree_scanner import LocalTreeScanner
 
 @dataclass(frozen=True)
 class WorkspaceServices:
-    """Container holding all wired infrastructure implementations.
-    """
+    """Container holding all wired infrastructure implementations."""
 
     extractor: MetadataExtractor
     """Extracts project metadata from project directories."""
@@ -117,8 +125,7 @@ class WorkspaceServices:
 
 @dataclass(frozen=True)
 class WorkspaceContext:
-    """Fully resolved workspace state: manifest + discovered data.
-    """
+    """Fully resolved workspace state: manifest + discovered data."""
 
     manifest: WorkspaceManifest
     """The loaded workspace manifest."""
@@ -132,8 +139,7 @@ class WorkspaceContext:
 
 @dataclass(frozen=True)
 class WorkspaceRegistrationResult:
-    """Result of registering a project into the workspace and regenerating artifacts.
-    """
+    """Result of registering a project into the workspace and regenerating artifacts."""
 
     manifest: WorkspaceManifest
     """The workspace manifest after registration."""
@@ -252,6 +258,55 @@ def resolve_manifest(manifest_path: Path) -> WorkspaceManifest:
     return load_manifest(manifest_path.resolve())
 
 
+def compose_workspace_manifest(
+    overlay_path: Path,
+    manifest_path: Path,
+) -> WorkspaceManifest:
+    """Compose and validate a consumer overlay against canonical defaults.
+
+    The destination path determines path-sensitive defaults such as the workspace
+    name. The overlay remains independent of Stelion's complete manifest shape.
+
+    Parameters
+    ----------
+    overlay_path : Path
+        YAML mapping containing consumer-specific manifest values.
+    manifest_path : Path
+        Destination of the complete rendered manifest.
+
+    Returns
+    -------
+    WorkspaceManifest
+        Complete typed manifest after default composition and validation.
+    """
+    manifest_path = manifest_path.resolve()
+    overlay = load_manifest_mapping(overlay_path, label="Manifest overlay")
+    defaults = manifest_to_dict(default_workspace_manifest(manifest_path.parent))
+    composed = merge_manifest_mappings(defaults, overlay)
+    return parse_workspace_manifest(composed, manifest_path.parent)
+
+
+def render_workspace_manifest(
+    overlay_path: Path,
+    manifest_path: Path,
+) -> str:
+    """Render a validated complete manifest from a consumer overlay.
+
+    Parameters
+    ----------
+    overlay_path : Path
+        YAML mapping containing consumer-specific manifest values.
+    manifest_path : Path
+        Destination path used to resolve path-sensitive defaults.
+
+    Returns
+    -------
+    str
+        Complete canonical YAML manifest.
+    """
+    return render_manifest(compose_workspace_manifest(overlay_path, manifest_path))
+
+
 def build_workspace_context(
     manifest: WorkspaceManifest,
     services: WorkspaceServices,
@@ -274,7 +329,9 @@ def build_workspace_context(
         Fully resolved workspace state with inventory, graph, and environment.
     """
     inventory = discover_projects(
-        manifest.discovery, services.extractor, manifest.manifest_dir,
+        manifest.discovery,
+        services.extractor,
+        manifest.manifest_dir,
     )
 
     # Pre-read environment specs once; pass to both subsystems.
@@ -287,7 +344,10 @@ def build_workspace_context(
 
     graph = build_dependency_graph(manifest, inventory, services.dependency_scanners)
     environment = build_shared_environment(
-        manifest, inventory, services.env_reader, env_specs=env_specs,
+        manifest,
+        inventory,
+        services.env_reader,
+        env_specs=env_specs,
     )
     return WorkspaceContext(
         manifest=manifest,
@@ -479,7 +539,9 @@ def register_workspace_project(
 
     def _discover(m: WorkspaceManifest) -> ProjectInventory:
         return discover_projects(
-            m.discovery, services.extractor, m.manifest_dir,
+            m.discovery,
+            services.extractor,
+            m.manifest_dir,
         )
 
     def _build_and_generate(
@@ -559,7 +621,10 @@ def run_submodule_sync(
     """
     git = create_git_operations()
     targets = resolve_submodule_targets(
-        dependency, ctx.graph, ctx.manifest, inventory=ctx.inventory,
+        dependency,
+        ctx.graph,
+        ctx.manifest,
+        inventory=ctx.inventory,
     )
     plan = plan_sync(
         dependency=dependency,
@@ -724,8 +789,7 @@ def _run_bulk(
 
 @dataclass(frozen=True)
 class ComparisonServices:
-    """Container for cross-project comparison infrastructure.
-    """
+    """Container for cross-project comparison infrastructure."""
 
     scanner: TreeScanner
     """Scans project directories for file-tree snapshots."""
@@ -747,13 +811,15 @@ def create_comparison_services() -> ComparisonServices:
     """
     return ComparisonServices(
         scanner=LocalTreeScanner(),
-        parser=DispatchingParser({
-            ".toml": TomlParser(),
-            ".yaml": YamlParser(),
-            ".yml": YamlParser(),
-            ".json": JsonParser(),
-            ".md": MarkdownSectionParser(),
-        }),
+        parser=DispatchingParser(
+            {
+                ".toml": TomlParser(),
+                ".yaml": YamlParser(),
+                ".yml": YamlParser(),
+                ".json": JsonParser(),
+                ".md": MarkdownSectionParser(),
+            }
+        ),
         spec_loader=YamlSpecLoader(),
         reader=LocalFileReader(),
     )

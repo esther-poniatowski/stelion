@@ -13,4 +13,4 @@ Format diagnostic information on package and platform.
 * **Returns:**
   Human-readable string with package name, version, OS, and Python version.
 * **Return type:**
-  [str](https://docs.python.org/3/library/stdtypes.html#str)
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)

@@ -1,5 +1,4 @@
-"""Typer command group for workspace management.
-"""
+"""Typer command group for workspace management."""
 
 from __future__ import annotations
 
@@ -9,12 +8,16 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from ..application.bootstrap import WorkspaceBootstrapRequest, bootstrap_workspace_project
+from ..application.bootstrap import (
+    WorkspaceBootstrapRequest,
+    bootstrap_workspace_project,
+)
 from ..application.generation import GenerationArtifact, GenerationResult
 from .bulk_commands import workspace_commit, workspace_exec, workspace_push
 from ..composition import (
     WorkspaceRegistrationResult,
     build_workspace_context,
+    compose_workspace_manifest,
     create_bootstrap_services,
     create_services,
     initialize_workspace_manifest,
@@ -25,9 +28,12 @@ from ..composition import (
     target_paths,
 )
 from ..domain.status import DriftReport, FileStatus
-from ..exceptions import BootstrapError, WorkspaceError
+from ..exceptions import BootstrapError, ManifestValidationError, WorkspaceError
+from ..infrastructure.manifest_codec import render_manifest
 
-app = typer.Typer(name="workspace", help="Multi-project workspace management.", no_args_is_help=True)
+app = typer.Typer(
+    name="workspace", help="Multi-project workspace management.", no_args_is_help=True
+)
 console = Console(stderr=True)
 
 app.command("exec")(workspace_exec)
@@ -35,12 +41,66 @@ app.command("commit")(workspace_commit)
 app.command("push")(workspace_push)
 
 
+@app.command("render-manifest")
+def workspace_render_manifest(
+    overlay: Path = typer.Argument(..., help="Path to a consumer manifest overlay."),
+    output: Path = typer.Option(
+        "stelion.yml",
+        "--output",
+        "-o",
+        help="Destination for the complete manifest.",
+    ),
+    manifest_dir: Path | None = typer.Option(
+        None,
+        "--manifest-dir",
+        help="Final workspace directory used for destination-derived defaults.",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Print the complete manifest without writing it.",
+    ),
+) -> None:
+    """Compose canonical defaults with a consumer overlay.
+
+    Parameters
+    ----------
+    overlay : Path
+        YAML mapping containing consumer-specific values.
+    output : Path
+        Destination for the complete validated manifest.
+    manifest_dir : Path | None
+        Final workspace directory when *output* is a staging path.
+    dry_run : bool
+        Print the result without writing *output*.
+    """
+    output = output.resolve()
+    semantic_path = (
+        manifest_dir.resolve() / output.name if manifest_dir is not None else output
+    )
+    try:
+        manifest = compose_workspace_manifest(overlay, semantic_path)
+    except (FileNotFoundError, ManifestValidationError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    content = render_manifest(manifest)
+    if dry_run:
+        typer.echo(content, nl=False)
+        return
+
+    create_services().writer.write(output, content)
+    console.print(f"[green]Rendered[/green] {output}")
+
+
 @app.command("init")
 def workspace_init(
     manifest: Path = typer.Option(
         "stelion.yml", "--manifest", "-m", help="Path to workspace manifest."
     ),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview actions without writing."),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Preview actions without writing."
+    ),
 ) -> None:
     """Initialize or regenerate a workspace from its manifest.
 
@@ -193,15 +253,21 @@ def workspace_new(
         raise typer.Exit(1)
 
     if dry_run:
-        console.print(f"[bold]Dry run:[/bold] would create project at {result.target_dir}")
+        console.print(
+            f"[bold]Dry run:[/bold] would create project at {result.target_dir}"
+        )
         return
 
     console.print(f"Replaced {result.placeholders_replaced} placeholder occurrences.")
     console.print(f"Renamed {result.files_renamed} paths.")
     if result.git_initialized:
         console.print("Initialized git repository.")
-    console.print(f"\n[bold green]Project '{name}' created at {result.target_dir}[/bold green]")
-    console.print("\nRun [bold]stelion workspace register[/bold] to persist it into workspace artifacts.")
+    console.print(
+        f"\n[bold green]Project '{name}' created at {result.target_dir}[/bold green]"
+    )
+    console.print(
+        "\nRun [bold]stelion workspace register[/bold] to persist it into workspace artifacts."
+    )
 
 
 @app.command("status")
@@ -271,7 +337,11 @@ def _print_generation_results(
     table.add_column("File")
     table.add_column("Status")
     for result in results:
-        status = f"[green]{result.reason}[/green]" if result.written else "[dim]current[/dim]"
+        status = (
+            f"[green]{result.reason}[/green]"
+            if result.written
+            else "[dim]current[/dim]"
+        )
         table.add_row(str(result.path.relative_to(manifest_dir)), status)
     console.print(table)
 
@@ -309,12 +379,16 @@ def _print_registration_result(result: WorkspaceRegistrationResult) -> None:
     result : WorkspaceRegistrationResult
         Registration outcome containing the registered project and generated artifacts.
     """
-    console.print(f"Registered [bold]{result.project.name}[/bold] at {result.project.path}")
+    console.print(
+        f"Registered [bold]{result.project.name}[/bold] at {result.project.path}"
+    )
     if result.project.issue:
         console.print(f"[yellow]Metadata warning:[/yellow] {result.project.issue}")
     if result.manifest_updated:
         console.print("Updated manifest discovery.extra_paths.")
-    _print_generation_results("Workspace Register", result.generated, result.manifest.manifest_dir)
+    _print_generation_results(
+        "Workspace Register", result.generated, result.manifest.manifest_dir
+    )
 
 
 def _parse_generation_targets(target: str | None) -> tuple[GenerationArtifact, ...]:
@@ -336,4 +410,6 @@ def _parse_generation_targets(target: str | None) -> tuple[GenerationArtifact, .
         return (GenerationArtifact(target),)
     except ValueError as exc:
         choices = ", ".join(artifact.value for artifact in GenerationArtifact)
-        raise typer.BadParameter(f"Unknown target '{target}'. Expected one of: {choices}.") from exc
+        raise typer.BadParameter(
+            f"Unknown target '{target}'. Expected one of: {choices}."
+        ) from exc

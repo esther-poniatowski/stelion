@@ -10,7 +10,7 @@ Workspace-specific exception types.
 
 ### *exception* stelion.workspace.exceptions.WorkspaceError
 
-Bases: [`Exception`](https://docs.python.org/3/library/exceptions.html#Exception)
+Bases: [`Exception`](https://docs.python.org/3/builtins/exceptions.html#Exception)
 
 Base exception for workspace application and infrastructure failures.
 

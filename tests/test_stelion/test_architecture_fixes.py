@@ -13,17 +13,29 @@ from stelion.workspace.application.bootstrap import (
 )
 from stelion.workspace.application.generation import GenerationArtifact, generate_all
 from stelion.workspace.application.protocols import GenerationServices
-from stelion.workspace.composition import create_services, register_workspace_project, resolve_manifest
+from stelion.workspace.composition import (
+    create_services,
+    register_workspace_project,
+    resolve_manifest,
+)
 from stelion.workspace.domain.dependency import DependencyGraph
 from stelion.workspace.domain.environment import EnvironmentSpec, merge_environments
 from stelion.workspace.domain.manifest import EcosystemDefaults, TemplateConfig
-from stelion.workspace.domain.project import MetadataStatus, ProjectInventory, ProjectMetadata
-from stelion.workspace.exceptions import ManifestValidationError
+from stelion.workspace.domain.project import (
+    MetadataStatus,
+    ProjectInventory,
+    ProjectMetadata,
+)
+from stelion.workspace.exceptions import BootstrapError, ManifestValidationError
 from stelion.workspace.infrastructure.environment_parser import (
     CondaEnvironmentReader,
     INVALID_ENVIRONMENT_MARKER,
 )
-from stelion.workspace.infrastructure.file_ops import LocalFileReader, LocalFileWriter, SHA256Hasher
+from stelion.workspace.infrastructure.file_ops import (
+    LocalFileReader,
+    LocalFileWriter,
+    SHA256Hasher,
+)
 from stelion.workspace.infrastructure.manifest_codec import (
     default_workspace_manifest,
     manifest_to_dict,
@@ -34,11 +46,16 @@ from stelion.workspace.infrastructure.pyproject_parser import (
     INVALID_PYPROJECT_MARKER,
     PyprojectExtractor,
 )
-from stelion.workspace.infrastructure.renderers.yaml import render_environment, render_projects_yaml
+from stelion.workspace.infrastructure.renderers.yaml import (
+    render_environment,
+    render_projects_yaml,
+)
 from stelion.workspace.infrastructure.template_engine import substitute_in_file
 
 
-def test_workspace_bootstrap_request_is_planned_from_manifest_dir(tmp_path: Path) -> None:
+def test_workspace_bootstrap_request_is_planned_from_manifest_dir(
+    tmp_path: Path,
+) -> None:
     manifest_dir = tmp_path / "workspace"
     manifest_dir.mkdir()
     request = WorkspaceBootstrapRequest(
@@ -55,6 +72,22 @@ def test_workspace_bootstrap_request_is_planned_from_manifest_dir(tmp_path: Path
 
     assert planned.template_source == (manifest_dir / "../template").resolve()
     assert planned.target_dir == (manifest_dir / "../projects/example").resolve()
+
+
+def test_workspace_bootstrap_requires_a_consumer_template(tmp_path: Path) -> None:
+    """Generic manifest defaults must not select a downstream project template."""
+    request = WorkspaceBootstrapRequest(
+        manifest_dir=tmp_path,
+        name="example",
+        description="desc",
+        template=TemplateConfig(source=""),
+        defaults=EcosystemDefaults(),
+        discovery_scan_dirs=("../projects",),
+        dry_run=True,
+    )
+
+    with pytest.raises(BootstrapError, match="template.source"):
+        plan_bootstrap_request(request)
 
 
 def test_workspace_bootstrap_uses_explicit_destination_root(tmp_path: Path) -> None:
@@ -116,7 +149,9 @@ def test_workspace_bootstrap_honors_custom_template_delimiters(tmp_path: Path) -
     result = bootstrap_workspace_project(request, services)
 
     assert result.target_dir == (scan_root / "sample").resolve()
-    assert (scan_root / "sample" / "README.md").read_text(encoding="utf-8") == "sample\n"
+    assert (scan_root / "sample" / "README.md").read_text(
+        encoding="utf-8"
+    ) == "sample\n"
 
 
 def test_workspace_manifest_parses_through_infrastructure_codec(tmp_path: Path) -> None:
@@ -127,7 +162,10 @@ def test_workspace_manifest_parses_through_infrastructure_codec(tmp_path: Path) 
             "template": {"renames": {"src/template": "src/{{ project_name }}"}},
             "vscode": {"settings_overrides": {"files.exclude": {"__pycache__": True}}},
             "names_in_use": {"old": "new"},
-            "dependencies": {"scan_paths": ["../vendors"], "superproject_paths": ["../apps"]},
+            "dependencies": {
+                "scan_paths": ["../vendors"],
+                "superproject_paths": ["../apps"],
+            },
         },
         tmp_path,
     )
@@ -140,7 +178,9 @@ def test_workspace_manifest_parses_through_infrastructure_codec(tmp_path: Path) 
     assert manifest.dependencies.superproject_paths == ("../apps",)
 
 
-def test_workspace_manifest_rejects_unknown_keys_at_codec_boundary(tmp_path: Path) -> None:
+def test_workspace_manifest_rejects_unknown_keys_at_codec_boundary(
+    tmp_path: Path,
+) -> None:
     with pytest.raises(ManifestValidationError, match="Unknown key"):
         parse_workspace_manifest(
             {
@@ -174,10 +214,14 @@ def test_legacy_extra_scan_dirs_populates_new_dependency_fields(tmp_path: Path) 
     assert manifest.dependencies.superproject_paths == ("../legacy",)
 
 
-def test_pyproject_parser_marks_invalid_toml_with_explicit_status(tmp_path: Path) -> None:
+def test_pyproject_parser_marks_invalid_toml_with_explicit_status(
+    tmp_path: Path,
+) -> None:
     project_dir = tmp_path / "broken"
     project_dir.mkdir()
-    (project_dir / "pyproject.toml").write_text("[project\nname='broken'\n", encoding="utf-8")
+    (project_dir / "pyproject.toml").write_text(
+        "[project\nname='broken'\n", encoding="utf-8"
+    )
 
     metadata = PyprojectExtractor().extract(project_dir)
 
@@ -200,10 +244,15 @@ def test_projects_yaml_surfaces_metadata_markers(tmp_path: Path) -> None:
 
     assert "status: invalid_pyproject" in rendered
     assert f"version: {INVALID_PYPROJECT_MARKER}" in rendered
-    assert "issue: 'broken: invalid pyproject.toml'" in rendered or "issue: broken: invalid pyproject.toml" in rendered
+    assert (
+        "issue: 'broken: invalid pyproject.toml'" in rendered
+        or "issue: broken: invalid pyproject.toml" in rendered
+    )
 
 
-def test_environment_reader_carries_invalid_yaml_issue_without_raising(tmp_path: Path) -> None:
+def test_environment_reader_carries_invalid_yaml_issue_without_raising(
+    tmp_path: Path,
+) -> None:
     project_dir = tmp_path / "broken"
     project_dir.mkdir()
     (project_dir / "environment.yml").write_text("dependencies: [\n", encoding="utf-8")
@@ -250,7 +299,9 @@ def test_targeted_generation_respects_selected_artifact(tmp_path: Path) -> None:
     assert not (tmp_path / "dependencies.yml").exists()
 
 
-def test_register_workspace_project_persists_manifest_and_updates_artifacts(tmp_path: Path) -> None:
+def test_register_workspace_project_persists_manifest_and_updates_artifacts(
+    tmp_path: Path,
+) -> None:
     manifest_dir = tmp_path / "workspace"
     projects_dir = tmp_path / "projects"
     external_dir = tmp_path / "external" / "manual"
