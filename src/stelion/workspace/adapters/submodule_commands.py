@@ -12,11 +12,11 @@ from rich.table import Table
 from ..composition import (
     build_workspace_context,
     create_services,
-    resolve_manifest,
     run_submodule_sync,
 )
 from ..domain.sync import OutcomeKind, SyncOrigin, SyncResult
 from ..exceptions import SyncError
+from ._cli_common import load_settings, opt_config, opt_root
 
 app = typer.Typer(
     name="submodule",
@@ -43,10 +43,8 @@ def submodule_sync(
         False, "--dry-run",
         help="Preview updates without applying.",
     ),
-    manifest: Path = typer.Option(
-        "stelion.yml", "--manifest", "-m",
-        help="Path to workspace manifest.",
-    ),
+    root: Path | None = opt_root,
+    config: Path | None = opt_config,
     remote: str = typer.Option(
         "origin", "--remote",
         help="Remote name (for remote origin).",
@@ -68,15 +66,17 @@ def submodule_sync(
         Update submodule pointers without committing.
     dry_run : bool
         Preview updates without applying.
-    manifest : Path
-        Path to the workspace manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     remote : str
         Remote name (for remote origin).
     branch : str
         Branch name (for remote origin).
     """
     services = create_services()
-    m = resolve_manifest(Path(manifest))
+    _location, m = load_settings(root, config)
     ctx = build_workspace_context(m, services)
 
     origin, source_superproject = _parse_origin(from_source)

@@ -62,6 +62,7 @@ def initialize_default_manifest(
     services: ManifestInitServices,
     *,
     dry_run: bool = False,
+    root: Path | None = None,
 ) -> ManifestInitResult:
     """Build and optionally persist a default manifest for a new workspace.
 
@@ -75,6 +76,9 @@ def initialize_default_manifest(
         Injected collaborators.
     dry_run : bool
         If True, skip writing the manifest to disk.
+    root : Path | None
+        Root of the workspace, from which projects are discovered. Defaults to the folder of the
+        manifest.
 
     Returns
     -------
@@ -82,7 +86,7 @@ def initialize_default_manifest(
         Result containing the manifest, inventory, and write status.
     """
     manifest_path = manifest_path.resolve()
-    manifest_dir = manifest_path.parent
+    manifest_dir = root.resolve() if root is not None else manifest_path.parent
     github_user, _ = services.read_git_identity()
     manifest = services.build_default_manifest(manifest_dir, github_user=github_user)
     inventory = discover_projects(manifest.discovery, extractor, manifest_dir)

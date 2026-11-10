@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from io import StringIO
 from pathlib import Path
 from typing import Optional
@@ -17,7 +18,6 @@ from ..composition import (
     build_workspace_context,
     create_comparison_services,
     create_services,
-    resolve_manifest,
     run_compare_files,
     run_compare_trees,
 )
@@ -33,7 +33,7 @@ from ..domain.comparison import (
 )
 from ..exceptions import ComparisonError, WorkspaceError
 from ..infrastructure.renderers.comparison import render_file_yaml, render_tree_yaml
-from ._cli_common import parse_project_filter
+from ._cli_common import load_settings, opt_config, opt_root, parse_project_filter
 
 app = typer.Typer(name="compare", help="Cross-project comparison.", no_args_is_help=True)
 console = Console(stderr=True)
@@ -47,8 +47,16 @@ _opt_names = typer.Option(None, "--names", "-n", help="Comma-separated project n
 _opt_pattern = typer.Option(None, "--pattern", "-p", help="Regex pattern to match project names.")
 _opt_git_only = typer.Option(False, "--git-only", help="Only projects with a git repository.")
 _opt_exclude = typer.Option(None, "--exclude", "-e", help="Comma-separated project names to exclude.")
-_opt_manifest = typer.Option("stelion.yml", "--manifest", help="Path to workspace manifest.")
-_opt_format = typer.Option("table", "--format", "-f", help="Output format: table or yaml.")
+
+
+class ReportFormat(str, Enum):
+    """Formats of a comparison report."""
+
+    TEXT = "text"
+    YAML = "yaml"
+
+
+_opt_format = typer.Option(ReportFormat.TEXT, "--format", help="Format of the report.")
 _opt_instruction = typer.Option(None, "--instruction", "-i", help="Path to instruction YAML file.")
 _opt_output = typer.Option(None, "--output", "-o", help="Save report to a file instead of printing.")
 
@@ -62,7 +70,7 @@ def _resolve_format(fmt: str, output: str | None) -> str:
     Parameters
     ----------
     fmt : str
-        Requested output format (e.g. ``"table"`` or ``"yaml"``).
+        Requested output format (``"text"`` or ``"yaml"``).
     output : str | None
         Output file path, or ``None`` for stdout.
 
@@ -152,9 +160,10 @@ def compare_tree(
     git_only: bool = _opt_git_only,
     exclude: Optional[str] = _opt_exclude,
     instruction: Optional[str] = _opt_instruction,
-    fmt: str = _opt_format,
+    fmt: ReportFormat = _opt_format,
     output: Optional[str] = _opt_output,
-    manifest: Path = _opt_manifest,
+    root: Optional[Path] = opt_root,
+    config: Optional[Path] = opt_config,
 ) -> None:
     """Compare directory structures across projects.
 
@@ -176,12 +185,14 @@ def compare_tree(
         Comma-separated project names to exclude.
     instruction : str | None
         Path to instruction YAML file.
-    fmt : str
-        Output format (``"table"`` or ``"yaml"``).
+    fmt : ReportFormat
+        Format of the report (``text`` or ``yaml``).
     output : str | None
         Save report to a file instead of printing.
-    manifest : Path
-        Path to the workspace manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     """
     _check_mutual_exclusivity(
         instruction, subtree=subtree, include=include, exclude_pattern=exclude_pattern,
@@ -191,8 +202,8 @@ def compare_tree(
     ws_services = create_services()
     cmp_services = create_comparison_services()
 
+    _location, m = load_settings(root, config)
     try:
-        m = resolve_manifest(Path(manifest))
         ctx = build_workspace_context(m, ws_services)
 
         if instruction:
@@ -218,7 +229,7 @@ def compare_tree(
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
 
-    effective_fmt = _resolve_format(fmt, output)
+    effective_fmt = _resolve_format(fmt.value, output)
     if effective_fmt == "yaml":
         content = render_tree_yaml(report)
     else:
@@ -244,7 +255,6 @@ def compare_files_cmd(
     reference: Optional[str] = typer.Option(
         None,
         "--reference",
-        "-r",
         help="Reference project for detail-mode diffs.",
     ),
     names: Optional[str] = _opt_names,
@@ -252,9 +262,10 @@ def compare_files_cmd(
     git_only: bool = _opt_git_only,
     exclude: Optional[str] = _opt_exclude,
     instruction: Optional[str] = _opt_instruction,
-    fmt: str = _opt_format,
+    fmt: ReportFormat = _opt_format,
     output: Optional[str] = _opt_output,
-    manifest: Path = _opt_manifest,
+    root: Optional[Path] = opt_root,
+    config: Optional[Path] = opt_config,
 ) -> None:
     """Compare specific files across projects.
 
@@ -276,12 +287,14 @@ def compare_files_cmd(
         Comma-separated project names to exclude.
     instruction : str | None
         Path to instruction YAML file.
-    fmt : str
-        Output format (``"table"`` or ``"yaml"``).
+    fmt : ReportFormat
+        Format of the report (``text`` or ``yaml``).
     output : str | None
         Save report to a file instead of printing.
-    manifest : Path
-        Path to the workspace manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     """
     _check_mutual_exclusivity(
         instruction, paths=paths, granularity=(granularity != "survey"),
@@ -291,8 +304,8 @@ def compare_files_cmd(
     ws_services = create_services()
     cmp_services = create_comparison_services()
 
+    _location, m = load_settings(root, config)
     try:
-        m = resolve_manifest(Path(manifest))
         ctx = build_workspace_context(m, ws_services)
 
         if instruction:
@@ -324,7 +337,7 @@ def compare_files_cmd(
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
 
-    effective_fmt = _resolve_format(fmt, output)
+    effective_fmt = _resolve_format(fmt.value, output)
     if effective_fmt == "yaml":
         content = render_file_yaml(report)
     else:

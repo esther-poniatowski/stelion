@@ -28,3 +28,7 @@ class SyncError(WorkspaceError):
 
 class ComparisonError(WorkspaceError):
     """Raised when a comparison operation cannot proceed."""
+
+
+class SettingsError(WorkspaceError):
+    """Raised when the settings file of Stelion cannot be located without ambiguity."""

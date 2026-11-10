@@ -22,7 +22,6 @@ from ..composition import (
     create_services,
     initialize_workspace_manifest,
     register_workspace_project,
-    resolve_manifest,
     run_drift_check,
     run_generate,
     target_paths,
@@ -30,6 +29,15 @@ from ..composition import (
 from ..domain.status import DriftReport, FileStatus
 from ..exceptions import BootstrapError, ManifestValidationError, WorkspaceError
 from ..infrastructure.manifest_codec import render_manifest
+from ..infrastructure.settings_locator import resolve_root
+from ._cli_common import (
+    confirm_change,
+    load_settings,
+    locate,
+    opt_config,
+    opt_root,
+    stop_with_usage_error,
+)
 
 app = typer.Typer(
     name="workspace", help="Multi-project workspace management.", no_args_is_help=True
@@ -44,17 +52,15 @@ app.command("push")(workspace_push)
 @app.command("render-manifest")
 def workspace_render_manifest(
     overlay: Path = typer.Argument(..., help="Path to a consumer manifest overlay."),
-    output: Path = typer.Option(
-        "stelion.yml",
+    output: Path | None = typer.Option(
+        None,
         "--output",
         "-o",
-        help="Destination for the complete manifest.",
+        dir_okay=False,
+        help="File that receives the complete manifest. Without it, the manifest goes to the "
+        "standard output.",
     ),
-    manifest_dir: Path | None = typer.Option(
-        None,
-        "--manifest-dir",
-        help="Final workspace directory used for destination-derived defaults.",
-    ),
+    root: Path | None = opt_root,
     dry_run: bool = typer.Option(
         False,
         "--dry-run",
@@ -63,63 +69,70 @@ def workspace_render_manifest(
 ) -> None:
     """Compose canonical defaults with a consumer overlay.
 
+    The root of the workspace that the manifest configures determines its path-sensitive
+    defaults, such as the workspace name; it may differ from the folder of *output* when the
+    output is staged elsewhere.
+
     Parameters
     ----------
     overlay : Path
         YAML mapping containing consumer-specific values.
-    output : Path
-        Destination for the complete validated manifest.
-    manifest_dir : Path | None
-        Final workspace directory when *output* is a staging path.
+    output : Path | None
+        Destination for the complete validated manifest, or ``None`` for the standard output.
+    root : Path | None
+        Root of the workspace that the manifest configures.
     dry_run : bool
         Print the result without writing *output*.
     """
-    output = output.resolve()
-    semantic_path = (
-        manifest_dir.resolve() / output.name if manifest_dir is not None else output
-    )
     try:
-        manifest = compose_workspace_manifest(overlay, semantic_path)
+        resolved_root = resolve_root(root, cwd=Path.cwd())
+        manifest = compose_workspace_manifest(overlay, resolved_root)
     except (FileNotFoundError, ManifestValidationError) as exc:
-        console.print(f"[red]Error:[/red] {exc}")
-        raise typer.Exit(1) from exc
+        raise stop_with_usage_error(exc) from exc
 
     content = render_manifest(manifest)
-    if dry_run:
+    if dry_run or output is None:
         typer.echo(content, nl=False)
         return
 
+    output = output.resolve()
     create_services().writer.write(output, content)
     console.print(f"[green]Rendered[/green] {output}")
 
 
 @app.command("init")
 def workspace_init(
-    manifest: Path = typer.Option(
-        "stelion.yml", "--manifest", "-m", help="Path to workspace manifest."
-    ),
+    root: Path | None = opt_root,
+    config: Path | None = opt_config,
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Preview actions without writing."
     ),
 ) -> None:
-    """Initialize or regenerate a workspace from its manifest.
+    """Initialize or regenerate a workspace from its settings file.
+
+    Without a settings file, the command writes ``stelion.yml`` at the root with the
+    auto-discovered projects. With a settings file, it regenerates every workspace artifact.
 
     Parameters
     ----------
-    manifest : Path
-        Path to the workspace manifest file.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     dry_run : bool
         Preview actions without writing.
     """
-    manifest_path = Path(manifest).resolve()
+    location = locate(root, config)
     services = create_services()
 
-    if not manifest_path.exists():
-        result = initialize_workspace_manifest(manifest_path, services, dry_run=dry_run)
+    if location.settings_path is None:
+        result = initialize_workspace_manifest(
+            location.target_path, services, dry_run=dry_run, root=location.root
+        )
         _print_manifest_init(result)
         return
 
-    m = resolve_manifest(manifest_path)
+    _location, m = load_settings(root, config)
     ctx = build_workspace_context(m, services)
 
     if dry_run:
@@ -134,31 +147,34 @@ def workspace_init(
 
 @app.command("sync")
 def workspace_sync(
-    manifest: Path = typer.Option("stelion.yml", "--manifest", "-m"),
+    root: Path | None = opt_root,
+    config: Path | None = opt_config,
     target: str | None = typer.Option(
         None,
         "--target",
         "-t",
         help="Single target to sync: workspace-file, projects, dependencies, or environment.",
     ),
-    dry_run: bool = typer.Option(False, "--dry-run"),
-    force: bool = typer.Option(False, "--force", help="Overwrite even if current."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show the drift without writing."),
 ) -> None:
     """Re-scan projects and update generated workspace files.
 
+    The generated files are derived from the settings and the projects, so the command
+    overwrites them whenever their content changes.
+
     Parameters
     ----------
-    manifest : Path
-        Path to the workspace manifest file.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     target : str | None
         Single generation target to sync.
     dry_run : bool
         Preview without writing.
-    force : bool
-        Overwrite even if current.
     """
     services = create_services()
-    m = resolve_manifest(Path(manifest))
+    _location, m = load_settings(root, config)
     ctx = build_workspace_context(m, services)
     selected_targets = _parse_generation_targets(target)
 
@@ -167,34 +183,57 @@ def workspace_sync(
         _print_drift(report, m.manifest_dir)
         return
 
-    results = run_generate(
-        ctx,
-        services,
-        force=force,
-        selected_targets=selected_targets,
-    )
+    results = run_generate(ctx, services, selected_targets=selected_targets)
     _print_generation_results("Workspace Sync", results, m.manifest_dir)
 
 
 @app.command("register")
 def workspace_register(
-    path: str = typer.Argument(..., help="Path to the project directory."),
-    manifest: Path = typer.Option("stelion.yml", "--manifest", "-m"),
+    path: Path = typer.Argument(..., help="Path to the project directory."),
+    root: Path | None = opt_root,
+    config: Path | None = opt_config,
+    yes: bool = typer.Option(
+        False, "--yes", help="Answer yes to the confirmation that the settings file is rewritten."
+    ),
 ) -> None:
     """Register an existing project into workspace artifacts.
 
+    When the project lies outside the discovery scan directories, the command adds it to
+    ``discovery.extra_paths`` and rewrites the settings file in canonical form, which drops its
+    comments. It asks for a confirmation on a terminal before that rewrite.
+
     Parameters
     ----------
-    path : str
+    path : Path
         Path to the project directory.
-    manifest : Path
-        Path to the workspace manifest file.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
+    yes : bool
+        Answer yes to the confirmation.
     """
     services = create_services()
-    project_dir = Path(path).resolve()
+    location = locate(root, config)
+    project_dir = path.resolve()
+
+    def _confirm(settings_path: Path) -> None:
+        confirm_change(
+            f"Add {project_dir} to discovery.extra_paths and rewrite {settings_path} in canonical "
+            "form (its comments are lost)?",
+            yes=yes,
+        )
 
     try:
-        result = register_workspace_project(Path(manifest), project_dir, services)
+        result = register_workspace_project(
+            location.target_path,
+            project_dir,
+            services,
+            root=location.root,
+            confirm_manifest_rewrite=_confirm,
+        )
+    except ManifestValidationError as exc:
+        raise stop_with_usage_error(exc) from exc
     except WorkspaceError as exc:
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(1)
@@ -206,14 +245,16 @@ def workspace_register(
 def workspace_new(
     name: str = typer.Argument(..., help="Project name (lowercase, underscores)."),
     description: str = typer.Argument(..., help="One-line project description."),
-    manifest: Path = typer.Option("stelion.yml", "--manifest", "-m"),
-    destination: str | None = typer.Option(
+    root: Path | None = opt_root,
+    config: Path | None = opt_config,
+    parent: Path | None = typer.Option(
         None,
-        "--destination",
-        "-d",
-        help="Target discovery root relative to the manifest. Defaults to the first discovery scan dir.",
+        "--parent",
+        file_okay=False,
+        help="Folder that receives the new project; it must be one of the discovery scan "
+        "directories. Defaults to the first scan directory.",
     ),
-    dry_run: bool = typer.Option(False, "--dry-run"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show the target without writing."),
     no_git: bool = typer.Option(False, "--no-git", help="Skip git init."),
 ) -> None:
     """Bootstrap a new project from the template.
@@ -224,24 +265,26 @@ def workspace_new(
         Project name (lowercase, underscores).
     description : str
         One-line project description.
-    manifest : Path
-        Path to the workspace manifest file.
-    destination : str | None
-        Target discovery root relative to the manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
+    parent : Path | None
+        Folder that receives the new project, read from the current folder.
     dry_run : bool
         Preview without writing.
     no_git : bool
         Skip git init.
     """
-    m = resolve_manifest(Path(manifest))
+    location, m = load_settings(root, config)
     request = WorkspaceBootstrapRequest(
-        manifest_dir=m.manifest_dir,
+        manifest_dir=location.root,
         name=name,
         description=description,
         template=m.template,
         defaults=m.defaults,
         discovery_scan_dirs=m.discovery.scan_dirs,
-        destination_root=destination,
+        parent_dir=parent.resolve() if parent is not None else None,
         initialize_git=not no_git,
         dry_run=dry_run,
     )
@@ -272,17 +315,20 @@ def workspace_new(
 
 @app.command("status")
 def workspace_status(
-    manifest: Path = typer.Option("stelion.yml", "--manifest", "-m"),
+    root: Path | None = opt_root,
+    config: Path | None = opt_config,
 ) -> None:
-    """Show which generated files are out of date.
+    """Show which generated files are out of date, and exit with status 1 when one is.
 
     Parameters
     ----------
-    manifest : Path
-        Path to the workspace manifest file.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     """
     services = create_services()
-    m = resolve_manifest(Path(manifest))
+    _location, m = load_settings(root, config)
     ctx = build_workspace_context(m, services)
 
     report = run_drift_check(ctx, services)

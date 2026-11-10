@@ -58,7 +58,7 @@ class WorkspaceBootstrapRequest:
     """High-level request for bootstrapping a project within a workspace."""
 
     manifest_dir: Path
-    """Absolute path to the workspace manifest directory."""
+    """Absolute root of the workspace, against which the paths of the manifest are resolved."""
     name: str
     """Project name."""
     description: str
@@ -69,8 +69,8 @@ class WorkspaceBootstrapRequest:
     """Ecosystem-level defaults from the manifest."""
     discovery_scan_dirs: tuple[str, ...]
     """Scan directories declared in the manifest discovery section."""
-    destination_root: str | None = None
-    """Override for the destination scan directory."""
+    parent_dir: Path | None = None
+    """Folder that receives the new project; one of the scan directories. Defaults to the first."""
     initialize_git: bool = True
     """Whether to initialize a git repository."""
     dry_run: bool = False
@@ -146,12 +146,19 @@ def plan_bootstrap_request(request: WorkspaceBootstrapRequest) -> BootstrapReque
         raise BootstrapError(
             "Manifest template.source must name the project template directory."
         )
-    destination_root = request.destination_root or request.discovery_scan_dirs[0]
-    if destination_root not in request.discovery_scan_dirs:
-        raise BootstrapError(
-            "Bootstrap destination must be one of manifest discovery.scan_dirs."
-        )
-    scan_dir = (request.manifest_dir / destination_root).resolve()
+    scan_dirs = tuple(
+        (request.manifest_dir / scan_dir).resolve() for scan_dir in request.discovery_scan_dirs
+    )
+    if request.parent_dir is None:
+        scan_dir = scan_dirs[0]
+    else:
+        scan_dir = request.parent_dir.resolve()
+        if scan_dir not in scan_dirs:
+            choices = ", ".join(str(path) for path in scan_dirs)
+            raise BootstrapError(
+                f"The parent folder {scan_dir} is not a discovery scan directory of the manifest; "
+                f"expected one of: {choices}."
+            )
     target_dir = scan_dir / request.name
     template_source = (request.manifest_dir / request.template.source).resolve()
     return BootstrapRequest(

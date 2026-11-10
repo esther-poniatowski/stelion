@@ -17,7 +17,7 @@ from ..composition import (
 )
 from ..domain.bulk import BulkResult, OutcomeStatus, ProjectFilter
 from ..exceptions import WorkspaceError
-from ._cli_common import parse_project_filter, resolve_workspace
+from ._cli_common import opt_config, opt_root, parse_project_filter, resolve_workspace
 
 console = Console(stderr=True)
 
@@ -68,7 +68,8 @@ def _print_bulk_result(result: BulkResult, dry_run: bool) -> None:
 
 
 def _run_bulk_command(
-    manifest: str,
+    root: Path | None,
+    config: Path | None,
     filter_: ProjectFilter,
     dry_run: bool,
     run_fn: Callable[..., BulkResult],
@@ -78,8 +79,10 @@ def _run_bulk_command(
 
     Parameters
     ----------
-    manifest : str
-        Path to the workspace manifest file.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     filter_ : ProjectFilter
         Criteria for selecting which projects to include.
     dry_run : bool
@@ -89,8 +92,8 @@ def _run_bulk_command(
     **kwargs : Any
         Additional keyword arguments forwarded to *run_fn*.
     """
+    ctx, _services = resolve_workspace(root, config)
     try:
-        ctx, _services = resolve_workspace(manifest)
         result = run_fn(ctx, filter_=filter_, dry_run=dry_run, **kwargs)
         _print_bulk_result(result, dry_run)
         if result.has_errors:
@@ -119,10 +122,6 @@ _opt_exclude = typer.Option(
     help="Comma-separated project names to exclude.",
 )
 _opt_dry_run = typer.Option(False, "--dry-run", help="Preview without executing.")
-_opt_manifest = typer.Option(
-    "stelion.yml", "--manifest",
-    help="Path to workspace manifest.",
-)
 
 
 # --- Commands -----------------------------------------------------------------
@@ -135,7 +134,8 @@ def workspace_exec(
     git_only: bool = _opt_git_only,
     exclude: Optional[str] = _opt_exclude,
     dry_run: bool = _opt_dry_run,
-    manifest: Path = _opt_manifest,
+    root: Optional[Path] = opt_root,
+    config: Optional[Path] = opt_config,
 ) -> None:
     """Run an arbitrary shell command in each project directory.
 
@@ -153,11 +153,13 @@ def workspace_exec(
         Comma-separated project names to exclude.
     dry_run : bool
         Preview without executing.
-    manifest : Path
-        Path to the workspace manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
-    _run_bulk_command(str(manifest), filter_, dry_run, run_bulk_exec, command=command)
+    _run_bulk_command(root, config, filter_, dry_run, run_bulk_exec, command=command)
 
 
 def workspace_commit(
@@ -167,7 +169,8 @@ def workspace_commit(
     git_only: bool = _opt_git_only,
     exclude: Optional[str] = _opt_exclude,
     dry_run: bool = _opt_dry_run,
-    manifest: Path = _opt_manifest,
+    root: Optional[Path] = opt_root,
+    config: Optional[Path] = opt_config,
 ) -> None:
     """Stage tracked changes and commit across projects.
 
@@ -185,11 +188,13 @@ def workspace_commit(
         Comma-separated project names to exclude.
     dry_run : bool
         Preview without executing.
-    manifest : Path
-        Path to the workspace manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
-    _run_bulk_command(str(manifest), filter_, dry_run, run_bulk_commit, message=message)
+    _run_bulk_command(root, config, filter_, dry_run, run_bulk_commit, message=message)
 
 
 def workspace_push(
@@ -200,7 +205,8 @@ def workspace_push(
     git_only: bool = _opt_git_only,
     exclude: Optional[str] = _opt_exclude,
     dry_run: bool = _opt_dry_run,
-    manifest: Path = _opt_manifest,
+    root: Optional[Path] = opt_root,
+    config: Optional[Path] = opt_config,
 ) -> None:
     """Push the current branch to a remote across projects.
 
@@ -220,11 +226,13 @@ def workspace_push(
         Comma-separated project names to exclude.
     dry_run : bool
         Preview without executing.
-    manifest : Path
-        Path to the workspace manifest.
+    root : Path | None
+        Root of the workspace.
+    config : Path | None
+        Settings file of the workspace.
     """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(
-        str(manifest), filter_, dry_run, run_bulk_push,
+        root, config, filter_, dry_run, run_bulk_push,
         remote=remote, branch=branch,
     )

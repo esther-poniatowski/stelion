@@ -51,13 +51,16 @@ def load_manifest_mapping(
     return raw
 
 
-def load_manifest(path: Path) -> WorkspaceManifest:
+def load_manifest(path: Path, root: Path | None = None) -> WorkspaceManifest:
     """Load and validate a workspace manifest from a YAML file.
 
     Parameters
     ----------
     path : Path
         Absolute or relative path to ``stelion.yml``.
+    root : Path | None
+        Root of the workspace, against which the paths written in the manifest are resolved.
+        Defaults to the folder of the manifest, for a manifest placed at the root.
 
     Returns
     -------
@@ -73,5 +76,5 @@ def load_manifest(path: Path) -> WorkspaceManifest:
     """
     path = path.resolve()
     raw = load_manifest_mapping(path)
-    manifest_dir = path.parent
+    manifest_dir = root.resolve() if root is not None else path.parent
     return parse_workspace_manifest(raw, manifest_dir)

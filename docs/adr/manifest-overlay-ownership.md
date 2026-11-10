@@ -35,7 +35,7 @@ Stelion composes typed defaults with consumer overlays. The path of the workspac
 
 An omitted field inherits its default. A nonempty YAML object merges recursively, while an empty YAML object clears the corresponding default object. A scalar or sequence replaces its default. Stelion rejects the YAML value `null` because an omitted field already inherits its default.
 
-The command `stelion workspace render-manifest` validates and serializes the complete manifest. The option `--manifest-dir` identifies the final workspace when the output path belongs to a temporary stage.
+The command `stelion workspace render-manifest` validates and serializes the complete manifest. The option `--root` identifies the final workspace when the output path belongs to a temporary stage.
 
 ## Consequences
 

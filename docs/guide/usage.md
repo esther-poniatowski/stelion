@@ -14,7 +14,7 @@ Initialize a workspace by scanning a directory for sibling projects:
 stelion workspace init
 ```
 
-The first run auto-discovers projects and generates `stelion.yml` with consumer-agnostic defaults. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
+The first run auto-discovers projects and writes `stelion.yml` at the root of the workspace with consumer-agnostic defaults. The settings file may move to `config/tools/stelion.yml` without an edit, since its paths are relative to the root. Every command finds the root from `--root`, else from the environment variable `STELION_ROOT`, else from the nearest ancestor of the current folder that holds the settings file, else from the current folder. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
 
 ### Consumer overlays
 
@@ -35,7 +35,7 @@ Render and validate an overlay with the following command:
 stelion workspace render-manifest workspace.overlay.yml --output stelion.yml
 ```
 
-When the output is a staging file, the option `--manifest-dir` supplies the final workspace directory for destination-derived defaults. The resulting `stelion.yml` is an ordinary complete manifest accepted by every workspace command.
+Without `--output`, the manifest goes to the standard output. When the output is a staging file, the option `--root` supplies the final workspace directory for the path-derived defaults. The resulting `stelion.yml` is an ordinary complete manifest accepted by every workspace command.
 
 Re-scan projects and update generated files:
 

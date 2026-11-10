@@ -24,7 +24,7 @@ All other replicas become **targets** and are updated automatically.
 stelion submodule sync <dependency> [--from local|<superproject>|remote]
                                     [--no-commit] [--dry-run]
                                     [--remote origin] [--branch main]
-                                    [--manifest stelion.yml]
+                                    [--root PATH] [--config PATH]
 ```
 
 ## Source Modes

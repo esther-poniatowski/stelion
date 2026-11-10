@@ -77,7 +77,7 @@ defaults:
         encoding="utf-8",
     )
 
-    manifest = compose_workspace_manifest(overlay_path, manifest_path)
+    manifest = compose_workspace_manifest(overlay_path, manifest_path.parent)
 
     assert manifest.discovery.scan_dirs == ("../projects",)
     assert manifest.discovery.exclude == ("workspace",)
@@ -99,7 +99,7 @@ def test_rendered_overlay_round_trips_as_complete_manifest(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    composed = compose_workspace_manifest(overlay_path, manifest_path)
+    composed = compose_workspace_manifest(overlay_path, manifest_path.parent)
     manifest_path.parent.mkdir()
     manifest_path.write_text(render_manifest(composed), encoding="utf-8")
 
@@ -117,7 +117,7 @@ def test_unknown_overlay_key_is_rejected_before_output(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ManifestValidationError, match="unexpected"):
-        compose_workspace_manifest(overlay_path, tmp_path / "workspace" / "stelion.yml")
+        compose_workspace_manifest(overlay_path, tmp_path / "workspace")
 
 
 @pytest.mark.parametrize(
@@ -132,7 +132,7 @@ def test_invalid_overlay_shape_or_yaml_is_rejected(
     overlay_path.write_text(content, encoding="utf-8")
 
     with pytest.raises(ManifestValidationError):
-        compose_workspace_manifest(overlay_path, tmp_path / "workspace" / "stelion.yml")
+        compose_workspace_manifest(overlay_path, tmp_path / "workspace")
 
 
 def test_empty_mapping_is_a_valid_overlay(tmp_path: Path) -> None:
@@ -142,7 +142,7 @@ def test_empty_mapping_is_a_valid_overlay(tmp_path: Path) -> None:
 
     manifest = compose_workspace_manifest(
         overlay_path,
-        tmp_path / "workspace" / "stelion.yml",
+        tmp_path / "workspace",
     )
 
     assert manifest.discovery.scan_dirs == ("../",)

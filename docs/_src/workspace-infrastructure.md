@@ -57,6 +57,15 @@ git, parsers, renderers, and other concrete collaborators.
    :show-inheritance:
 ```
 
+## Settings Locator
+
+```{eval-rst}
+.. automodule:: stelion.workspace.infrastructure.settings_locator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+```
+
 ## Manifest Codec
 
 ```{eval-rst}

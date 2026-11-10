@@ -90,7 +90,7 @@ def test_workspace_bootstrap_requires_a_consumer_template(tmp_path: Path) -> Non
         plan_bootstrap_request(request)
 
 
-def test_workspace_bootstrap_uses_explicit_destination_root(tmp_path: Path) -> None:
+def test_workspace_bootstrap_uses_explicit_parent_dir(tmp_path: Path) -> None:
     manifest_dir = tmp_path / "workspace"
     manifest_dir.mkdir()
     request = WorkspaceBootstrapRequest(
@@ -100,13 +100,31 @@ def test_workspace_bootstrap_uses_explicit_destination_root(tmp_path: Path) -> N
         template=TemplateConfig(source="../template"),
         defaults=EcosystemDefaults(github_user="user"),
         discovery_scan_dirs=("../projects", "../scratch"),
-        destination_root="../scratch",
+        parent_dir=tmp_path / "scratch",
         dry_run=True,
     )
 
     planned = plan_bootstrap_request(request)
 
     assert planned.target_dir == (manifest_dir / "../scratch/example").resolve()
+
+
+def test_workspace_bootstrap_rejects_a_parent_outside_the_scan_dirs(tmp_path: Path) -> None:
+    manifest_dir = tmp_path / "workspace"
+    manifest_dir.mkdir()
+    request = WorkspaceBootstrapRequest(
+        manifest_dir=manifest_dir,
+        name="example",
+        description="desc",
+        template=TemplateConfig(source="../template"),
+        defaults=EcosystemDefaults(github_user="user"),
+        discovery_scan_dirs=("../projects",),
+        parent_dir=tmp_path / "elsewhere",
+        dry_run=True,
+    )
+
+    with pytest.raises(BootstrapError, match="not a discovery scan directory"):
+        plan_bootstrap_request(request)
 
 
 def test_workspace_bootstrap_honors_custom_template_delimiters(tmp_path: Path) -> None:

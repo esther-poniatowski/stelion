@@ -165,10 +165,10 @@ Both commands share the project filter options used by bulk commands:
 | `--pattern REGEX` | Match project names by regular expression |
 | `--git-only` | Only projects with a git repository |
 | `--exclude x,y` | Exclude named projects |
-| `--format table` | (Default) Rich terminal table |
+| `--format text` | (Default) Rich terminal table |
 | `--format yaml` | Machine-parseable YAML output |
 | `--instruction FILE` | Load comparison spec from a YAML instruction file |
-| `--manifest PATH` | Path to workspace manifest (default: `stelion.yml`) |
+| `--root PATH` / `-r`, `--config PATH` / `-c` | Root of the workspace and settings file (see the CLI reference) |
 
 At least 2 projects must be selected for comparison.
 

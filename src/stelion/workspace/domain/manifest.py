@@ -260,7 +260,10 @@ class WorkspaceManifest:
     references: ReferencesConfig
     """Expected reference documents in the workspace."""
     manifest_dir: Path
-    """Directory containing the manifest file."""
+    """Root of the workspace, against which the paths written in the manifest are resolved.
+
+    The manifest lies at the root or in its ``config/tools/`` folder, so this folder is not always
+    the folder of the manifest file."""
 
     def __post_init__(self) -> None:
         object.__setattr__(

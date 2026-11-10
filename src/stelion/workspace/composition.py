@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 from .application.bootstrap import BootstrapServices
 from .application.bulk import execute_bulk, select_projects
@@ -74,6 +75,7 @@ from .infrastructure.manifest_codec import (
     render_manifest,
 )
 from .infrastructure.manifest_loader import load_manifest, load_manifest_mapping
+from .infrastructure.settings_locator import SettingsLocation
 from .infrastructure.pyproject_parser import PyprojectExtractor
 from .infrastructure.renderers.vscode import VSCodeWorkspaceFileRenderer
 from .infrastructure.renderers.yaml import (
@@ -242,53 +244,75 @@ def create_manifest_init_services(writer: FileWriter) -> ManifestInitServices:
     )
 
 
-def resolve_manifest(manifest_path: Path) -> WorkspaceManifest:
+def resolve_manifest(manifest_path: Path, root: Path | None = None) -> WorkspaceManifest:
     """Load and return a validated workspace manifest.
 
     Parameters
     ----------
     manifest_path : Path
         Path to the workspace manifest file.
+    root : Path | None
+        Root of the workspace, against which the paths of the manifest are resolved. Defaults to
+        the folder of the manifest.
 
     Returns
     -------
     WorkspaceManifest
         The parsed and validated manifest.
     """
-    return load_manifest(manifest_path.resolve())
+    return load_manifest(manifest_path.resolve(), root)
+
+
+def resolve_settings(location: SettingsLocation) -> WorkspaceManifest:
+    """Load the settings file of a located workspace, or build the built-in defaults.
+
+    Parameters
+    ----------
+    location : SettingsLocation
+        Root and settings file resolved by :func:`locate_settings`.
+
+    Returns
+    -------
+    WorkspaceManifest
+        The manifest read from the settings file, or the canonical defaults for the root when
+        the workspace has no settings file.
+    """
+    if location.settings_path is None:
+        return default_workspace_manifest(location.root)
+    return load_manifest(location.settings_path, location.root)
 
 
 def compose_workspace_manifest(
     overlay_path: Path,
-    manifest_path: Path,
+    root: Path,
 ) -> WorkspaceManifest:
     """Compose and validate a consumer overlay against canonical defaults.
 
-    The destination path determines path-sensitive defaults such as the workspace
+    The root of the workspace determines path-sensitive defaults such as the workspace
     name. The overlay remains independent of Stelion's complete manifest shape.
 
     Parameters
     ----------
     overlay_path : Path
         YAML mapping containing consumer-specific manifest values.
-    manifest_path : Path
-        Destination of the complete rendered manifest.
+    root : Path
+        Root of the workspace that the complete manifest configures.
 
     Returns
     -------
     WorkspaceManifest
         Complete typed manifest after default composition and validation.
     """
-    manifest_path = manifest_path.resolve()
+    root = root.resolve()
     overlay = load_manifest_mapping(overlay_path, label="Manifest overlay")
-    defaults = manifest_to_dict(default_workspace_manifest(manifest_path.parent))
+    defaults = manifest_to_dict(default_workspace_manifest(root))
     composed = merge_manifest_mappings(defaults, overlay)
-    return parse_workspace_manifest(composed, manifest_path.parent)
+    return parse_workspace_manifest(composed, root)
 
 
 def render_workspace_manifest(
     overlay_path: Path,
-    manifest_path: Path,
+    root: Path,
 ) -> str:
     """Render a validated complete manifest from a consumer overlay.
 
@@ -296,15 +320,15 @@ def render_workspace_manifest(
     ----------
     overlay_path : Path
         YAML mapping containing consumer-specific manifest values.
-    manifest_path : Path
-        Destination path used to resolve path-sensitive defaults.
+    root : Path
+        Root of the workspace, used to resolve path-sensitive defaults.
 
     Returns
     -------
     str
         Complete canonical YAML manifest.
     """
-    return render_manifest(compose_workspace_manifest(overlay_path, manifest_path))
+    return render_manifest(compose_workspace_manifest(overlay_path, root))
 
 
 def build_workspace_context(
@@ -362,6 +386,7 @@ def initialize_workspace_manifest(
     services: WorkspaceServices,
     *,
     dry_run: bool = False,
+    root: Path | None = None,
 ) -> ManifestInitResult:
     """Create and optionally write a default manifest for a new workspace.
 
@@ -373,6 +398,8 @@ def initialize_workspace_manifest(
         Infrastructure services providing the file writer.
     dry_run : bool
         If True, build the manifest without writing to disk.
+    root : Path | None
+        Root of the workspace. Defaults to the folder of the manifest.
 
     Returns
     -------
@@ -385,6 +412,7 @@ def initialize_workspace_manifest(
         services.extractor,
         manifest_services,
         dry_run=dry_run,
+        root=root,
     )
 
 
@@ -512,6 +540,9 @@ def register_workspace_project(
     manifest_path: Path,
     project_dir: Path,
     services: WorkspaceServices,
+    *,
+    root: Path | None = None,
+    confirm_manifest_rewrite: Callable[[Path], None] | None = None,
 ) -> WorkspaceRegistrationResult:
     """Register a project, persist manifest updates, and regenerate artifacts.
 
@@ -528,6 +559,12 @@ def register_workspace_project(
         Directory of the project to register.
     services : WorkspaceServices
         Infrastructure services for discovery, generation, and persistence.
+    root : Path | None
+        Root of the workspace. Defaults to the folder of the manifest.
+    confirm_manifest_rewrite : Callable[[Path], None] | None
+        Called with the path of an existing manifest before the registration rewrites it. The
+        callable stops the registration by raising; a manifest that does not exist yet is
+        created without a call.
 
     Returns
     -------
@@ -535,7 +572,12 @@ def register_workspace_project(
         Registration outcome including manifest, project, and generated artifacts.
     """
     manifest_path = manifest_path.resolve()
-    manifest = resolve_manifest(manifest_path)
+    root = root.resolve() if root is not None else manifest_path.parent
+    manifest = (
+        resolve_manifest(manifest_path, root)
+        if manifest_path.exists()
+        else default_workspace_manifest(root)
+    )
 
     def _discover(m: WorkspaceManifest) -> ProjectInventory:
         return discover_projects(
@@ -552,6 +594,8 @@ def register_workspace_project(
         return ctx.inventory, generated
 
     def _persist(path: Path, m: WorkspaceManifest) -> None:
+        if confirm_manifest_rewrite is not None and path.exists():
+            confirm_manifest_rewrite(path)
         services.writer.write(path, render_manifest(m))
 
     result = execute_registration(

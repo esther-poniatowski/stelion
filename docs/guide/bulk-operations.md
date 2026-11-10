@@ -11,7 +11,7 @@ outcomes.
 ### exec
 
 ```sh
-stelion workspace exec <command> [FILTER OPTIONS] [--dry-run] [--manifest PATH]
+stelion workspace exec <command> [FILTER OPTIONS] [--dry-run] [--root PATH] [--config PATH]
 ```
 
 Run an arbitrary shell command in each project directory. The command is passed
@@ -25,7 +25,7 @@ stelion workspace exec "git stash list | head -5"
 ### commit
 
 ```sh
-stelion workspace commit -m <message> [FILTER OPTIONS] [--dry-run] [--manifest PATH]
+stelion workspace commit -m <message> [FILTER OPTIONS] [--dry-run] [--root PATH] [--config PATH]
 ```
 
 Stage tracked changes (`git add --update`) and commit with the given message.
@@ -41,7 +41,7 @@ stelion workspace commit -m "build: bump dependency versions" --names stelion,mo
 ### push
 
 ```sh
-stelion workspace push [--remote origin] [--branch main] [FILTER OPTIONS] [--dry-run] [--manifest PATH]
+stelion workspace push [--remote origin] [--branch main] [FILTER OPTIONS] [--dry-run] [--root PATH] [--config PATH]
 ```
 
 Push the current branch to a remote in each project.
@@ -63,7 +63,8 @@ the discovered project inventory.
 | `--git-only` | Only include projects that have a `.git` directory. |
 | `--exclude x,y` / `-e x,y` | Exclude the named projects (comma-separated). |
 | `--dry-run` | Preview planned operations without executing. |
-| `--manifest PATH` | Path to `stelion.yml`. Defaults to `stelion.yml` in the current directory. |
+| `--root PATH` / `-r` | Root of the workspace. Defaults to `STELION_ROOT`, else to the nearest ancestor holding `stelion.yml` (in `config/tools/` or at its level), else to the current directory. |
+| `--config PATH` / `-c` | Settings file. Defaults to `config/tools/stelion.yml` or `stelion.yml` below the root. |
 
 Filters compose as an intersection: `--names a,b,c --git-only` selects only the
 named projects that also have git. Projects are always processed in alphabetical
