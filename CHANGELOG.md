@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `-v`/`--version` prints the version without a command. The option was not eager, so the command
+  line stopped with "Missing command" and status 2.
+
 ### Changed
 
 - The command line follows the conventions shared by the tools of the workspace:

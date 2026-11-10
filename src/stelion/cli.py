@@ -33,10 +33,22 @@ def cli_info() -> None:
     typer.echo(info())
 
 
+def _print_version(value: bool) -> None:
+    """Print the package version and exit, before any command is required."""
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
 @app.callback()
 def main_callback(
     version: bool = typer.Option(
-        False, "--version", "-v", help="Show the package version and exit."
+        False,
+        "--version",
+        "-v",
+        callback=_print_version,
+        is_eager=True,
+        help="Show the package version and exit.",
     )
 ) -> None:
     """Root command for the package command-line interface.
@@ -46,9 +58,6 @@ def main_callback(
     version : bool
         If ``True``, print the package version and exit.
     """
-    if version:
-        typer.echo(__version__)
-        raise typer.Exit()
 
 
 # --- Commands for Workspace Management ------------------------------------------------------------
