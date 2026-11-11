@@ -264,18 +264,18 @@ def resolve_manifest(manifest_path: Path, root: Path | None = None) -> Workspace
 
 
 def resolve_settings(location: SettingsLocation) -> WorkspaceManifest:
-    """Load the settings file of a located workspace, or build the built-in defaults.
+    """Load the configuration file of a located workspace, or build the built-in defaults.
 
     Parameters
     ----------
     location : SettingsLocation
-        Root and settings file resolved by :func:`locate_settings`.
+        Root and configuration file resolved by :func:`locate_settings`.
 
     Returns
     -------
     WorkspaceManifest
-        The manifest read from the settings file, or the canonical defaults for the root when
-        the workspace has no settings file.
+        The manifest read from the configuration file, or the canonical defaults for the root when
+        the workspace has no configuration file.
     """
     if location.settings_path is None:
         return default_workspace_manifest(location.root)

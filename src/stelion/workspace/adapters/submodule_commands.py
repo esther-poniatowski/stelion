@@ -69,7 +69,7 @@ def submodule_sync(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     remote : str
         Remote name (for remote origin).
     branch : str

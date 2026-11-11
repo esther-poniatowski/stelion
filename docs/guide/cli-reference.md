@@ -11,25 +11,25 @@ stelion [OPTIONS] COMMAND [ARGS]
 | `--version` / `-v` | Display the version and exit. |
 | `--help` | Display the help message and exit. |
 
-## Root and Settings File
+## Root and Configuration File
 
-Every command that reads the settings of a workspace takes two options:
+Every command that reads the configuration file of a workspace takes two options:
 
 | Option | Description |
 | ------ | ----------- |
-| `--root PATH` / `-r` | Root of the workspace: the folder from which Stelion finds its settings file and resolves the paths written in that file. |
-| `--config PATH` / `-c` | Settings file. A file named by this option must exist. |
+| `--root PATH` / `-r` | Root of the workspace: the folder from which Stelion finds its configuration file and resolves the paths written in that file. |
+| `--config PATH` / `-c` | Configuration file. A file named by this option must exist. |
 
 The root is the first of these answers: the option `--root`; the environment variable
 `STELION_ROOT`; the nearest ancestor of the current folder that holds `stelion.yml`, in
 `config/tools/` or at its own level; the current folder. A command can therefore run from any
 subfolder of the workspace.
 
-The settings file is `config/tools/stelion.yml` or `stelion.yml` below the root. When both exist,
-the command stops with status 2 and names both files. Without any settings file, Stelion runs on
-its canonical defaults. A path written in the settings file is relative to the root, so the file
-moves between the root and `config/tools/` without an edit. A path given on the command line is
-relative to the current folder.
+The configuration file is `config/tools/stelion.yml` or `stelion.yml` below the root. When both
+exist, the command stops with status 2 and names both files. Without any configuration file, Stelion
+runs on its canonical defaults. A path written in the configuration file is relative to the root, so
+the file moves between the root and `config/tools/` without an edit. A path given on the command
+line is relative to the current folder.
 
 ## Exit Statuses
 
@@ -37,7 +37,7 @@ relative to the current folder.
 | ------ | ------- |
 | 0 | Success. |
 | 1 | A check found a problem (drift for `workspace status`), an operation failed in a project, or a confirmation was declined. |
-| 2 | A usage or configuration error: an unknown option or value, an absent or invalid settings file, two competing settings files, or a confirmation required without a terminal and without `--yes`. |
+| 2 | A usage or configuration error: an unknown option or value, an absent or invalid configuration file, two competing configuration files, or a confirmation required without a terminal and without `--yes`. |
 
 ## Workspace Commands
 
@@ -57,7 +57,7 @@ stelion workspace render-manifest OVERLAY [--output/-o PATH] [--root/-r PATH] [-
 
 ### `stelion workspace init`
 
-Initialize or regenerate a workspace. Without a settings file, the command writes `stelion.yml` at the root, with auto-discovered projects and consumer-agnostic defaults. With a settings file, the command generates all workspace artifacts.
+Initialize or regenerate a workspace. Without a configuration file, the command writes `stelion.yml` at the root, with auto-discovered projects and consumer-agnostic defaults. With a configuration file, the command generates all workspace artifacts.
 
 ```sh
 stelion workspace init [--root/-r PATH] [--config/-c PATH] [--dry-run]
@@ -98,9 +98,9 @@ The command never overwrites an existing folder: a target that exists stops it w
 
 Register an existing project and regenerate workspace artifacts. If the project sits
 outside the configured scan roots, stelion records it in `discovery.extra_paths` and rewrites the
-settings file in canonical form, which drops its comments. Before that rewrite, the command asks
-for a confirmation on a terminal; `--yes` answers it, and without a terminal and without `--yes`
-the command stops with status 2.
+configuration file in canonical form, which drops its comments. Before that rewrite, the command
+asks for a confirmation on a terminal; `--yes` answers it, and without a terminal and without
+`--yes` the command stops with status 2.
 
 ```sh
 stelion workspace register <path> [--root/-r PATH] [--config/-c PATH] [--yes]
@@ -126,7 +126,7 @@ All bulk commands share the same filter options:
 | `--git-only` | Only projects with a git repository. |
 | `--exclude x,y` / `-e` | Exclude the named projects. |
 | `--dry-run` | Preview without executing. |
-| `--root PATH` / `-r`, `--config PATH` / `-c` | Root and settings file (see [Root and Settings File](#root-and-settings-file)). |
+| `--root PATH` / `-r`, `--config PATH` / `-c` | Root and configuration file (see [Root and Configuration File](#root-and-configuration-file)). |
 
 The bulk commands perform the action that the command line states (a shell command, a commit of
 the tracked changes, a push), so they ask for no confirmation.

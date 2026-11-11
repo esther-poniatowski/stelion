@@ -2,7 +2,7 @@
 
 Stelion resolves its root from ``--root``, then ``STELION_ROOT``, then the nearest ancestor holding
 ``stelion.yml`` (in ``config/tools/`` or at its level), then the current folder. It reads its
-settings file from one of those two places, rejects two competing files, and resolves the paths
+configuration file from one of those two places, rejects two competing files, and resolves the paths
 written in the file against the root. Former option names are rejected.
 """
 
@@ -39,7 +39,7 @@ def _write_project(project_dir: Path, name: str) -> None:
 
 
 def _write_settings(root: Path, place: Path, scan_dirs: tuple[str, ...] = ("projects",)) -> Path:
-    """Write a settings file at *place* below *root*, scanning *scan_dirs* from the root."""
+    """Write a configuration file at *place* below *root*, scanning *scan_dirs* from the root."""
     manifest = default_workspace_manifest(root)
     manifest = replace(manifest, discovery=replace(manifest.discovery, scan_dirs=scan_dirs))
     path = root / place
@@ -48,7 +48,7 @@ def _write_settings(root: Path, place: Path, scan_dirs: tuple[str, ...] = ("proj
     return path
 
 
-# --- Locating the settings ------------------------------------------------------------------------
+# --- Locating the configuration file --------------------------------------------------------------
 
 
 def test_locate_finds_the_nearest_ancestor_holding_the_settings(tmp_path: Path) -> None:
@@ -74,7 +74,7 @@ def test_locate_rejects_two_competing_settings_files(tmp_path: Path) -> None:
     _write_settings(tmp_path, Path("config/tools/stelion.yml"))
     _write_settings(tmp_path, Path("stelion.yml"))
 
-    with pytest.raises(SettingsError, match="Two settings files"):
+    with pytest.raises(SettingsError, match="Two configuration files"):
         locate_settings(tmp_path, None, cwd=tmp_path)
 
 
@@ -138,7 +138,7 @@ def test_two_competing_settings_files_stop_with_status_2(tmp_path: Path) -> None
     result = runner.invoke(app, ["workspace", "status", "--root", str(tmp_path)])
 
     assert result.exit_code == 2
-    assert "Two settings files" in result.stderr
+    assert "Two configuration files" in result.stderr
 
 
 def test_an_absent_config_stops_with_status_2(tmp_path: Path) -> None:
@@ -202,7 +202,7 @@ def test_render_manifest_writes_the_output_with_defaults_of_the_root(tmp_path: P
     assert "self_name: hub" in output.read_text(encoding="utf-8")
 
 
-# --- Confirmation of a rewrite of the settings file -----------------------------------------------
+# --- Confirmation of a rewrite of the configuration file ------------------------------------------
 
 
 @pytest.fixture

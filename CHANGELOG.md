@@ -15,22 +15,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - The command line follows the conventions shared by the tools of the workspace:
-  - every command that reads the settings takes `-r`/`--root` and `-c`/`--config`; the root comes
-    from `--root`, else `STELION_ROOT`, else the nearest ancestor holding `stelion.yml` in
-    `config/tools/` or at its level, else the current folder;
-  - the settings file is read from `config/tools/stelion.yml` or `stelion.yml` below the root; two
-    competing files stop the command with status 2; without a settings file, Stelion runs on its
-    canonical defaults;
-  - the paths written in the settings file are relative to the root, no longer to the folder of
+  - every command that reads the configuration file takes `-r`/`--root` and `-c`/`--config`; the
+    root comes from `--root`, else `STELION_ROOT`, else the nearest ancestor holding `stelion.yml`
+    in `config/tools/` or at its level, else the current folder;
+  - the configuration file is read from `config/tools/stelion.yml` or `stelion.yml` below the root;
+    two competing files stop the command with status 2; without a configuration file, Stelion runs
+    on its canonical defaults;
+  - the paths written in the configuration file are relative to the root, no longer to the folder of
     the file;
   - `workspace render-manifest` writes to the standard output without `--output`, and takes the
     final workspace from `--root`;
   - `workspace new --parent PATH`, read from the current folder, selects the scan directory that
     receives the new project;
-  - `workspace register` asks for a confirmation before it rewrites an existing settings file;
+  - `workspace register` asks for a confirmation before it rewrites an existing configuration file;
     `--yes` answers it, and without a terminal and without `--yes` the command stops with status 2;
   - `compare --format` takes `text` or `yaml`;
-  - an absent or invalid settings file is a configuration error, with status 2.
+  - an absent or invalid configuration file is a configuration error, with status 2.
 
 ### Removed
 

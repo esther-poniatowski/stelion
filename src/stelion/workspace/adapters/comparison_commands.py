@@ -192,7 +192,7 @@ def compare_tree(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     """
     _check_mutual_exclusivity(
         instruction, subtree=subtree, include=include, exclude_pattern=exclude_pattern,
@@ -294,7 +294,7 @@ def compare_files_cmd(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     """
     _check_mutual_exclusivity(
         instruction, paths=paths, granularity=(granularity != "survey"),

@@ -1,8 +1,8 @@
 """Shared CLI utilities for adapter commands.
 
-Every command that reads the settings of a workspace takes the options ``-r``/``--root`` and
-``-c``/``--config``, defined here, and loads its settings through :func:`load_settings`. A settings
-error is a configuration error, so it ends the command with status 2.
+Every command that reads the configuration file of a workspace takes the options ``-r``/``--root``
+and ``-c``/``--config``, defined here, and loads its configuration through :func:`load_settings`. A
+settings error is a configuration error, so it ends the command with status 2.
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ opt_config = typer.Option(
     "--config",
     "-c",
     dir_okay=False,
-    help="Settings file. Defaults to config/tools/stelion.yml or stelion.yml below the root.",
+    help="Configuration file. Defaults to config/tools/stelion.yml or stelion.yml below the root.",
 )
 
 
@@ -93,7 +93,7 @@ def stop_with_usage_error(message: object) -> typer.Exit:
 
 
 def locate(root: Path | None, config: Path | None) -> SettingsLocation:
-    """Resolve the root and the settings file, or stop with status 2.
+    """Resolve the root and the configuration file, or stop with status 2.
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ def locate(root: Path | None, config: Path | None) -> SettingsLocation:
 def load_settings(
     root: Path | None, config: Path | None
 ) -> tuple[SettingsLocation, WorkspaceManifest]:
-    """Resolve the settings of a workspace and load them, or stop with status 2.
+    """Resolve the configuration file of a workspace and load it, or stop with status 2.
 
     Parameters
     ----------
@@ -123,8 +123,8 @@ def load_settings(
     Returns
     -------
     tuple[SettingsLocation, WorkspaceManifest]
-        The resolved location, and the manifest read from the settings file or built from the
-        defaults when the workspace has no settings file.
+        The resolved location, and the manifest read from the configuration file or built from the
+        defaults when the workspace has no configuration file.
     """
     location = locate(root, config)
     try:
@@ -136,7 +136,7 @@ def load_settings(
 def resolve_workspace(
     root: Path | None, config: Path | None
 ) -> tuple[WorkspaceContext, WorkspaceServices]:
-    """Load the settings of a workspace and build the full workspace context.
+    """Load the configuration file of a workspace and build the full workspace context.
 
     Parameters
     ----------

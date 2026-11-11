@@ -14,7 +14,7 @@ Initialize a workspace by scanning a directory for sibling projects:
 stelion workspace init
 ```
 
-The first run auto-discovers projects and writes `stelion.yml` at the root of the workspace with consumer-agnostic defaults. The settings file may move to `config/tools/stelion.yml` without an edit, since its paths are relative to the root. Every command finds the root from `--root`, else from the environment variable `STELION_ROOT`, else from the nearest ancestor of the current folder that holds the settings file, else from the current folder. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
+The first run auto-discovers projects and writes `stelion.yml` at the root of the workspace with consumer-agnostic defaults. The configuration file may move to `config/tools/stelion.yml` without an edit, since its paths are relative to the root. Every command finds the root from `--root`, else from the environment variable `STELION_ROOT`, else from the nearest ancestor of the current folder that holds the configuration file, else from the current folder. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
 
 ### Consumer overlays
 

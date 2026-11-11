@@ -168,7 +168,7 @@ Both commands share the project filter options used by bulk commands:
 | `--format text` | (Default) Rich terminal table |
 | `--format yaml` | Machine-parseable YAML output |
 | `--instruction FILE` | Load comparison spec from a YAML instruction file |
-| `--root PATH` / `-r`, `--config PATH` / `-c` | Root of the workspace and settings file (see the CLI reference) |
+| `--root PATH` / `-r`, `--config PATH` / `-c` | Root of the workspace and configuration file (see the CLI reference) |
 
 At least 2 projects must be selected for comparison.
 

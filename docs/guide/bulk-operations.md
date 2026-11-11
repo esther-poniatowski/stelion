@@ -64,7 +64,7 @@ the discovered project inventory.
 | `--exclude x,y` / `-e x,y` | Exclude the named projects (comma-separated). |
 | `--dry-run` | Preview planned operations without executing. |
 | `--root PATH` / `-r` | Root of the workspace. Defaults to `STELION_ROOT`, else to the nearest ancestor holding `stelion.yml` (in `config/tools/` or at its level), else to the current directory. |
-| `--config PATH` / `-c` | Settings file. Defaults to `config/tools/stelion.yml` or `stelion.yml` below the root. |
+| `--config PATH` / `-c` | Configuration file. Defaults to `config/tools/stelion.yml` or `stelion.yml` below the root. |
 
 Filters compose as an intersection: `--names a,b,c --git-only` selects only the
 named projects that also have git. Projects are always processed in alphabetical

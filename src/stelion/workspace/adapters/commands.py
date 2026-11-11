@@ -108,17 +108,17 @@ def workspace_init(
         False, "--dry-run", help="Preview actions without writing."
     ),
 ) -> None:
-    """Initialize or regenerate a workspace from its settings file.
+    """Initialize or regenerate a workspace from its configuration file.
 
-    Without a settings file, the command writes ``stelion.yml`` at the root with the
-    auto-discovered projects. With a settings file, it regenerates every workspace artifact.
+    Without a configuration file, the command writes ``stelion.yml`` at the root with the
+    auto-discovered projects. With a configuration file, it regenerates every workspace artifact.
 
     Parameters
     ----------
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     dry_run : bool
         Preview actions without writing.
     """
@@ -159,7 +159,7 @@ def workspace_sync(
 ) -> None:
     """Re-scan projects and update generated workspace files.
 
-    The generated files are derived from the settings and the projects, so the command
+    The generated files are derived from the configuration file and the projects, so the command
     overwrites them whenever their content changes.
 
     Parameters
@@ -167,7 +167,7 @@ def workspace_sync(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     target : str | None
         Single generation target to sync.
     dry_run : bool
@@ -193,13 +193,15 @@ def workspace_register(
     root: Path | None = opt_root,
     config: Path | None = opt_config,
     yes: bool = typer.Option(
-        False, "--yes", help="Answer yes to the confirmation that the settings file is rewritten."
+        False,
+        "--yes",
+        help="Answer yes to the confirmation that the configuration file is rewritten.",
     ),
 ) -> None:
     """Register an existing project into workspace artifacts.
 
     When the project lies outside the discovery scan directories, the command adds it to
-    ``discovery.extra_paths`` and rewrites the settings file in canonical form, which drops its
+    ``discovery.extra_paths`` and rewrites the configuration file in canonical form, which drops its
     comments. It asks for a confirmation on a terminal before that rewrite.
 
     Parameters
@@ -209,7 +211,7 @@ def workspace_register(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     yes : bool
         Answer yes to the confirmation.
     """
@@ -268,7 +270,7 @@ def workspace_new(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     parent : Path | None
         Folder that receives the new project, read from the current folder.
     dry_run : bool
@@ -325,7 +327,7 @@ def workspace_status(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     """
     services = create_services()
     _location, m = load_settings(root, config)

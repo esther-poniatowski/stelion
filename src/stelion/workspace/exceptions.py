@@ -31,4 +31,4 @@ class ComparisonError(WorkspaceError):
 
 
 class SettingsError(WorkspaceError):
-    """Raised when the settings file of Stelion cannot be located without ambiguity."""
+    """Raised when the configuration file of Stelion cannot be located without ambiguity."""

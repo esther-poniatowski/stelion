@@ -82,7 +82,7 @@ def _run_bulk_command(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     filter_ : ProjectFilter
         Criteria for selecting which projects to include.
     dry_run : bool
@@ -156,7 +156,7 @@ def workspace_exec(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(root, config, filter_, dry_run, run_bulk_exec, command=command)
@@ -191,7 +191,7 @@ def workspace_commit(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(root, config, filter_, dry_run, run_bulk_commit, message=message)
@@ -229,7 +229,7 @@ def workspace_push(
     root : Path | None
         Root of the workspace.
     config : Path | None
-        Settings file of the workspace.
+        Configuration file of the workspace.
     """
     filter_ = parse_project_filter(names, pattern, git_only, exclude)
     _run_bulk_command(
