@@ -25,7 +25,7 @@
 #
 # Notes
 # -----
-# Trigger: On every push to the `main` branch.
+# Trigger: After a release, or manually through `workflow_dispatch`.
 #
 # Platform: `noarch` (pure python, no architecture-specific dependencies).
 #
@@ -56,10 +56,9 @@
 # ==================================================================================================
 
 name: Build and Deploy
+# Started by the Release workflow after each release, or by hand; a push publishes nothing, so the
+# channel holds released versions only.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
