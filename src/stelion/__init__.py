@@ -24,11 +24,12 @@ To programmatically retrieve the package version:
     >>> stelion.__version__
     '0.1.0'
 """
+
 from importlib.metadata import version, PackageNotFoundError
 import platform
 
 try:
-    if __package__ is None: # erroneous script execution
+    if __package__ is None:  # erroneous script execution
         raise PackageNotFoundError
     __version__ = version(__package__)
 except PackageNotFoundError:
@@ -45,4 +46,5 @@ def info() -> str:
     str
         Human-readable string with package name, version, OS, and Python version.
     """
-    return f"{__package__} {__version__} | Platform: {platform.system()} Python {platform.python_version()}"
+    platform_name = f"{platform.system()} Python {platform.python_version()}"
+    return f"{__package__} {__version__} | Platform: {platform_name}"
