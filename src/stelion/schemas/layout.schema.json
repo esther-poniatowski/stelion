@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/esther-poniatowski/stelion/specs/schemas/layout.schema.json",
+  "title": "stelion:layout@1",
+  "description": "the layout of a repository, declared by its consumer: its areas, its kinds of folder and of file, the roles admitted in each area, the link directions forbidden between areas, its retired paths and the rules of its tree. Every pattern is a glob anchored at the root of the repository, where ** matches any number of folders",
+  "type": "object",
+  "required": [
+    "_schema"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "_schema": {
+      "const": "stelion:layout@1"
+    },
+    "extends": {
+      "description": "a layout that this layout extends: the name of a layout shipped by Stelion, or a path relative to this file",
+      "type": "string",
+      "minLength": 1
+    },
+    "exclude": {
+      "description": "the files outside every rule",
+      "$ref": "#/$defs/globs"
+    },
+    "metadata": {
+      "description": "the keys of the metadata of a file that the rules read",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "description": "the key naming the role of a file; role by default",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "areas": {
+      "description": "the areas of the repository by identifier, each the folder that holds it",
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/glob"
+      }
+    },
+    "folders": {
+      "description": "the kinds of folder, each matched by a glob, and the kinds of file that each requires",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "match"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/identifier"
+          },
+          "gloss": {
+            "type": "string"
+          },
+          "match": {
+            "description": "the glob of the folders of the kind",
+            "$ref": "#/$defs/glob"
+          },
+          "exclude": {
+            "$ref": "#/$defs/globs"
+          },
+          "when": {
+            "description": "a condition on the metadata of a file of the folder, such as its index",
+            "type": "object",
+            "required": [
+              "file",
+              "key",
+              "equals"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "equals": {}
+            }
+          },
+          "requires": {
+            "description": "the kinds of file that the folder holds, itself or in each of its phases",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "phases": {
+            "description": "the kind of the subfolders that count as phases of the folder",
+            "$ref": "#/$defs/identifier"
+          }
+        }
+      }
+    },
+    "kinds": {
+      "description": "the kinds of file named by a fixed pattern, the folders that admit them, their role and their skeleton",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "in"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/identifier"
+          },
+          "gloss": {
+            "type": "string"
+          },
+          "name": {
+            "description": "a regular expression matching the name of a file of the kind",
+            "type": "string",
+            "minLength": 1
+          },
+          "within": {
+            "description": "the files where the kind applies; every file by default",
+            "$ref": "#/$defs/globs"
+          },
+          "except": {
+            "description": "the files where the kind does not apply, among those of within",
+            "$ref": "#/$defs/globs"
+          },
+          "in": {
+            "description": "the kinds of folder that may hold a file of the kind",
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "role": {
+            "description": "the role that a file of the kind declares",
+            "type": "string",
+            "minLength": 1
+          },
+          "skeleton": {
+            "description": "the skeleton of the kind, whose level-2 headings a file follows in order: a path from the root, or <package>:<resource> of an installed package",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "roles": {
+      "description": "the roles admitted in each area; a role listed nowhere is admitted everywhere",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "everywhere": {
+          "$ref": "#/$defs/names"
+        },
+        "by_area": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/names"
+          }
+        },
+        "open": {
+          "description": "the areas that admit every role",
+          "$ref": "#/$defs/names"
+        }
+      }
+    },
+    "links": {
+      "description": "the directions in which a file may not link, between areas",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forbidden": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "from",
+              "to"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/identifier"
+              },
+              "from": {
+                "$ref": "#/$defs/identifier"
+              },
+              "to": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "#/$defs/identifier"
+                }
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "retired": {
+      "description": "the path prefixes that no file may hold, and that no text may store outside its records",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "prefix"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retained_in": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "tree": {
+      "description": "the rules of the tracked files of the repository",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "description": "the entries admitted at the root, each a name or a glob",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "folder": {
+                "type": "boolean"
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "holds": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "placements": {
+          "description": "the files of given suffixes, admitted only under given paths",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "suffixes",
+              "allowed"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/identifier"
+              },
+              "suffixes": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^\\."
+                }
+              },
+              "allowed": {
+                "$ref": "#/$defs/globs"
+              },
+              "except": {
+                "$ref": "#/$defs/globs"
+              },
+              "gloss": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "untracked": {
+          "description": "the paths that Git must not track",
+          "$ref": "#/$defs/globs"
+        },
+        "max_file_mib": {
+          "description": "the largest size of a tracked file, in mebibytes",
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "glob": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "^/|(?:^|/)\\.\\.(?:/|$)"
+      }
+    },
+    "globs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/glob"
+      }
+    },
+    "names": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+# Default layout of a project repository, shipped by Stelion: the practices recommended for every
+# project, which a layout extends by `extends: project` and completes with its own entries. It
+# names no tool and no consumer.
+_schema: stelion:layout@1
+
+tree:
+  root:
+    # entry point, licence, citation and history
+    - {name: README.md, required: true, holds: "the entry point of the repository"}
+    - {name: LICENSE, holds: "the licence of the repository"}
+    - {name: CITATION.cff, holds: "the citation of the repository"}
+    - {name: CHANGELOG.md, holds: "the significant changes of the repository"}
+    - {name: CONTRIBUTING.md, holds: "how to contribute"}
+    - {name: TODO.md, holds: "the open tasks"}
+    - {name: AGENTS.md, holds: "the instructions to agents"}
+    # files read by their tool at the root
+    - {name: pyproject.toml, holds: "the package and its tools"}
+    - {name: environment.yml, holds: "the conda environment"}
+    - {name: conda-lock.yml, holds: "the locked conda environment"}
+    - {name: conftest.py, holds: "the pytest settings shared by the tests and the doctests"}
+    - {name: "*.code-workspace", holds: "the workspace of the editor"}
+    # configuration of Git, of its host and of the editor
+    - {name: .gitignore, holds: "the paths that Git ignores"}
+    - {name: .gitattributes, holds: "the attributes of the paths for Git"}
+    - {name: .gitmodules, holds: "the submodules"}
+    - {name: .gitmessage, holds: "the template of a commit message"}
+    - {name: .github, folder: true, holds: "the workflows of the host"}
+    - {name: .githooks, folder: true, holds: "the hooks of Git"}
+    - {name: .vscode, folder: true, holds: "the settings of the editor"}
+    # content folders
+    - {name: src, folder: true, holds: "the code"}
+    - {name: tests, folder: true, holds: "the tests of the code"}
+    - {name: docs, folder: true, holds: "the documentation"}
+    - {name: notebooks, folder: true, holds: "the notebooks, by topic"}
+    - {name: config, folder: true, holds: "the settings read by the code and the configuration of the tools"}
+    - {name: results, folder: true, holds: "the committed generated files"}
+    - {name: resources, folder: true, holds: "the documents of others that serve the project"}
+    - {name: vendor, folder: true, holds: "the code authored outside the repository"}
+    - {name: archive, folder: true, holds: "the work withdrawn from active use"}
+    - {name: data, folder: true, holds: "the data of the project, which Git ignores"}
+  placements:
+    - id: code
+      gloss: code sits under src/ and tests/
+      suffixes: [.py, .pyx, .r, .R, .c, .h, .cpp, .sh, .jl, .m]
+      allowed: [src/**, tests/**, vendor/**, archive/**, conftest.py, docs/conf.py, docs/source/conf.py]
+    - id: notebooks
+      gloss: notebooks sit under notebooks/
+      suffixes: [.ipynb]
+      allowed: [notebooks/**, vendor/**, archive/**]
+  untracked: [data/**, config/local/**]
+  max_file_mib: 100
