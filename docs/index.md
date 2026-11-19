@@ -12,6 +12,7 @@ Keeps multiple Python projects consistent within a shared workspace.
 - [Submodule Synchronization](guide/submodule-sync.md)
 - [Cross-Project Comparison](guide/comparison.md)
 - [Integration Policy](guide/integration-policy.md)
+- [Repository Layout](guide/layout.md)
 
 ## API Reference
 

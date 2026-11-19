@@ -129,6 +129,13 @@ a recurring challenge:
 - [X] Output as Rich terminal tables or machine-parseable YAML.
 - [X] Per-file error resilience: read or parse failures do not abort the comparison.
 
+### Repository Layout (implemented)
+
+- [X] Check a repository against a [layout](docs/guide/layout.md) that its consumer declares, in
+  the format `stelion:layout@1`: kinds of folder and of file, roles per area, forbidden link
+  directions, retired paths, and the root entries, placements and limits of the tree.
+- [X] Ship the schema of the format and a default `project` layout, which a layout extends by name.
+
 ### Repository Synchronization (planned)
 
 - [ ] Synchronize and adapt file versions across repositories.

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- The command `stelion layout check`, which checks a repository against a layout that its consumer
+  declares, in the new format `stelion:layout@1`, and reports twelve rules: missing kinds of file,
+  the placement, role and sections of a kind of file, the roles admitted per area, the forbidden
+  link directions between areas, the retired paths, and the root entries, placements, untracked
+  paths and size limit of the tree. The report is text or a findings log in the profile of
+  Elenchos. The package ships the schema of the format and the default layout `project`, which a
+  layout extends by name.
+- The extra `layout`, which installs the read package of Anagraphe and `jsonschema`, and the extra
+  `test`, which installs Elenchos.
+
 ### Fixed
 
 - `-v`/`--version` prints the version without a command. The option was not eager, so the command
