@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - The first commit of a bootstrapped project names the template that the manifest configures,
   the folder of `template.source`, instead of a fixed template name.
+- **Breaking:** The extra `layout` requires `anagraphe-read` 0.5.0 at commit `107a80b`, and the
+  extra `test` requires Elenchos at commit `33160b2`. Both pin Hodegos at `a151a28`, as Stelion
+  does, so the extras install again. Therefore, `stelion layout check` reads `anagraphe.yml` at the
+  root, in `.config/` or in `config/`, and no longer in `config/tools/`. A file left in
+  `config/tools/` is ignored, so the repository is read without shared exclusions. A root that holds
+  the file at two places stops the check with status 2.
 - **Breaking:** Stelion requires Hodegos at commit `a151a28`. Therefore, Stelion searches
   `config/stelion.yml`, and no longer searches a folder that a file `hodegos.yml` lists. A file
   `hodegos.yml` left at the root is ignored, so an invalid one no longer stops a command. A root

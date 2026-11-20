@@ -45,11 +45,11 @@ dependencies = [
 # repository through the read package of Anagraphe, and checks a layout against its schema.
 layout = [
     "jsonschema>=4.18",
-    "anagraphe-read @ git+https://github.com/esther-poniatowski/anagraphe.git@cb0ffc685d0ccc58b67ddb8f08936d750de5f7f2#subdirectory=packages/read-python",
+    "anagraphe-read @ git+https://github.com/esther-poniatowski/anagraphe.git@107a80bbae354fa00cd4981369a7ea747857aec2#subdirectory=packages/read-python",
 ]
 # The tests check the findings log of the layout check with the profile interface of Elenchos.
 test = [
-    "elenchos @ git+https://github.com/esther-poniatowski/elenchos.git@4141cc82978a8e1ebba23b9c92af71691cffe954",
+    "elenchos @ git+https://github.com/esther-poniatowski/elenchos.git@33160b25e26226f50283a0503ba9c39796901ea2",
 ]
 
 
