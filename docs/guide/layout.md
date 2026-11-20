@@ -53,7 +53,7 @@ Every finding has the level `error`. Its resource is the file, or the folder end
 
 A role that no area lists is admitted everywhere. A folder belongs to the first kind whose glob matches it, and a file to the first kind whose name pattern matches it. A link counts by the place that it names, whether or not a file exists there, so a broken link into a forbidden area is reported too.
 
-The rules on files read the tracked files of the repository, or every file of a folder without Git. Three facts of a file come through the read package of Anagraphe, which owns their sources, their syntaxes and their resolution: its metadata, its links, and whether the shared exclusions of the repository leave it out. A file that the exclusions leave out escapes the rules on kinds, roles, links and retired paths, but not the rules of the tree.
+The rules on files read the tracked files of the repository, or every file of a folder without Git. Three facts of a file come through the read package of Anagraphe, which owns their sources, their syntaxes and their resolution: its metadata, its links, and whether the shared exclusions of the repository leave it out. A file that the exclusions leave out escapes the rules on kinds, roles, links and retired paths, but not the rules of the tree. Anagraphe reads its configuration `anagraphe.yml` at the root of the check, in its subfolder `.config/`, or in its subfolder `config/`. A root that holds no such file is read without shared exclusions, and a root that holds the file at two of these places stops the check with status 2.
 
 ## 3. Command
 
