@@ -54,12 +54,19 @@ def cli_layout_check(
     output: Optional[Path] = typer.Option(
         None, "--output", "-o", help="File of the report; standard output by default."
     ),
+    anagraphe_config: Optional[Path] = typer.Option(
+        None,
+        "--anagraphe-config",
+        help="Configuration of Anagraphe at another place of the root, such as"
+        " settings/anagraphe.yml; by default, anagraphe.yml at the root, in .config/"
+        " or in config/.",
+    ),
 ) -> None:
     """
     Check the repository at the root against a layout of format `stelion:layout@1`.
 
     The exit status is 0 when no finding is reported, 1 when one is, and 2 when the check cannot
-    run: an unreadable or invalid layout, or an invalid configuration of Anagraphe.
+    run: an unreadable or invalid layout, or a missing or invalid configuration of Anagraphe.
     """
     try:
         # The check needs the extra `layout`, which the other commands do not.
@@ -77,8 +84,12 @@ def cli_layout_check(
     stopped: str | None = None
     findings = []
     try:
-        resolved = root.resolve()
-        findings = check_layout(load_layout(layout), resolved, AnagrapheReader(resolved))
+        root = root.resolve()
+        findings = check_layout(
+            load_layout(layout),
+            root,
+            AnagrapheReader(root, anagraphe_config.resolve() if anagraphe_config else None),
+        )
     except (LayoutError, ValueError) as error:
         stopped = str(error)
     if output_format == "sarif":

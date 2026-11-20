@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   layout extends by name.
 - The extra `layout`, which installs the read package of Anagraphe and `jsonschema`, and the extra
   `test`, which installs Elenchos.
+- The option `--anagraphe-config PATH` of `stelion layout check`, which names a configuration of
+  Anagraphe kept outside the places that Anagraphe searches, such as `settings/anagraphe.yml`.
+  The check then reads the metadata, links and shared exclusions declared in that file. A missing
+  file stops the check with status 2. Without the option, the check is unchanged.
 
 ### Fixed
 

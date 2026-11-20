@@ -1,5 +1,6 @@
 """Tests of the check of a layout on a repository where each rule is broken once."""
 
+import json
 import posixpath
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,7 +8,9 @@ from typing import Any, Mapping
 
 import pytest
 import yaml
+from typer.testing import CliRunner
 
+from stelion.cli import app
 from stelion.layout import LayoutError, check_layout, load_layout, sarif_log
 from stelion.layout.rules import headings
 
@@ -217,3 +220,57 @@ def test_the_default_layout_extends_and_is_overridden(tmp_path: Path) -> None:
 
 def test_headings_skip_fenced_code() -> None:
     assert headings("## A\n```\n## B\n```\n## C\n") == ["A", "C"]
+
+
+ANAGRAPHE_CONFIG = "settings/anagraphe.yml"
+
+
+def checked_paths(root: Path, monkeypatch: pytest.MonkeyPatch, *options: str) -> tuple[int, dict]:
+    """Run `stelion layout check` with the real reader of Anagraphe, from the root."""
+    pytest.importorskip("anagraphe_read")
+    repository(root)
+    (root / ANAGRAPHE_CONFIG).parent.mkdir(parents=True)
+    (root / ANAGRAPHE_CONFIG).write_text(
+        "_schema: anagraphe:configuration@3\nexclude:\n  paths:\n    - projects/\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(root)
+    result = CliRunner().invoke(
+        app, ["layout", "check", "--layout", "layout.yml", "--format", "sarif", *options]
+    )
+    return result.exit_code, json.loads(result.output)
+
+
+def rule_paths(log: dict) -> set[tuple[str, str]]:
+    return {
+        (item["ruleId"], item["locations"][0]["physicalLocation"]["artifactLocation"]["uri"])
+        for item in log["runs"][0].get("results", [])
+    }
+
+
+def test_the_named_configuration_of_anagraphe_applies(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The exclusion declared in a file outside the accepted places applies once it is named."""
+    status, log = checked_paths(tmp_path, monkeypatch, "--anagraphe-config", ANAGRAPHE_CONFIG)
+    assert status == 1
+    assert ("role/area", "projects/b.md") not in rule_paths(log)
+    assert ("link/direction", "foundations/a.md") in rule_paths(log)
+
+
+def test_a_configuration_outside_the_accepted_places_is_not_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, log = checked_paths(tmp_path, monkeypatch)
+    assert status == 1
+    assert ("role/area", "projects/b.md") in rule_paths(log)
+
+
+def test_a_missing_configuration_of_anagraphe_stops_the_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, log = checked_paths(tmp_path, monkeypatch, "--anagraphe-config", "settings/missing.yml")
+    assert status == 2
+    invocation = log["runs"][0]["invocations"][0]
+    assert invocation["executionSuccessful"] is False
+    assert "settings/missing.yml" in invocation["toolExecutionNotifications"][0]["message"]["text"]

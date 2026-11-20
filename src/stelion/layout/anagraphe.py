@@ -13,10 +13,20 @@ from anagraphe_read import open_repository
 
 
 class AnagrapheReader:
-    """The metadata, references and exemptions of the files of one repository."""
+    """
+    The metadata, references and exemptions of the files of one repository.
 
-    def __init__(self, root: Path) -> None:
-        self._repository = open_repository(root)
+    The configuration of Anagraphe is the file ``config`` when it is given, else the file
+    ``anagraphe.yml`` at one of the places of the root that Anagraphe accepts.
+
+    Raises
+    ------
+    ValueError
+        If the configuration of Anagraphe is invalid, or if ``config`` names no file.
+    """
+
+    def __init__(self, root: Path, config: Path | None = None) -> None:
+        self._repository = open_repository(root, config=config)
         self._metadata: dict[str, Mapping[str, Any]] = {}
 
     def metadata(self, path: str) -> Mapping[str, Any]:

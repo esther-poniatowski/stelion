@@ -53,17 +53,18 @@ Every finding has the level `error`. Its resource is the file, or the folder end
 
 A role that no area lists is admitted everywhere. A folder belongs to the first kind whose glob matches it, and a file to the first kind whose name pattern matches it. A link counts by the place that it names, whether or not a file exists there, so a broken link into a forbidden area is reported too.
 
-The rules on files read the tracked files of the repository, or every file of a folder without Git. Three facts of a file come through the read package of Anagraphe, which owns their sources, their syntaxes and their resolution: its metadata, its links, and whether the shared exclusions of the repository leave it out. A file that the exclusions leave out escapes the rules on kinds, roles, links and retired paths, but not the rules of the tree. Anagraphe reads its configuration `anagraphe.yml` at the root of the check, in its subfolder `.config/`, or in its subfolder `config/`. A root that holds no such file is read without shared exclusions, and a root that holds the file at two of these places stops the check with status 2.
+The rules on files read the tracked files of the repository, or every file of a folder without Git. Three facts of a file come through the read package of Anagraphe, which owns their sources, their syntaxes and their resolution: its metadata, its links, and whether the shared exclusions of the repository leave it out. A file that the exclusions leave out escapes the rules on kinds, roles, links and retired paths, but not the rules of the tree. Anagraphe reads its configuration `anagraphe.yml` at the root of the check, in its subfolder `.config/`, or in its subfolder `config/`. A root that holds no such file is read without shared exclusions, and a root that holds the file at two of these places stops the check with status 2. A configuration kept at another place, such as `settings/anagraphe.yml`, is read only when the option `--anagraphe-config` names it. The path is read from the current folder, as the path of `--root` is. The file must lie inside the root, and a missing file stops the check with status 2.
 
 ## 3. Command
 
 ```sh
 stelion layout check --layout layout.yml
 stelion layout check --layout specs/project.layout.yml --root projects/a-project --format sarif --output build/layout.sarif
+stelion layout check --layout layout.yml --anagraphe-config settings/anagraphe.yml
 ```
 
 The root is the folder given by `--root`, or by the environment variable `STELION_ROOT`, or the current folder. The option `--format` takes `text`, the default, or `sarif`, which writes a findings log in the profile of the gate Elenchos.
 
-The exit status is 0 without finding, 1 with findings, and 2 when the check cannot run on an unreadable or invalid layout, or on an invalid configuration of Anagraphe. With `--format sarif`, the log then holds a failed run that states why.
+The exit status is 0 without finding, 1 with findings, and 2 when the check cannot run on an unreadable or invalid layout, or on a missing or invalid configuration of Anagraphe. With `--format sarif`, the log then holds a failed run that states why.
 
 The command needs the extra `layout`, which installs the read package of Anagraphe and `jsonschema`: `pip install "stelion[layout]"`.
