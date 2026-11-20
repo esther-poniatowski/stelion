@@ -26,6 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Breaking:** Hodegos locates the root of a command and the file `stelion.yml`, as its
+  [specification](https://github.com/esther-poniatowski/hodegos/blob/main/docs/specification.md)
+  states. The file lies at the root, in its subfolder `.config/`, or in a folder that the
+  `hodegos.yml` of the root declares. `config/tools/stelion.yml` is read only when `hodegos.yml`
+  lists `config/tools`. Hodegos reads `STELION_ROOT`, and the option `--root` no longer reads it.
+  `workspace render-manifest` stops with status 2 when its root holds two competing configuration
+  files or when the discovery meets an invalid `hodegos.yml`. The places named in the next entry are
+  replaced by these places.
 - The command line follows the conventions shared by the tools of the workspace:
   - every command that reads the configuration file takes `-r`/`--root` and `-c`/`--config`; the
     root comes from `--root`, else `STELION_ROOT`, else the nearest ancestor holding `stelion.yml`

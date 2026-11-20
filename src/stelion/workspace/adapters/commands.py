@@ -29,7 +29,6 @@ from ..composition import (
 from ..domain.status import DriftReport, FileStatus
 from ..exceptions import BootstrapError, ManifestValidationError, WorkspaceError
 from ..infrastructure.manifest_codec import render_manifest
-from ..infrastructure.settings_locator import resolve_root
 from ._cli_common import (
     confirm_change,
     load_settings,
@@ -84,8 +83,8 @@ def workspace_render_manifest(
     dry_run : bool
         Print the result without writing *output*.
     """
+    resolved_root = locate(root, None).root
     try:
-        resolved_root = resolve_root(root, cwd=Path.cwd())
         manifest = compose_workspace_manifest(overlay, resolved_root)
     except (FileNotFoundError, ManifestValidationError) as exc:
         raise stop_with_usage_error(exc) from exc

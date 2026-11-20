@@ -1,9 +1,10 @@
 """Tests for the command-line conventions shared by the tools of the workspace.
 
-Stelion resolves its root from ``--root``, then ``STELION_ROOT``, then the nearest ancestor holding
-``stelion.yml`` (in ``config/tools/`` or at its level), then the current folder. It reads its
-configuration file from one of those two places, rejects two competing files, and resolves the paths
-written in the file against the root. Former option names are rejected.
+Hodegos locates the root and the configuration file. The root comes from ``--root``, then
+``STELION_ROOT``, then the nearest folder, from the current one upward, holding ``stelion.yml`` at
+one of its places, then the current folder. The places are the root, its ``.config/``, and the
+folders that its ``hodegos.yml`` declares; two places holding a file stop the command. The paths
+written in the file resolve against the root. Former option names are rejected.
 """
 
 from __future__ import annotations
@@ -51,13 +52,67 @@ def _write_settings(root: Path, place: Path, scan_dirs: tuple[str, ...] = ("proj
 # --- Locating the configuration file --------------------------------------------------------------
 
 
+DECLARED = Path("shared/stelion.yml")
+"""Place of a configuration file in a folder that only a declaration makes searched."""
+DECLARATION = "_schema: hodegos:configuration@1\nfolders:\n  - shared\n"
+"""Declaration of a workspace keeping its configuration file in ``shared/``."""
+
+
+def _declare(root: Path) -> None:
+    """Write at *root* the declaration ``hodegos.yml`` that lists the folder ``shared/``."""
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "hodegos.yml").write_text(DECLARATION, encoding="utf-8")
+
+
+@pytest.mark.parametrize("place", [Path("stelion.yml"), Path(".config/stelion.yml")])
+def test_locate_reads_the_root_and_its_dot_config(tmp_path: Path, place: Path) -> None:
+    settings = _write_settings(tmp_path, place)
+
+    location = locate_settings(tmp_path, None, cwd=tmp_path)
+
+    assert location.settings_path == settings.resolve()
+
+
+def test_locate_reads_a_folder_that_the_root_declares(tmp_path: Path) -> None:
+    _declare(tmp_path)
+    settings = _write_settings(tmp_path, DECLARED)
+
+    location = locate_settings(tmp_path, None, cwd=tmp_path)
+
+    assert location.settings_path == settings.resolve()
+
+
+def test_locate_ignores_an_undeclared_folder(tmp_path: Path) -> None:
+    _write_settings(tmp_path, DECLARED)
+
+    location = locate_settings(tmp_path, None, cwd=tmp_path)
+
+    assert location.settings_path is None
+
+
 def test_locate_finds_the_nearest_ancestor_holding_the_settings(tmp_path: Path) -> None:
     root = tmp_path / "hub"
-    settings = _write_settings(root, Path("config/tools/stelion.yml"))
+    _declare(root)
+    settings = _write_settings(root, DECLARED)
     nested = root / "a" / "b"
     nested.mkdir(parents=True)
 
     location = locate_settings(None, None, cwd=nested)
+
+    assert location.root == root.resolve()
+    assert location.settings_path == settings.resolve()
+
+
+def test_locate_takes_the_root_from_the_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "hub"
+    settings = _write_settings(root, Path("stelion.yml"))
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.setenv("STELION_ROOT", str(root))
+
+    location = locate_settings(None, None, cwd=elsewhere)
 
     assert location.root == root.resolve()
     assert location.settings_path == settings.resolve()
@@ -71,20 +126,37 @@ def test_locate_falls_back_to_the_current_folder_without_settings(tmp_path: Path
 
 
 def test_locate_rejects_two_competing_settings_files(tmp_path: Path) -> None:
-    _write_settings(tmp_path, Path("config/tools/stelion.yml"))
+    _declare(tmp_path)
+    _write_settings(tmp_path, DECLARED)
     _write_settings(tmp_path, Path("stelion.yml"))
 
-    with pytest.raises(SettingsError, match="Two configuration files"):
+    with pytest.raises(SettingsError, match="two places hold a configuration"):
         locate_settings(tmp_path, None, cwd=tmp_path)
 
 
+def test_locate_reads_a_named_config_from_the_current_folder(tmp_path: Path) -> None:
+    _write_settings(tmp_path, Path("stelion.yml"))
+    other = _write_settings(tmp_path, Path("settings/other.yml"))
+
+    location = locate_settings(tmp_path, Path("other.yml"), cwd=tmp_path / "settings")
+
+    assert location.settings_path == other.resolve()
+
+
 def test_locate_rejects_an_absent_config(tmp_path: Path) -> None:
-    with pytest.raises(SettingsError, match="not found"):
+    with pytest.raises(SettingsError, match="no configuration file"):
         locate_settings(None, Path("missing.yml"), cwd=tmp_path)
 
 
+def test_locate_rejects_an_invalid_declaration(tmp_path: Path) -> None:
+    (tmp_path / "hodegos.yml").write_text("folders: [shared]\n", encoding="utf-8")
+
+    with pytest.raises(SettingsError):
+        locate_settings(tmp_path, None, cwd=tmp_path)
+
+
 def test_paths_of_the_settings_resolve_against_the_root(tmp_path: Path) -> None:
-    settings = _write_settings(tmp_path, Path("config/tools/stelion.yml"))
+    settings = _write_settings(tmp_path, DECLARED)
 
     manifest = load_manifest(settings, tmp_path)
 
@@ -94,15 +166,29 @@ def test_paths_of_the_settings_resolve_against_the_root(tmp_path: Path) -> None:
 # --- Commands -------------------------------------------------------------------------------------
 
 
-def test_sync_reads_settings_from_config_tools_and_writes_at_the_root(tmp_path: Path) -> None:
-    _write_settings(tmp_path, Path("config/tools/stelion.yml"))
+def test_sync_reads_settings_from_a_declared_folder_and_writes_at_the_root(tmp_path: Path) -> None:
+    _declare(tmp_path)
+    _write_settings(tmp_path, DECLARED)
     _write_project(tmp_path / "projects" / "alpha", "alpha")
 
     result = runner.invoke(app, ["workspace", "sync", "-r", str(tmp_path)])
 
     assert result.exit_code == 0, result.output + result.stderr
     assert "alpha" in (tmp_path / "projects.yml").read_text(encoding="utf-8")
-    assert not (tmp_path / "config" / "tools" / "projects.yml").exists()
+    assert not (tmp_path / "shared" / "projects.yml").exists()
+
+
+def test_sync_reads_the_named_config(tmp_path: Path) -> None:
+    _write_settings(tmp_path, Path("settings/other.yml"))
+    _write_project(tmp_path / "projects" / "alpha", "alpha")
+
+    result = runner.invoke(
+        app,
+        ["workspace", "sync", "-r", str(tmp_path), "-c", str(tmp_path / "settings/other.yml")],
+    )
+
+    assert result.exit_code == 0, result.output + result.stderr
+    assert "alpha" in (tmp_path / "projects.yml").read_text(encoding="utf-8")
 
 
 def test_status_finds_the_root_from_a_subfolder(
@@ -132,13 +218,13 @@ def test_status_takes_the_root_from_the_environment(
 
 
 def test_two_competing_settings_files_stop_with_status_2(tmp_path: Path) -> None:
-    _write_settings(tmp_path, Path("config/tools/stelion.yml"))
+    _write_settings(tmp_path, Path(".config/stelion.yml"))
     _write_settings(tmp_path, Path("stelion.yml"))
 
     result = runner.invoke(app, ["workspace", "status", "--root", str(tmp_path)])
 
     assert result.exit_code == 2
-    assert "Two configuration files" in result.stderr
+    assert "two places hold a configuration" in result.stderr
 
 
 def test_an_absent_config_stops_with_status_2(tmp_path: Path) -> None:

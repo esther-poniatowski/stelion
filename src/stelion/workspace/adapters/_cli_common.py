@@ -1,7 +1,8 @@
 """Shared CLI utilities for adapter commands.
 
 Every command that reads the configuration file of a workspace takes the options ``-r``/``--root``
-and ``-c``/``--config``, defined here, and loads its configuration through :func:`load_settings`. A
+and ``-c``/``--config``, defined here, and loads its configuration through :func:`load_settings`.
+Hodegos resolves the root, the variable ``STELION_ROOT`` included, and the configuration file. A
 settings error is a configuration error, so it ends the command with status 2.
 """
 
@@ -23,11 +24,7 @@ from ..composition import (
 from ..domain.bulk import ProjectFilter
 from ..domain.manifest import WorkspaceManifest
 from ..exceptions import ManifestValidationError, SettingsError
-from ..infrastructure.settings_locator import (
-    ROOT_ENVIRONMENT_VARIABLE,
-    SettingsLocation,
-    locate_settings,
-)
+from ..infrastructure.settings_locator import SettingsLocation, locate_settings
 
 USAGE_ERROR = 2
 """Exit status of a usage or configuration error."""
@@ -38,11 +35,11 @@ opt_root = typer.Option(
     None,
     "--root",
     "-r",
-    envvar=ROOT_ENVIRONMENT_VARIABLE,
     file_okay=False,
     help=(
-        "Root of the workspace. Defaults to STELION_ROOT, else to the nearest ancestor holding "
-        "stelion.yml (in config/tools/ or at its level), else to the current folder."
+        "Root of the workspace. Defaults to the folder of STELION_ROOT, else to the nearest "
+        "folder, from the current one upward, holding stelion.yml at one of its places, else to "
+        "the current folder."
     ),
 )
 opt_config = typer.Option(
@@ -50,7 +47,10 @@ opt_config = typer.Option(
     "--config",
     "-c",
     dir_okay=False,
-    help="Configuration file. Defaults to config/tools/stelion.yml or stelion.yml below the root.",
+    help=(
+        "Configuration file, relative to the current folder. Defaults to stelion.yml at the root, "
+        "in .config/, or in a folder that hodegos.yml declares."
+    ),
 )
 
 
@@ -98,7 +98,7 @@ def locate(root: Path | None, config: Path | None) -> SettingsLocation:
     Parameters
     ----------
     root : Path | None
-        Value of ``--root`` (or ``STELION_ROOT``).
+        Value of ``--root``.
     config : Path | None
         Value of ``--config``.
     """
@@ -116,7 +116,7 @@ def load_settings(
     Parameters
     ----------
     root : Path | None
-        Value of ``--root`` (or ``STELION_ROOT``).
+        Value of ``--root``.
     config : Path | None
         Value of ``--config``.
 
@@ -141,7 +141,7 @@ def resolve_workspace(
     Parameters
     ----------
     root : Path | None
-        Value of ``--root`` (or ``STELION_ROOT``).
+        Value of ``--root``.
     config : Path | None
         Value of ``--config``.
 

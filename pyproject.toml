@@ -36,6 +36,8 @@ dependencies = [
     "pyyaml",            # YAML configuration parsing
     "typer",             # CLI interface
     "rich",              # Improved CLI output formatting
+    # The root of a workspace and the places of stelion.yml are located by Hodegos.
+    "hodegos @ git+https://github.com/esther-poniatowski/hodegos.git@e61d0d97eaa80cc0cfdd90c3022c1e3916ef1ad9",
 ]
 
 [project.optional-dependencies]

@@ -63,8 +63,8 @@ the discovered project inventory.
 | `--git-only` | Only include projects that have a `.git` directory. |
 | `--exclude x,y` / `-e x,y` | Exclude the named projects (comma-separated). |
 | `--dry-run` | Preview planned operations without executing. |
-| `--root PATH` / `-r` | Root of the workspace. Defaults to `STELION_ROOT`, else to the nearest ancestor holding `stelion.yml` (in `config/tools/` or at its level), else to the current directory. |
-| `--config PATH` / `-c` | Configuration file. Defaults to `config/tools/stelion.yml` or `stelion.yml` below the root. |
+| `--root PATH` / `-r` | Root of the workspace. Defaults to `STELION_ROOT`, else to the nearest folder, from the current one upward, holding `stelion.yml` at one of its places, else to the current directory. |
+| `--config PATH` / `-c` | Configuration file. Defaults to `stelion.yml` at the root, in `.config/`, or in a folder that `hodegos.yml` declares. |
 
 Filters compose as an intersection: `--names a,b,c --git-only` selects only the
 named projects that also have git. Projects are always processed in alphabetical

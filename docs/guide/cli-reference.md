@@ -20,16 +20,28 @@ Every command that reads the configuration file of a workspace takes two options
 | `--root PATH` / `-r` | Root of the workspace: the folder from which Stelion finds its configuration file and resolves the paths written in that file. |
 | `--config PATH` / `-c` | Configuration file. A file named by this option must exist. |
 
-The root is the first of these answers: the option `--root`; the environment variable
-`STELION_ROOT`; the nearest ancestor of the current folder that holds `stelion.yml`, in
-`config/tools/` or at its own level; the current folder. A command can therefore run from any
-subfolder of the workspace.
+Hodegos resolves the root and the configuration file, as its
+[specification](https://github.com/esther-poniatowski/hodegos/blob/main/docs/specification.md) states.
 
-The configuration file is `config/tools/stelion.yml` or `stelion.yml` below the root. When both
-exist, the command stops with status 2 and names both files. Without any configuration file, Stelion
-runs on its canonical defaults. A path written in the configuration file is relative to the root, so
-the file moves between the root and `config/tools/` without an edit. A path given on the command
-line is relative to the current folder.
+The root is the first of these answers: the option `--root`; the environment variable
+`STELION_ROOT`; the nearest folder, from the current folder upward, that holds `stelion.yml` at one
+of its places; the current folder. A command can therefore run from any subfolder of the workspace.
+
+The places of `stelion.yml` are the root itself, its subfolder `.config/`, and each folder that the
+declaration `hodegos.yml` of the root lists. A workspace that keeps its configuration file in
+`config/tools/` declares that folder:
+
+```yaml
+_schema: hodegos:configuration@1
+folders:
+  - config/tools
+```
+
+When two places hold the file, the command stops with status 2 and names both files. Without any
+configuration file, Stelion runs on its canonical defaults, and `workspace init` writes
+`stelion.yml` at the root. A path written in the configuration file is relative to the root, so the
+file moves between its places without an edit. A path given on the command line is relative to the
+current folder.
 
 ## Exit Statuses
 
@@ -37,7 +49,7 @@ line is relative to the current folder.
 | ------ | ------- |
 | 0 | Success. |
 | 1 | A check found a problem (drift for `workspace status`), an operation failed in a project, or a confirmation was declined. |
-| 2 | A usage or configuration error: an unknown option or value, an absent or invalid configuration file, two competing configuration files, or a confirmation required without a terminal and without `--yes`. |
+| 2 | A usage or configuration error: an unknown option or value, an absent or invalid configuration file, two competing configuration files, an invalid `hodegos.yml`, or a confirmation required without a terminal and without `--yes`. |
 
 ## Workspace Commands
 

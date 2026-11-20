@@ -200,6 +200,7 @@ various formats. The [citation metadata](CITATION.cff) file is also available.
 ### Third-Party Dependencies
 
 - **[PyYAML](https://pyyaml.org/)** — YAML configuration parsing.
+- **[Hodegos](https://github.com/esther-poniatowski/hodegos)** — Root of a workspace and places of `stelion.yml`, as its [specification](https://github.com/esther-poniatowski/hodegos/blob/main/docs/specification.md) states.
 - **[Typer](https://typer.tiangolo.com/)** — CLI interface.
 - **[Rich](https://rich.readthedocs.io/)** — Terminal output formatting.
 

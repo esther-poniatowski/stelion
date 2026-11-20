@@ -14,7 +14,7 @@ Initialize a workspace by scanning a directory for sibling projects:
 stelion workspace init
 ```
 
-The first run auto-discovers projects and writes `stelion.yml` at the root of the workspace with consumer-agnostic defaults. The configuration file may move to `config/tools/stelion.yml` without an edit, since its paths are relative to the root. Every command finds the root from `--root`, else from the environment variable `STELION_ROOT`, else from the nearest ancestor of the current folder that holds the configuration file, else from the current folder. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
+The first run auto-discovers projects and writes `stelion.yml` at the root of the workspace with consumer-agnostic defaults. The configuration file may move to `.config/stelion.yml`, or to a folder that the `hodegos.yml` of the root declares, without an edit, since its paths are relative to the root. Every command finds the root from `--root`, else from the environment variable `STELION_ROOT`, else from the nearest folder, from the current one upward, that holds the configuration file at one of its places, else from the current folder. Hodegos resolves the root and the places, as its [specification](https://github.com/esther-poniatowski/hodegos/blob/main/docs/specification.md) states. The workspace directory supplies the default workspace name. A consumer must select any project template, license, account or channel values that its workflow requires. Subsequent runs regenerate all workspace artifacts from the manifest.
 
 ### Consumer overlays
 
