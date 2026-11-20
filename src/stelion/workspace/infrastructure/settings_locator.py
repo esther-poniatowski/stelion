@@ -12,10 +12,10 @@ file. It is resolved in this order, which stops at the first answer:
 4. the current folder.
 
 The places of ``stelion.yml`` in a folder are, in order, the folder itself, its subfolder
-``.config/``, and its subfolder ``config/``. A configuration file kept in any other folder, such as
-``config/tools/``, is named by the option ``--config``. When two places hold the file, the location
-is ambiguous and :class:`SettingsError` names both files. A configuration file named explicitly must
-exist. Without any configuration file, Stelion runs on its built-in defaults.
+``.config/``, and its subfolder ``config/``. A configuration file kept in any other folder is named
+by the option ``--config``. When two places hold the file, the location is ambiguous and
+:class:`SettingsError` names both files. A configuration file named explicitly must exist. Without
+any configuration file, Stelion runs on its built-in defaults.
 """
 
 from __future__ import annotations
