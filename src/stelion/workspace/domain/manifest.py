@@ -40,9 +40,7 @@ class TemplateConfig:
     """Filename substitution rules applied during bootstrapping."""
 
     def __post_init__(self) -> None:
-        if len(self.delimiters) != 2 or not all(
-            isinstance(part, str) for part in self.delimiters
-        ):
+        if len(self.delimiters) != 2 or not all(isinstance(part, str) for part in self.delimiters):
             raise ValueError("Template delimiters must contain exactly two strings.")
         object.__setattr__(self, "exclude_patterns", tuple(self.exclude_patterns))
         object.__setattr__(self, "renames", MappingProxyType(dict(self.renames)))
@@ -77,9 +75,7 @@ class VSCodeConfig:
             "settings_overrides",
             MappingProxyType(dict(self.settings_overrides)),
         )
-        object.__setattr__(
-            self, "extensions_overrides", tuple(self.extensions_overrides)
-        )
+        object.__setattr__(self, "extensions_overrides", tuple(self.extensions_overrides))
 
     def uses_defaults(self) -> bool:
         """Whether VS Code assets should come from bundled defaults.
@@ -132,17 +128,11 @@ class GenerateConfig:
 
     workspace_file: WorkspaceFileConfig = field(default_factory=WorkspaceFileConfig)
     """Configuration for the VS Code .code-workspace file."""
-    projects_registry: ProjectsRegistryConfig = field(
-        default_factory=ProjectsRegistryConfig
-    )
+    projects_registry: ProjectsRegistryConfig = field(default_factory=ProjectsRegistryConfig)
     """Configuration for the projects registry."""
-    dependency_graph: DependencyGraphConfig = field(
-        default_factory=DependencyGraphConfig
-    )
+    dependency_graph: DependencyGraphConfig = field(default_factory=DependencyGraphConfig)
     """Configuration for the dependency graph."""
-    shared_environment: SharedEnvironmentConfig = field(
-        default_factory=SharedEnvironmentConfig
-    )
+    shared_environment: SharedEnvironmentConfig = field(default_factory=SharedEnvironmentConfig)
     """Configuration for the shared Conda environment."""
 
 
@@ -266,9 +256,7 @@ class WorkspaceManifest:
     by ``--config``, so this folder is not always the folder of the manifest file."""
 
     def __post_init__(self) -> None:
-        object.__setattr__(
-            self, "names_in_use", MappingProxyType(dict(self.names_in_use))
-        )
+        object.__setattr__(self, "names_in_use", MappingProxyType(dict(self.names_in_use)))
 
     def with_added_extra_path(self, extra_path: str) -> "WorkspaceManifest":
         """Return a manifest that explicitly discovers *extra_path*.

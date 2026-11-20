@@ -58,9 +58,7 @@ UNSEARCHED = Path("shared/stelion.yml")
 """Configuration file in a folder that is not a place, so only ``--config`` names it."""
 
 
-@pytest.mark.parametrize(
-    "place", [Path("stelion.yml"), Path(".config/stelion.yml"), CONFIG_PLACE]
-)
+@pytest.mark.parametrize("place", [Path("stelion.yml"), Path(".config/stelion.yml"), CONFIG_PLACE])
 def test_locate_reads_the_root_and_its_config_folders(tmp_path: Path, place: Path) -> None:
     settings = _write_settings(tmp_path, place)
 
@@ -257,8 +255,15 @@ def test_render_manifest_writes_the_output_with_defaults_of_the_root(tmp_path: P
 
     result = runner.invoke(
         app,
-        ["workspace", "render-manifest", str(overlay), "-o", str(output),
-         "--root", str(tmp_path / "hub")],
+        [
+            "workspace",
+            "render-manifest",
+            str(overlay),
+            "-o",
+            str(output),
+            "--root",
+            str(tmp_path / "hub"),
+        ],
     )
 
     assert result.exit_code == 0, result.output + result.stderr
@@ -303,9 +308,7 @@ def test_register_rewrites_the_settings_with_yes(
     root, external, original = registration
     _terminal(monkeypatch, False)
 
-    result = runner.invoke(
-        app, ["workspace", "register", str(external), "-r", str(root), "--yes"]
-    )
+    result = runner.invoke(app, ["workspace", "register", str(external), "-r", str(root), "--yes"])
 
     assert result.exit_code == 0, result.output + result.stderr
     assert "external/manual" in (root / "stelion.yml").read_text(encoding="utf-8")
