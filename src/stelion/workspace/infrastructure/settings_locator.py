@@ -11,10 +11,11 @@ file. It is resolved in this order, which stops at the first answer:
    places;
 4. the current folder.
 
-The places of ``stelion.yml`` in a folder are the folder itself, its subfolder ``.config/``, and
-each folder that the declaration ``hodegos.yml`` of the folder lists. When two places hold the
-file, the location is ambiguous and :class:`SettingsError` names both files. A configuration file
-named explicitly must exist. Without any configuration file, Stelion runs on its built-in defaults.
+The places of ``stelion.yml`` in a folder are, in order, the folder itself, its subfolder
+``.config/``, and its subfolder ``config/``. A configuration file kept in any other folder, such as
+``config/tools/``, is named by the option ``--config``. When two places hold the file, the location
+is ambiguous and :class:`SettingsError` names both files. A configuration file named explicitly must
+exist. Without any configuration file, Stelion runs on its built-in defaults.
 """
 
 from __future__ import annotations
@@ -69,8 +70,8 @@ def locate_settings(root: Path | None, config: Path | None, *, cwd: Path) -> Set
     Raises
     ------
     SettingsError
-        If the file named by *config* does not exist, if two places of the root hold a
-        configuration file, or if a declaration ``hodegos.yml`` met by the search is invalid.
+        If the file named by *config* does not exist, or if two places of the root hold a
+        configuration file.
     """
     try:
         found = discover(

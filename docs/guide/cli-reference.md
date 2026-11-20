@@ -27,14 +27,12 @@ The root is the first of these answers: the option `--root`; the environment var
 `STELION_ROOT`; the nearest folder, from the current folder upward, that holds `stelion.yml` at one
 of its places; the current folder. A command can therefore run from any subfolder of the workspace.
 
-The places of `stelion.yml` are the root itself, its subfolder `.config/`, and each folder that the
-declaration `hodegos.yml` of the root lists. A workspace that keeps its configuration file in
-`config/tools/` declares that folder:
+The places of `stelion.yml` are, in order, the root itself, its subfolder `.config/`, and its
+subfolder `config/`. Stelion searches no other folder. A workspace that keeps its configuration file
+in another folder, such as `config/tools/`, names the file with `--config`:
 
-```yaml
-_schema: hodegos:configuration@1
-folders:
-  - config/tools
+```sh
+stelion workspace status --config config/tools/stelion.yml
 ```
 
 When two places hold the file, the command stops with status 2 and names both files. Without any
@@ -49,7 +47,7 @@ current folder.
 | ------ | ------- |
 | 0 | Success. |
 | 1 | A check found a problem (drift for `workspace status`), an operation failed in a project, or a confirmation was declined. |
-| 2 | A usage or configuration error: an unknown option or value, an absent or invalid configuration file, two competing configuration files, an invalid `hodegos.yml`, or a confirmation required without a terminal and without `--yes`. |
+| 2 | A usage or configuration error: an unknown option or value, an absent or invalid configuration file, two competing configuration files, or a confirmation required without a terminal and without `--yes`. |
 
 ## Workspace Commands
 

@@ -49,7 +49,7 @@ opt_config = typer.Option(
     dir_okay=False,
     help=(
         "Configuration file, relative to the current folder. Defaults to stelion.yml at the root, "
-        "in .config/, or in a folder that hodegos.yml declares."
+        "in .config/, or in config/. A file in any other folder is named by this option."
     ),
 )
 

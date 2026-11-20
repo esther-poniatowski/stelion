@@ -28,14 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - The first commit of a bootstrapped project names the template that the manifest configures,
   the folder of `template.source`, instead of a fixed template name.
+- **Breaking:** Stelion requires Hodegos at commit `a151a28`. Therefore, Stelion searches
+  `config/stelion.yml`, and no longer searches a folder that a file `hodegos.yml` lists. A file
+  `hodegos.yml` left at the root is ignored, so an invalid one no longer stops a command. A root
+  that holds both `config/stelion.yml` and another place of the file stops the command with
+  status 2.
 - **Breaking:** Hodegos locates the root of a command and the file `stelion.yml`, as its
   [specification](https://github.com/esther-poniatowski/hodegos/blob/main/docs/specification.md)
-  states. The file lies at the root, in its subfolder `.config/`, or in a folder that the
-  `hodegos.yml` of the root declares. `config/tools/stelion.yml` is read only when `hodegos.yml`
-  lists `config/tools`. Hodegos reads `STELION_ROOT`, and the option `--root` no longer reads it.
-  `workspace render-manifest` stops with status 2 when its root holds two competing configuration
-  files or when the discovery meets an invalid `hodegos.yml`. The places named in the next entry are
-  replaced by these places.
+  states. The file lies at the root, in its subfolder `.config/`, or in its subfolder `config/`.
+  Stelion no longer reads `config/tools/stelion.yml`: the option `--config` names a file kept in
+  that folder or in any other folder. Hodegos reads `STELION_ROOT`, and the option `--root` no
+  longer reads it. `workspace render-manifest` stops with status 2 when its root holds two competing
+  configuration files. The places named in the next entry are replaced by these places.
 - The command line follows the conventions shared by the tools of the workspace:
   - every command that reads the configuration file takes `-r`/`--root` and `-c`/`--config`; the
     root comes from `--root`, else `STELION_ROOT`, else the nearest ancestor holding `stelion.yml`

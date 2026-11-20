@@ -262,8 +262,8 @@ class WorkspaceManifest:
     manifest_dir: Path
     """Root of the workspace, against which the paths written in the manifest are resolved.
 
-    The manifest lies at the root, in its ``.config/`` folder, or in a folder that its
-    ``hodegos.yml`` declares, so this folder is not always the folder of the manifest file."""
+    The manifest lies at the root, in its ``.config/`` or ``config/`` folder, or in a folder named
+    by ``--config``, so this folder is not always the folder of the manifest file."""
 
     def __post_init__(self) -> None:
         object.__setattr__(
