@@ -121,8 +121,9 @@ class BootstrapServices:
     """Substitute placeholders in all files under a directory."""
     rename_paths: Callable[[Path, dict[str, str], dict[str, str], tuple[str, str]], int]
     """Rename files and directories using the bindings."""
-    init_repository: Callable[[Path], None]
-    """Initialize a git repository in the given directory."""
+    init_repository: Callable[[Path, str], None]
+    """Initialize a git repository in the given directory, naming the template in its first
+    commit."""
 
 
 def plan_bootstrap_request(request: WorkspaceBootstrapRequest) -> BootstrapRequest:
@@ -280,7 +281,7 @@ def bootstrap_project(
     )
     git_initialized = False
     if request.initialize_git:
-        services.init_repository(request.target_dir)
+        services.init_repository(request.target_dir, request.template_source.name)
         git_initialized = True
     return BootstrapResult(
         name=request.name,

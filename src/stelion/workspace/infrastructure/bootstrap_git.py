@@ -29,18 +29,20 @@ def read_git_identity() -> tuple[str, str]:
     return author_name, author_email
 
 
-def init_repository(target_dir: Path) -> None:
+def init_repository(target_dir: Path, template: str) -> None:
     """Initialize a git repository for a bootstrapped project.
 
     Parameters
     ----------
     target_dir : Path
         Root directory of the newly created project.
+    template : str
+        Name of the configured template, written in the message of the first commit.
     """
     subprocess.run(["git", "init", "--quiet"], cwd=target_dir, check=True)
     subprocess.run(["git", "add", "."], cwd=target_dir, check=True)
     subprocess.run(
-        ["git", "commit", "--quiet", "-m", "feat: Initialize project from keystone template"],
+        ["git", "commit", "--quiet", "-m", f"feat: Initialize project from {template} template"],
         cwd=target_dir,
         check=True,
     )

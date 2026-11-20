@@ -161,7 +161,7 @@ def test_workspace_bootstrap_honors_custom_template_delimiters(tmp_path: Path) -
             patterns,
         ),
         rename_paths=lambda root, renames, bindings, delimiters: 0,
-        init_repository=lambda target: None,
+        init_repository=lambda target, template: None,
     )
 
     result = bootstrap_workspace_project(request, services)

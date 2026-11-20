@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- The first commit of a bootstrapped project names the template that the manifest configures,
+  the folder of `template.source`, instead of a fixed template name.
 - **Breaking:** Hodegos locates the root of a command and the file `stelion.yml`, as its
   [specification](https://github.com/esther-poniatowski/hodegos/blob/main/docs/specification.md)
   states. The file lies at the root, in its subfolder `.config/`, or in a folder that the
